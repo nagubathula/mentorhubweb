@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin } from "lucide-react";
+import { Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 const supabase = createClient();
 
@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-type FlowState = "LOGIN" | "PHONE" | "OTP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
+type FlowState = "LOGIN" | "EMAIL" | "OTP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -107,7 +107,7 @@ const MOCK_STUDENTS = [
 
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("LOGIN");
-  const [phone, setPhone] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [role, setRole] = useState<"STUDENT" | "MENTOR" | null>(null);
   
@@ -165,6 +165,11 @@ export default function OnboardingFlow() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setState("LOGIN");
+  };
+
   const handleSelect = (qId: string, val: string, multi: boolean = false) => {
     setSelections(prev => {
       if (multi) {
@@ -180,9 +185,9 @@ export default function OnboardingFlow() {
   };
 
   const handleSendOTP = async () => {
-    if (phone.length !== 10) return;
+    if (!authEmail.includes("@")) return;
     try {
-      const { error } = await supabase.auth.signInWithOtp({ phone: '+91' + phone });
+      const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
       if (error) console.error("Supabase OTP Error (Mocking success for demo):", error);
     } catch (e) {
       console.error(e);
@@ -193,7 +198,7 @@ export default function OnboardingFlow() {
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) return;
     try {
-      const { error } = await supabase.auth.verifyOtp({ phone: '+91' + phone, token: otp, type: 'sms' });
+      const { error } = await supabase.auth.verifyOtp({ email: authEmail, token: otp, type: 'email' });
       if (error) console.error("Supabase Verify Error (Mocking success for demo):", error);
     } catch (e) {
       console.error(e);
@@ -276,35 +281,24 @@ export default function OnboardingFlow() {
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
                 <div className="mb-4"><LogoHeader /></div>
                 <div className="flex flex-col gap-4">
-                  <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200 hover:bg-slate-50" onClick={handleGoogleSignIn}>
-                    <GoogleIcon /> Continue with Gmail
-                  </Button>
-                  <div className="flex items-center gap-4 py-2">
-                    <Separator className="flex-1" />
-                    <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">or</span>
-                    <Separator className="flex-1" />
-                  </div>
-                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => setState("PHONE")}>
-                    <Phone className="w-5 h-5 mr-2" /> Continue with Phone Number
+                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => setState("EMAIL")}>
+                    <Mail className="w-5 h-5 mr-2" /> Continue with Email
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {state === "PHONE" && (
-              <motion.div key="phone" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
+            {state === "EMAIL" && (
+              <motion.div key="email" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
                 <div className="flex-1 flex flex-col justify-center">
                   <LogoHeader />
                   <div className="mt-8 flex flex-col gap-5">
                     <div className="space-y-2">
-                      <Label className="text-sm text-slate-600 font-medium ml-1">Phone Number</Label>
-                      <div className="flex gap-2">
-                        <div className="w-[72px] h-[52px] flex items-center justify-center border border-slate-200 rounded-xl bg-slate-50 text-slate-600 font-medium shrink-0">+91</div>
-                        <Input type="tel" maxLength={10} placeholder="Enter 10-digit number" className="h-[52px] rounded-xl flex-1 border-slate-200 placeholder:text-slate-400 text-base" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} />
-                      </div>
+                      <Label className="text-sm text-slate-600 font-medium ml-1">Email Address</Label>
+                      <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} />
                     </div>
-                    <Button className={`h-[52px] rounded-xl mt-1 text-[15px] font-medium transition-all ${phone.length === 10 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400 hover:bg-slate-100 cursor-not-allowed"}`} onClick={handleSendOTP}>
-                      Send OTP <ArrowRight className="w-4 h-4 ml-1 inline" />
+                    <Button className={`h-[52px] rounded-xl mt-1 text-[15px] font-medium transition-all ${authEmail.includes("@") ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400 hover:bg-slate-100 cursor-not-allowed"}`} onClick={handleSendOTP}>
+                      Send Magic PIN <ArrowRight className="w-4 h-4 ml-1 inline" />
                     </Button>
                     <button className="text-[13px] text-slate-400 mt-2 hover:text-slate-600 transition-colors mx-auto" onClick={() => setState("LOGIN")}>Back to sign-in options</button>
                   </div>
@@ -318,11 +312,11 @@ export default function OnboardingFlow() {
                   <LogoHeader />
                   <div className="bg-[#ecfdf5] border border-[#d1fae5] rounded-xl p-3.5 flex items-center gap-2 text-[#059669] text-sm mb-8 mt-2 mx-1">
                     <ShieldCheck className="w-5 h-5 shrink-0" />
-                    <span className="font-medium">OTP sent to +91 {phone || "8499888133"}</span>
+                    <span className="font-medium">PIN sent to {authEmail || "your email"}</span>
                   </div>
                   <div className="flex flex-col gap-6 items-center w-full px-1">
                     <div className="w-full space-y-3">
-                      <Label className="text-sm text-slate-600 font-medium ml-1">Enter 6-digit OTP</Label>
+                      <Label className="text-sm text-slate-600 font-medium ml-1">Enter 6-digit PIN</Label>
                       <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                         <InputOTPGroup className="w-full flex justify-between">
                           {[0, 1, 2, 3, 4, 5].map((idx) => <InputOTPSlot key={idx} index={idx} className="h-14 w-[3.25rem] text-xl rounded-xl bg-white" />)}
@@ -1485,8 +1479,8 @@ export default function OnboardingFlow() {
                       <ArrowLeft className="w-5 h-5" />
                     </button>
                     <p className="font-medium text-[15px]">My Profile</p>
-                    <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
-                      <Pencil className="w-[17px] h-[17px]" />
+                    <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-rose-500/80 transition-colors shrink-0" onClick={handleSignOut}>
+                      <LogOut className="w-[17px] h-[17px]" />
                     </button>
                   </div>
                   
