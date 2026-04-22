@@ -290,13 +290,10 @@ export default function OnboardingFlow() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center sm:p-4 selection:bg-slate-200 font-sans">
-      <div className="w-full sm:max-w-[400px] h-screen sm:h-[780px] bg-white sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden relative flex flex-col sm:border sm:border-slate-100">
+    <div className="min-h-screen bg-white sm:bg-slate-50 flex sm:items-center sm:justify-center sm:p-6 selection:bg-slate-200 font-sans">
+      <div className="w-full sm:max-w-lg h-screen sm:h-[calc(100vh-3rem)] bg-white sm:rounded-2xl sm:shadow-sm overflow-hidden relative flex flex-col sm:border sm:border-slate-200">
 
-        {/* Mock top phone notch bar indicator */}
-        <div className="hidden sm:block absolute top-4 left-1/2 -translate-x-1/2 w-16 h-[5px] bg-slate-800 rounded-full z-20"></div>
-
-        <div className="flex-1 relative mt-4 sm:mt-[40px] px-6 pb-6 overflow-hidden">
+        <div className="flex-1 relative px-6 pb-6 overflow-hidden pt-4 sm:pt-6">
           <AnimatePresence mode="wait">
             {state === "LOGIN" && (
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
@@ -577,7 +574,7 @@ export default function OnboardingFlow() {
             })()}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="dashboard" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 {/* Header */}
                 <div className="pt-8 pb-4 flex items-center justify-between z-10 px-2 mt-2">
                   <div className="flex items-center gap-3">
@@ -784,7 +781,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom bar backdrop */}
-                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-32 flex flex-col items-center justify-end sm:rounded-b-[2.5rem]">
+                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-32 flex flex-col items-center justify-end sm:rounded-b-2xl">
                   <div onClick={() => setState("DASHBOARD_MAIN")} className="w-full sm:max-w-[352px] h-[60px] bg-[#0f172a] text-white rounded-2xl font-medium flex justify-center items-center gap-2 cursor-pointer hover:bg-[#1e293b] transition-all shadow-xl shadow-slate-900/20 active:scale-95">
                     Explore Dashboard Preview <ArrowRight className="w-[18px] h-[18px]" />
                   </div>
@@ -795,7 +792,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_MAIN" && (
-              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative">
+              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative">
                 
                 {/* Top Section / Header Quote */}
                 <div className="bg-white rounded-[1.5rem] p-5 pt-8 shadow-sm border border-slate-100 flex flex-col gap-4 mt-2 mx-1 relative z-10">
@@ -1073,7 +1070,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-2xl z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-900 cursor-pointer group">
                      <div className="relative">
                        <Home className="w-6 h-6 stroke-[2.2px] group-hover:-translate-y-0.5 transition-transform" />
@@ -1104,7 +1101,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "COURSE_DETAILS" && (
-              <motion.div key="course_details" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-40 relative">
+              <motion.div key="course_details" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-40 relative">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-5 pb-3 z-30 flex items-center gap-4 px-1 mx-1">
@@ -1292,7 +1289,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Container (Button + Nav) */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col px-6 pb-6 pt-4 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col px-6 pb-6 pt-4 sm:rounded-b-2xl z-50">
                    
                    <button className="w-full bg-[#0f172a] text-white py-4 rounded-xl font-medium flex gap-2 items-center justify-center hover:bg-[#1e293b] transition-colors mb-6 shadow-md shadow-slate-900/10">
                      <Play className="w-[18px] h-[18px]" strokeWidth={2.5} /> Continue Learning
@@ -1330,7 +1327,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "GAMES" && (
-              <motion.div key="games" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="games" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-3 z-30 px-1 mx-1 flex flex-col gap-3">
@@ -1422,7 +1419,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-2xl z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1451,7 +1448,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "NOTES" && (
-              <motion.div key="notes" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="notes" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-1 mx-1 flex justify-between items-center border-b border-slate-100 mb-4">
@@ -1500,7 +1497,7 @@ export default function OnboardingFlow() {
                 </button>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-2xl z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1530,7 +1527,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "PROFILE" && (
-              <motion.div key="profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Purple Top Block */}
                 <div className="bg-[#8b5cf6] pt-8 pb-16 px-5 relative -mx-1 -mt-1 -mr-1">
@@ -1678,7 +1675,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-2xl z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1791,7 +1788,7 @@ export default function OnboardingFlow() {
             })()}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-5 pb-4 z-30 px-2 mx-1 border-b border-slate-100">
@@ -1857,7 +1854,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Action Container */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-6 sm:rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-6 sm:rounded-b-2xl z-50">
                    <button className={`w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
                      {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
                    </button>
