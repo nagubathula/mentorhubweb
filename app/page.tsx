@@ -11,9 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-type FlowState = "LOGIN" | "EMAIL" | "OTP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
+type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -108,7 +107,9 @@ const MOCK_STUDENTS = [
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("LOGIN");
   const [authEmail, setAuthEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
   const [role, setRole] = useState<"STUDENT" | "MENTOR" | null>(null);
   
   // Custom user data
@@ -184,26 +185,46 @@ export default function OnboardingFlow() {
     setSelections(prev => ({ ...prev, [qId]: val }));
   };
 
-  const handleSendOTP = async () => {
-    if (!authEmail.includes("@")) return;
+  const handleSignIn = async () => {
+    if (!authEmail.includes("@") || !authPassword) return;
+    setAuthLoading(true);
+    setAuthError("");
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
-      if (error) console.error("Supabase OTP Error (Mocking success for demo):", error);
+      const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+      if (error) { setAuthError(error.message); return; }
+      if (data.user) {
+        if (data.user.user_metadata?.full_name) setName(data.user.user_metadata.full_name);
+        else if (data.user.user_metadata?.name) setName(data.user.user_metadata.name);
+        if (data.user.email) setEmail(data.user.email);
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        if (profile) setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+        else setState("ROLE");
+      }
     } catch (e) {
-      console.error(e);
+      setAuthError("Something went wrong. Please try again.");
+    } finally {
+      setAuthLoading(false);
     }
-    setState("OTP");
   };
 
-  const handleVerifyOTP = async () => {
-    if (otp.length !== 6) return;
+  const handleSignUp = async () => {
+    if (!authEmail.includes("@") || authPassword.length < 6) return;
+    setAuthLoading(true);
+    setAuthError("");
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: authEmail, token: otp, type: 'email' });
-      if (error) console.error("Supabase Verify Error (Mocking success for demo):", error);
+      const { data, error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+      if (error) { setAuthError(error.message); return; }
+      if (data.session) {
+        if (data.user?.email) setEmail(data.user.email);
+        setState("ROLE");
+      } else {
+        setAuthError("confirm-email");
+      }
     } catch (e) {
-      console.error(e);
+      setAuthError("Something went wrong. Please try again.");
+    } finally {
+      setAuthLoading(false);
     }
-    setState("ROLE");
   };
 
   const saveProfileData = async (userRole: string) => {
@@ -269,65 +290,104 @@ export default function OnboardingFlow() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-slate-200 font-sans">
-      <div className="w-full max-w-[400px] h-[780px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden relative flex flex-col border border-slate-100">
-        
-        {/* Mock top phone notch bar indicator */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-[5px] bg-slate-800 rounded-full z-20"></div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center sm:p-4 selection:bg-slate-200 font-sans">
+      <div className="w-full sm:max-w-[400px] h-screen sm:h-[780px] bg-white sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden relative flex flex-col sm:border sm:border-slate-100">
 
-        <div className="flex-1 relative mt-[40px] px-6 pb-6 overflow-hidden">
+        {/* Mock top phone notch bar indicator */}
+        <div className="hidden sm:block absolute top-4 left-1/2 -translate-x-1/2 w-16 h-[5px] bg-slate-800 rounded-full z-20"></div>
+
+        <div className="flex-1 relative mt-4 sm:mt-[40px] px-6 pb-6 overflow-hidden">
           <AnimatePresence mode="wait">
             {state === "LOGIN" && (
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
-                <div className="mb-4"><LogoHeader /></div>
-                <div className="flex flex-col gap-4">
-                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => setState("EMAIL")}>
-                    <Mail className="w-5 h-5 mr-2" /> Continue with Email
+                <div className="mb-2"><LogoHeader /></div>
+                <div className="flex flex-col gap-3">
+                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
+                    <Mail className="w-5 h-5 mr-2" /> Sign In
+                  </Button>
+                  <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>
+                    Create Account
                   </Button>
                 </div>
+                <div className="relative flex items-center gap-3">
+                  <div className="flex-1 h-px bg-slate-100" />
+                  <span className="text-[12px] text-slate-400 font-medium">or</span>
+                  <div className="flex-1 h-px bg-slate-100" />
+                </div>
+                <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200 text-slate-700 hover:bg-slate-50" onClick={handleGoogleSignIn}>
+                  <GoogleIcon /> Continue with Google
+                </Button>
               </motion.div>
             )}
 
-            {state === "EMAIL" && (
-              <motion.div key="email" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
-                <div className="flex-1 flex flex-col justify-center">
-                  <LogoHeader />
-                  <div className="mt-8 flex flex-col gap-5">
+            {state === "SIGNIN" && (
+              <motion.div key="signin" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
+                <div className="mb-2"><button onClick={() => setState("LOGIN")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500"><ArrowLeft className="w-5 h-5" /></button></div>
+                <div className="mb-6 space-y-1 ml-1">
+                  <h2 className="text-2xl font-semibold text-slate-900">Welcome back</h2>
+                  <p className="text-sm text-slate-500">Sign in to your account to continue.</p>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm text-slate-600 font-medium ml-1">Email</Label>
+                    <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm text-slate-600 font-medium ml-1">Password</Label>
+                    <Input type="password" placeholder="••••••••" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignIn()} />
+                  </div>
+                  {authError && authError !== "confirm-email" && (
+                    <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">{authError}</div>
+                  )}
+                  <Button disabled={authLoading || !authEmail.includes("@") || !authPassword} className="h-[52px] rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 mt-1" onClick={handleSignIn}>
+                    {authLoading ? "Signing in…" : <>Sign In <ArrowRight className="w-4 h-4 ml-1.5" /></>}
+                  </Button>
+                  <p className="text-[13px] text-slate-400 text-center mt-1">
+                    Don&apos;t have an account?{" "}
+                    <button className="text-slate-700 font-medium hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>Create one</button>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
+            {state === "SIGNUP" && (
+              <motion.div key="signup" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
+                <div className="mb-2"><button onClick={() => setState("LOGIN")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500"><ArrowLeft className="w-5 h-5" /></button></div>
+                <div className="mb-6 space-y-1 ml-1">
+                  <h2 className="text-2xl font-semibold text-slate-900">Create account</h2>
+                  <p className="text-sm text-slate-500">Join MentorHub and start your journey.</p>
+                </div>
+                {authError === "confirm-email" ? (
+                  <div className="bg-[#ecfdf5] border border-[#d1fae5] rounded-xl p-5 flex flex-col items-center text-center gap-3">
+                    <ShieldCheck className="w-10 h-10 text-[#059669]" />
+                    <div>
+                      <p className="font-medium text-slate-900 mb-1">Check your email</p>
+                      <p className="text-sm text-slate-500">We sent a confirmation link to <span className="font-medium text-slate-700">{authEmail}</span>. Click it to activate your account.</p>
+                    </div>
+                    <button className="text-[13px] text-slate-500 hover:text-slate-700 mt-1" onClick={() => { setAuthError(""); setState("SIGNIN"); }}>Back to sign in</button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
                     <div className="space-y-2">
-                      <Label className="text-sm text-slate-600 font-medium ml-1">Email Address</Label>
-                      <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} />
+                      <Label className="text-sm text-slate-600 font-medium ml-1">Email</Label>
+                      <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
                     </div>
-                    <Button className={`h-[52px] rounded-xl mt-1 text-[15px] font-medium transition-all ${authEmail.includes("@") ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400 hover:bg-slate-100 cursor-not-allowed"}`} onClick={handleSendOTP}>
-                      Send Magic PIN <ArrowRight className="w-4 h-4 ml-1 inline" />
-                    </Button>
-                    <button className="text-[13px] text-slate-400 mt-2 hover:text-slate-600 transition-colors mx-auto" onClick={() => setState("LOGIN")}>Back to sign-in options</button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {state === "OTP" && (
-              <motion.div key="otp" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
-                <div className="flex-1 flex flex-col justify-center">
-                  <LogoHeader />
-                  <div className="bg-[#ecfdf5] border border-[#d1fae5] rounded-xl p-3.5 flex items-center gap-2 text-[#059669] text-sm mb-8 mt-2 mx-1">
-                    <ShieldCheck className="w-5 h-5 shrink-0" />
-                    <span className="font-medium">PIN sent to {authEmail || "your email"}</span>
-                  </div>
-                  <div className="flex flex-col gap-6 items-center w-full px-1">
-                    <div className="w-full space-y-3">
-                      <Label className="text-sm text-slate-600 font-medium ml-1">Enter 6-digit PIN</Label>
-                      <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                        <InputOTPGroup className="w-full flex justify-between">
-                          {[0, 1, 2, 3, 4, 5].map((idx) => <InputOTPSlot key={idx} index={idx} className="h-14 w-[3.25rem] text-xl rounded-xl bg-white" />)}
-                        </InputOTPGroup>
-                      </InputOTP>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-600 font-medium ml-1">Password <span className="text-slate-400 font-normal">(min. 6 characters)</span></Label>
+                      <Input type="password" placeholder="••••••••" className="h-[52px] rounded-xl border-slate-200 placeholder:text-slate-400 text-base px-4" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignUp()} />
                     </div>
-                    <Button className={`w-full h-[52px] rounded-xl text-[15px] font-medium transition-all ${otp.length === 6 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-[#0f172a] text-white"}`} disabled={otp.length < 6} onClick={handleVerifyOTP}>
-                      <ShieldCheck className="w-4 h-4 mr-2" /> Verify & Continue
+                    {authError && (
+                      <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">{authError}</div>
+                    )}
+                    <Button disabled={authLoading || !authEmail.includes("@") || authPassword.length < 6} className="h-[52px] rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 mt-1" onClick={handleSignUp}>
+                      {authLoading ? "Creating account…" : <>Create Account <ArrowRight className="w-4 h-4 ml-1.5" /></>}
                     </Button>
+                    <p className="text-[13px] text-slate-400 text-center mt-1">
+                      Already have an account?{" "}
+                      <button className="text-slate-700 font-medium hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>Sign in</button>
+                    </p>
                   </div>
-                </div>
+                )}
               </motion.div>
             )}
 
@@ -517,7 +577,7 @@ export default function OnboardingFlow() {
             })()}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="dashboard" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 {/* Header */}
                 <div className="pt-8 pb-4 flex items-center justify-between z-10 px-2 mt-2">
                   <div className="flex items-center gap-3">
@@ -724,8 +784,8 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom bar backdrop */}
-                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-32 flex flex-col items-center justify-end rounded-b-[2.5rem]">
-                  <div onClick={() => setState("DASHBOARD_MAIN")} className="w-full max-w-[352px] h-[60px] bg-[#0f172a] text-white rounded-2xl font-medium flex justify-center items-center gap-2 cursor-pointer hover:bg-[#1e293b] transition-all shadow-xl shadow-slate-900/20 active:scale-95">
+                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-32 flex flex-col items-center justify-end sm:rounded-b-[2.5rem]">
+                  <div onClick={() => setState("DASHBOARD_MAIN")} className="w-full sm:max-w-[352px] h-[60px] bg-[#0f172a] text-white rounded-2xl font-medium flex justify-center items-center gap-2 cursor-pointer hover:bg-[#1e293b] transition-all shadow-xl shadow-slate-900/20 active:scale-95">
                     Explore Dashboard Preview <ArrowRight className="w-[18px] h-[18px]" />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-4 font-medium mb-2">You can explore the app while waiting for your mentor</p>
@@ -735,7 +795,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_MAIN" && (
-              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative">
+              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative">
                 
                 {/* Top Section / Header Quote */}
                 <div className="bg-white rounded-[1.5rem] p-5 pt-8 shadow-sm border border-slate-100 flex flex-col gap-4 mt-2 mx-1 relative z-10">
@@ -1013,7 +1073,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-900 cursor-pointer group">
                      <div className="relative">
                        <Home className="w-6 h-6 stroke-[2.2px] group-hover:-translate-y-0.5 transition-transform" />
@@ -1044,7 +1104,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "COURSE_DETAILS" && (
-              <motion.div key="course_details" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-40 relative">
+              <motion.div key="course_details" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-40 relative">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-5 pb-3 z-30 flex items-center gap-4 px-1 mx-1">
@@ -1232,7 +1292,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Container (Button + Nav) */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col px-6 pb-6 pt-4 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col px-6 pb-6 pt-4 sm:rounded-b-[2.5rem] z-50">
                    
                    <button className="w-full bg-[#0f172a] text-white py-4 rounded-xl font-medium flex gap-2 items-center justify-center hover:bg-[#1e293b] transition-colors mb-6 shadow-md shadow-slate-900/10">
                      <Play className="w-[18px] h-[18px]" strokeWidth={2.5} /> Continue Learning
@@ -1270,7 +1330,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "GAMES" && (
-              <motion.div key="games" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="games" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-3 z-30 px-1 mx-1 flex flex-col gap-3">
@@ -1362,7 +1422,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1391,7 +1451,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "NOTES" && (
-              <motion.div key="notes" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="notes" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-1 mx-1 flex justify-between items-center border-b border-slate-100 mb-4">
@@ -1440,7 +1500,7 @@ export default function OnboardingFlow() {
                 </button>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1470,7 +1530,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "PROFILE" && (
-              <motion.div key="profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-slate-50 -mx-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Purple Top Block */}
                 <div className="bg-[#8b5cf6] pt-8 pb-16 px-5 relative -mx-1 -mt-1 -mr-1">
@@ -1618,7 +1678,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Navigation Menu */}
-                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex items-center justify-between px-6 sm:rounded-b-[2.5rem] z-50">
                    <div onClick={() => setState("DASHBOARD_MAIN")} className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer group">
                      <Home className="w-6 h-6 stroke-[2px] group-hover:-translate-y-0.5 transition-transform" />
                      <span className="text-[10px] font-semibold mt-1">Home</span>
@@ -1731,7 +1791,7 @@ export default function OnboardingFlow() {
             })()}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full sm:h-[730px] flex flex-col pt-0 bg-white -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-5 pb-4 z-30 px-2 mx-1 border-b border-slate-100">
@@ -1797,7 +1857,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Fixed Bottom Action Container */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-6 rounded-b-[2.5rem] z-50">
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-6 sm:rounded-b-[2.5rem] z-50">
                    <button className={`w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
                      {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
                    </button>
