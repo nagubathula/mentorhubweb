@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
 
@@ -128,6 +130,45 @@ export default function OnboardingFlow() {
   const [mentorExpertise, setMentorExpertise] = useState("");
   const [mentorQuizIndex, setMentorQuizIndex] = useState(0);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [realStudents, setRealStudents] = useState<any[]>(MOCK_STUDENTS);
+
+  useEffect(() => {
+    if (state === "MENTOR_MATCHING" || state === "DASHBOARD_MAIN") {
+      const fetchStudents = async () => {
+        const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
+        if (data && data.length > 0) {
+          const formatted = data.map(profile => {
+             const prefs = profile.preferences || {};
+             const tags = [];
+             if (prefs.q2) {
+               if (Array.isArray(prefs.q2)) tags.push(...prefs.q2);
+               else tags.push(prefs.q2);
+             }
+             if (prefs.q3) {
+               if (Array.isArray(prefs.q3)) tags.push(...prefs.q3);
+               else tags.push(prefs.q3);
+             }
+             if (tags.length === 0) tags.push("Computer Science", "Web Development");
+
+             const desc = prefs.q1 ? `Studying at ${prefs.q1}` : "Looking to grow and learn new skills.";
+
+             return {
+                id: profile.id,
+                name: profile.name || profile.email?.split('@')[0] || "Student",
+                match: (Math.floor(Math.random() * (98 - 75 + 1)) + 75) + "%",
+                desc,
+                time: "Recently joined",
+                location: "Online",
+                tags: tags.slice(0, 3),
+                image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`
+             };
+          });
+          setRealStudents(formatted);
+        }
+      };
+      fetchStudents();
+    }
+  }, [state]);
 
   useEffect(() => {
     const checkActiveSession = async () => {
@@ -289,11 +330,13 @@ export default function OnboardingFlow() {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-white sm:bg-slate-50 flex sm:items-center sm:justify-center sm:p-6 selection:bg-slate-200 font-sans">
-      <div className="w-full sm:max-w-lg h-screen sm:h-[calc(100vh-3rem)] bg-white sm:rounded-2xl sm:shadow-sm overflow-hidden relative flex flex-col sm:border sm:border-slate-200">
+  const isDashboard = state === "DASHBOARD_MAIN" || state === "DASHBOARD_AWAITING" || state === "MENTOR_MATCHING";
 
-        <div className="flex-1 relative px-6 pb-6 overflow-hidden pt-4 sm:pt-6">
+  return (
+    <div className={`min-h-screen bg-slate-50 flex items-center justify-center p-0 md:p-6 selection:bg-slate-200 font-sans`}>
+      <div className={`w-full ${isDashboard ? 'max-w-7xl min-h-[calc(100vh-3rem)] rounded-none md:rounded-3xl' : 'max-w-lg h-screen md:h-[calc(100vh-3rem)] md:rounded-3xl'} bg-white shadow-none md:shadow-sm overflow-hidden relative flex flex-col md:border border-slate-200 transition-all duration-300 ease-in-out`}>
+
+        <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : 'px-6 pt-6 pb-6'}`}>
           <AnimatePresence mode="wait">
             {state === "LOGIN" && (
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
@@ -574,225 +617,154 @@ export default function OnboardingFlow() {
             })()}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 {/* Header */}
-                <div className="pt-8 pb-4 flex items-center justify-between z-10 px-2 mt-2">
+                <div className="pt-8 pb-4 flex items-center justify-between z-10 w-full mb-4">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-600 p-3 rounded-full text-white shadow-sm ring-4 ring-blue-600/20">
                       <GraduationCap className="w-6 h-6" />
                     </div>
                     <div>
-                      <h2 className="text-[17px] font-medium text-slate-900 leading-tight">Welcome, {name || "Satya"}!</h2>
-                      <p className="text-[13px] text-slate-500 font-medium">Application submitted</p>
+                      <h2 className="text-[18px] md:text-2xl font-semibold text-slate-900 leading-tight">Welcome, {name || "Satya"}!</h2>
+                      <p className="text-[14px] text-slate-500 font-medium">Application submitted successfully.</p>
                     </div>
                   </div>
-                  <button className="p-3 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-slate-600 shadow-sm cursor-pointer hover:shadow-md transition-all">
+                  <Button variant="outline" size="icon" className="rounded-full">
                     <Bell className="w-5 h-5" />
-                  </button>
+                  </Button>
                 </div>
 
-                {/* Yellow Card */}
-                <div className="bg-gradient-to-b from-[#fff7ed] to-[#fffbed] border border-[#ffedd5] rounded-3xl p-6 mt-2 relative overflow-hidden flex flex-col items-center text-center shadow-sm mx-1">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#ffedd5]/50 rounded-full translate-x-20 -translate-y-20 blur-3xl"></div>
-                  
-                  <div className="bg-gradient-to-br from-amber-500 to-orange-500 w-16 h-16 rounded-[20px] flex items-center justify-center text-white shadow-lg shadow-orange-500/20 mb-5 z-10">
-                    <Search className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-[19px] font-medium text-slate-900 z-10 mb-2">Awaiting Mentor Assignment</h3>
-                  
-                  {/* Dots animation */}
-                  <div className="flex gap-1.5 mb-5 z-10">
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-60"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-30"></div>
+                <div className="flex flex-col md:flex-row gap-6 w-full">
+                  {/* Left Column */}
+                  <div className="flex-1 space-y-6">
+                    {/* Profile Card */}
+                    <Card>
+                      <CardHeader className="pb-3 border-b border-slate-100">
+                         <div className="flex justify-between items-center">
+                            <CardTitle className="text-lg flex items-center gap-2"><User className="w-5 h-5"/> Your Profile</CardTitle>
+                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none"><CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Complete</Badge>
+                         </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-4">
+                        <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-xl">
+                          <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><User className="w-5 h-5" /></div>
+                          <div>
+                            <p className="text-[12px] text-slate-500 uppercase font-semibold tracking-wider">Full Name</p>
+                            <p className="text-[15px] text-slate-900 font-medium">{name || "Satya"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-xl">
+                          <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl"><Mail className="w-5 h-5" /></div>
+                          <div>
+                            <p className="text-[12px] text-slate-500 uppercase font-semibold tracking-wider">Email</p>
+                            <p className="text-[15px] text-slate-900 font-medium">{email || "satyasai2108@gmail.com"}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Preferences Card */}
+                    <Card>
+                       <CardHeader className="pb-3 border-b border-slate-100">
+                         <CardTitle className="text-lg flex items-center gap-2"><Sparkles className="w-5 h-5"/> Your Preferences</CardTitle>
+                       </CardHeader>
+                       <CardContent className="pt-4">
+                          <div className="flex flex-wrap gap-2">
+                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Computer Science / IT</Badge>
+                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Hindi</Badge>
+                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Yes, regularly</Badge>
+                          </div>
+                       </CardContent>
+                    </Card>
+
+                    {/* Assignment Progress */}
+                    <Card>
+                      <CardHeader className="pb-4 border-b border-slate-100">
+                        <CardTitle className="text-lg flex items-center gap-2"><Clock className="w-5 h-5"/> Assignment Progress</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                         <div className="relative border-l-2 border-slate-100 ml-3 space-y-6">
+                            <div className="relative pl-6">
+                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-emerald-500 text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div></div>
+                              <div><p className="text-[15px] text-slate-900 font-medium leading-none">Profile Created</p><p className="text-[13px] text-slate-500 mt-1">Your details are saved</p></div>
+                              <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-emerald-500 ml-[11px]"></div>
+                            </div>
+                            <div className="relative pl-6">
+                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-emerald-500 text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div></div>
+                              <div><p className="text-[15px] text-slate-900 font-medium leading-none">Questionnaire Completed</p><p className="text-[13px] text-slate-500 mt-1">Preferences recorded</p></div>
+                              <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-emerald-500 ml-[11px]"></div>
+                            </div>
+                            <div className="relative pl-6">
+                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-amber-500 text-white rounded-full p-1 shadow-sm"><Search className="w-3.5 h-3.5" strokeWidth={3} /></div></div>
+                              <div><p className="text-[15px] text-amber-600 font-medium leading-none">Finding Best Mentor...</p><p className="text-[13px] text-slate-500 mt-1">Matching based on your goals</p></div>
+                            </div>
+                         </div>
+                      </CardContent>
+                    </Card>
                   </div>
 
-                  <p className="text-sm text-amber-700/80 z-10 mb-6 font-medium">Analyzing your learning preferences</p>
-                  
-                  <div className="w-full bg-white/60 backdrop-blur-md rounded-2xl py-3 px-5 flex justify-between items-center z-10 border border-white">
-                    <span className="text-[13px] text-slate-600 font-medium">Estimated wait time</span>
-                    <span className="text-[13px] font-medium text-orange-600 flex items-center gap-1.5">
-                      <Clock className="w-4 h-4" /> 24-48 hours
-                    </span>
-                  </div>
-                </div>
+                  {/* Right Column / Sticky Sidebar */}
+                  <div className="w-full md:w-[380px] space-y-6 shrink-0">
+                    {/* Yellow Banner */}
+                    <div className="bg-gradient-to-b from-[#fff7ed] to-[#fffbed] border border-[#ffedd5] rounded-xl p-8 relative overflow-hidden flex flex-col items-center text-center shadow-sm">
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-[#ffedd5]/50 rounded-full translate-x-20 -translate-y-20 blur-3xl"></div>
+                      <div className="bg-gradient-to-br from-amber-500 to-orange-500 w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg mb-5 z-10">
+                        <Search className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-slate-900 z-10 mb-2">Awaiting Assignment</h3>
+                      <div className="flex gap-1.5 mb-5 z-10">
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-60"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-30"></div>
+                      </div>
+                      <p className="text-[15px] text-amber-800 z-10 mb-6 font-medium">Analyzing learning preferences...</p>
+                      <div className="w-full bg-white/80 rounded-xl py-3 px-5 flex justify-between items-center z-10">
+                        <span className="text-sm text-slate-600 font-medium">Estimated wait time</span>
+                        <span className="text-sm font-semibold text-orange-600 flex items-center gap-1.5"><Clock className="w-4 h-4" /> 24-48 hrs</span>
+                      </div>
+                    </div>
 
-                {/* Profile Sect */}
-                <div className="bg-white rounded-[1.5rem] border border-slate-100 p-5 mt-4 shadow-sm flex flex-col gap-4 mx-1">
-                  <div className="flex justify-between items-center px-1">
-                    <div className="flex items-center gap-2.5 text-slate-700 font-medium text-[15px]">
-                      <User className="w-[18px] h-[18px]" strokeWidth={2.5} /> Your Profile
-                    </div>
-                    <div className="bg-[#ecfdf5] text-[#059669] text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1 border border-[#a7f3d0]">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Complete
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 bg-slate-50/50 border border-slate-50 p-4 rounded-2xl">
-                    <div className="p-2.5 bg-blue-50 text-blue-500 rounded-xl">
-                      <User className="w-5 h-5" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Full Name</p>
-                      <p className="text-[14px] text-slate-800 font-medium">{name || "Satya"}</p>
-                    </div>
-                  </div>
+                    {/* Explore Actions */}
+                    <Card>
+                      <CardHeader className="pb-3 border-b border-slate-100">
+                        <CardTitle className="text-lg text-blue-700 flex items-center gap-2"><Sparkles className="w-5 h-5"/> While You Wait</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-4">
+                        <Button variant="outline" className="w-full justify-start h-auto p-4 flex gap-4 hover:bg-blue-50/50 group">
+                           <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform"><BookText className="w-5 h-5" /></div>
+                           <div className="text-left flex-1"><p className="text-[15px] text-slate-900 font-semibold mb-0.5">Explore Courses</p><p className="text-[13px] text-slate-500 font-normal whitespace-normal">Browse the Python curriculum while you wait</p></div>
+                        </Button>
+                        <Button variant="outline" className="w-full justify-start h-auto p-4 flex gap-4 hover:bg-blue-50/50 group">
+                           <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform"><MessageSquare className="w-5 h-5" /></div>
+                           <div className="text-left flex-1"><p className="text-[15px] text-slate-900 font-semibold mb-0.5">Community</p><p className="text-[13px] text-slate-500 font-normal whitespace-normal">Join the student community to connect with peers</p></div>
+                        </Button>
+                      </CardContent>
+                    </Card>
 
-                  <div className="flex items-center gap-4 bg-slate-50/50 border border-slate-50 p-4 rounded-2xl">
-                    <div className="p-2.5 bg-purple-50 text-purple-500 rounded-xl">
-                      <Mail className="w-5 h-5" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Email</p>
-                      <p className="text-[14px] text-slate-800 font-medium">{email || "satyasai2108@gmail.com"}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preferences */}
-                <div className="bg-white rounded-[1.5rem] border border-slate-100 p-5 mt-4 shadow-sm flex flex-col gap-4 mx-1">
-                  <div className="flex justify-between items-center mb-1 px-1">
-                    <div className="flex items-center gap-2.5 text-slate-700 font-medium text-[15px]">
-                      <Sparkles className="w-[18px] h-[18px]" strokeWidth={2.5} /> Your Preferences
-                    </div>
-                    <span className="text-[11px] text-slate-400 font-medium">7 answers</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2.5 mt-1">
-                    <div className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-600 text-[13px] rounded-full font-medium">Computer Science / IT</div>
-                    <div className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-600 text-[13px] rounded-full font-medium">Hindi</div>
-                    <div className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-600 text-[13px] rounded-full font-medium">Yes, regularly</div>
-                  </div>
-                </div>
-
-                {/* Assignment Progress */}
-                <div className="bg-white rounded-[1.5rem] border border-slate-100 p-6 mt-4 shadow-sm mx-1">
-                  <div className="flex items-center gap-2 text-slate-700 font-medium text-[15px] mb-6">
-                    <Clock className="w-[18px] h-[18px]" strokeWidth={2.5} /> Assignment Progress
-                  </div>
-                  <div className="relative border-l-2 border-slate-100 ml-3 space-y-6">
+                    <Card className="bg-emerald-50 border-emerald-200">
+                      <CardContent className="p-5 flex gap-4 items-start">
+                         <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
+                         <div>
+                           <p className="text-emerald-800 font-semibold mb-1">You're in good hands</p>
+                           <p className="text-sm text-emerald-700">Our mentors are verified professionals. We carefully match based on your goals.</p>
+                         </div>
+                      </CardContent>
+                    </Card>
                     
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[13px] bg-white p-1">
-                        <div className="bg-[#10b981] text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div>
-                      </div>
-                      <div>
-                        <p className="text-[14px] text-slate-800 font-medium">Profile Created</p>
-                        <p className="text-[12px] text-slate-500">Your details are saved</p>
-                      </div>
-                      <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-[#10b981] ml-[11px]"></div>
-                    </div>
-
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[13px] bg-white p-1">
-                        <div className="bg-[#10b981] text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div>
-                      </div>
-                      <div>
-                        <p className="text-[14px] text-slate-800 font-medium">Questionnaire Completed</p>
-                        <p className="text-[12px] text-slate-500">Preferences recorded</p>
-                      </div>
-                      <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-[#10b981] ml-[11px]"></div>
-                    </div>
-
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[13px] bg-white p-1">
-                        <div className="bg-amber-500 text-white rounded-full p-1 shadow-sm"><Search className="w-[14px] h-[14px]" strokeWidth={3} /></div>
-                      </div>
-                      <div>
-                        <p className="text-[14px] text-amber-600 font-medium">Finding Best Mentor...</p>
-                        <p className="text-[12px] text-slate-500">Matching based on your goals</p>
-                      </div>
-                    </div>
-
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[13px] bg-white p-1">
-                        <div className="text-slate-300 rounded-full p-0.5"><Circle className="w-4 h-4" fill="currentColor" /></div>
-                      </div>
-                      <div>
-                        <p className="text-[14px] text-slate-400 font-medium">Mentor Assigned</p>
-                        <p className="text-[12px] text-slate-400">You'll be notified</p>
-                      </div>
-                    </div>
-
-                    <div className="relative pl-6">
-                      <div className="absolute -left-[13px] bg-white p-1">
-                        <div className="text-slate-300 rounded-full p-0.5"><Circle className="w-4 h-4" fill="currentColor" /></div>
-                      </div>
-                      <div>
-                        <p className="text-[14px] text-slate-400 font-medium">First Session Scheduled</p>
-                        <p className="text-[12px] text-slate-400">Begin your learning journey</p>
-                      </div>
-                    </div>
+                    <Button onClick={() => setState("DASHBOARD_MAIN")} className="w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all bg-[#0f172a] text-white hover:bg-[#1e293b] mt-4 shadow-xl shadow-slate-900/10">
+                      Explore Dashboard Preview <ArrowRight className="w-[18px] h-[18px]" />
+                    </Button>
 
                   </div>
                 </div>
-
-                {/* While You Wait */}
-                <div className="bg-[#eff6ff] rounded-[1.5rem] border border-[#dbeafe] p-5 mt-4 mx-1">
-                  <div className="flex items-center gap-2 text-blue-800 font-medium text-[15px] mb-4">
-                    <Sparkles className="w-[18px] h-[18px]" strokeWidth={2.5} /> While You Wait
-                  </div>
-                  <div className="space-y-3">
-                    <button className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm border border-slate-100 hover:border-slate-200 transition-colors">
-                      <div className="p-2.5 bg-blue-50 text-blue-500 rounded-xl"><BookText className="w-5 h-5" /></div>
-                      <div>
-                        <p className="text-[14px] text-slate-800 font-medium">Explore Courses</p>
-                        <p className="text-[12px] text-slate-500">Browse the Python curriculum while you wait</p>
-                      </div>
-                    </button>
-                    <button className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm border border-slate-100 hover:border-slate-200 transition-colors">
-                      <div className="p-2.5 bg-blue-50 text-blue-500 rounded-xl"><Target className="w-5 h-5" /></div>
-                      <div>
-                        <p className="text-[14px] text-slate-800 font-medium">Set Your Goals</p>
-                        <p className="text-[12px] text-slate-500">Think about what you want to achieve this month</p>
-                      </div>
-                    </button>
-                    <button className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 text-left shadow-sm border border-slate-100 hover:border-slate-200 transition-colors">
-                      <div className="p-2.5 bg-blue-50 text-blue-500 rounded-xl"><MessageSquare className="w-5 h-5" /></div>
-                      <div>
-                        <p className="text-[14px] text-slate-800 font-medium">Community</p>
-                        <p className="text-[12px] text-slate-500">Join the student community to connect with peers</p>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* You're in good hands */}
-                <div className="bg-[#ecfdf5] rounded-2xl border border-[#d1fae5] p-5 mt-4 mx-1 flex gap-3">
-                  <ShieldCheck className="w-6 h-6 text-[#059669] shrink-0" />
-                  <div>
-                    <p className="text-[#065f46] font-medium text-[14px] mb-1">You're in good hands</p>
-                    <p className="text-[#059669] text-[13px] leading-relaxed">Our mentors are verified professionals with real industry experience. We carefully match based on your goals and learning style.</p>
-                  </div>
-                </div>
-
-                {/* Get notified toggle */}
-                <div className="bg-white rounded-2xl border border-slate-100 p-5 mt-4 mx-1 flex items-center justify-between mb-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-purple-50 text-purple-600 p-2.5 rounded-xl"><Bell className="w-5 h-5" /></div>
-                    <div>
-                      <p className="text-slate-800 font-medium text-[14px]">Get notified</p>
-                      <p className="text-slate-500 text-[12px]">We'll notify you when your mentor is assigned</p>
-                    </div>
-                  </div>
-                  {/* Purple tailwind toggle */}
-                  <div className="w-[42px] h-[24px] bg-purple-600 rounded-full relative shadow-inner cursor-pointer shrink-0">
-                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow"></div>
-                  </div>
-                </div>
-
-                {/* Fixed Bottom bar backdrop */}
-                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-32 flex flex-col items-center justify-end sm:rounded-b-2xl">
-                  <div onClick={() => setState("DASHBOARD_MAIN")} className="w-full sm:max-w-[352px] h-[60px] bg-[#0f172a] text-white rounded-2xl font-medium flex justify-center items-center gap-2 cursor-pointer hover:bg-[#1e293b] transition-all shadow-xl shadow-slate-900/20 active:scale-95">
-                    Explore Dashboard Preview <ArrowRight className="w-[18px] h-[18px]" />
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-4 font-medium mb-2">You can explore the app while waiting for your mentor</p>
-                </div>
-
               </motion.div>
             )}
 
             {state === "DASHBOARD_MAIN" && (
-              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative">
+              <motion.div key="dashboard_main" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-8 -mt-2 overflow-y-auto hidden-scrollbar pb-36 relative w-full items-center">
+                <div className="w-full max-w-2xl xl:max-w-none xl:grid xl:grid-cols-[2fr_1fr] gap-8">
+                  {/* Left Column */}
+                  <div className="space-y-6 flex flex-col">
                 
                 {/* Top Section / Header Quote */}
                 <div className="bg-white rounded-[1.5rem] p-5 pt-8 shadow-sm border border-slate-100 flex flex-col gap-4 mt-2 mx-1 relative z-10">
@@ -850,6 +822,9 @@ export default function OnboardingFlow() {
                   </div>
                 </div>
 
+                  </div>
+                  {/* Right Column */}
+                  <div className="space-y-6">
                 {/* Today's Schedule Options */}
                 <div className="mt-6 mx-1">
                   <div className="flex justify-between items-end mb-4 px-1">
@@ -1063,6 +1038,8 @@ export default function OnboardingFlow() {
                    </div>
                 </div>
                 
+                  </div>
+                </div>
                 {/* Final Quote */}
                 <div className="text-center pb-24 px-6 flex flex-col gap-1 items-center mb-6">
                    <p className="text-slate-400/80 italic text-[13px] relative flex gap-2"><Quote className="w-4 h-4 shrink-0 text-slate-300" /> "You're doing great, keep pushing!"</p>
@@ -1808,7 +1785,7 @@ export default function OnboardingFlow() {
                 <div className="bg-[#eef2ff] rounded-[1.5rem] p-5 mt-4 mx-2 border border-[#e0e7ff] flex gap-4">
                   <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
                   <div>
-                     <p className="text-[13px] font-semibold text-indigo-800 mb-1">5 students are waiting for a mentor</p>
+                     <p className="text-[13px] font-semibold text-indigo-800 mb-1">{realStudents.length} students are waiting for a mentor</p>
                      <p className="text-[12px] text-indigo-500 leading-relaxed font-medium">Select the students you'd like to mentor. You can review their profiles and questionnaire responses below.</p>
                   </div>
                 </div>
@@ -1822,7 +1799,7 @@ export default function OnboardingFlow() {
 
                 {/* Student List */}
                 <div className="space-y-4 px-2">
-                  {MOCK_STUDENTS.map(student => (
+                  {realStudents.map(student => (
                     <div key={student.id} onClick={() => setSelectedStudents(prev => prev.includes(student.id) ? prev.filter(id => id !== student.id) : [...prev, student.id])} className={`bg-white rounded-[1.5rem] border ${selectedStudents.includes(student.id) ? 'border-indigo-500 shadow-[0_0_0_1px_rgba(99,102,241,1)]' : 'border-slate-100'} p-5 shadow-sm transition-all cursor-pointer relative`}>
                       <div className="flex gap-4">
                         <div className="relative shrink-0">
