@@ -106,12 +106,6 @@ const MENTOR_QUIZ_STEPS: QuizStepData[] = [
   }
 ];
 
-const MOCK_STUDENTS = [
-  { id: "s1", name: "Vikram Patel", email: "vikram.p@gmail.com", match: "94%", desc: "Build a portfolio website and learn Python for data analysis", time: "2 hours ago", location: "Mumbai, India", tags: ["Python", "Web Development", "Data Science"], image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop", preferences: { inspiration: "A teacher/mentor", movie: "Sci-fi / Technology", style: "Hands-on projects", location: "Mumbai, India" } },
-  { id: "s2", name: "Ananya Krishnan", email: "ananya.k@gmail.com", match: "88%", desc: "Machine Learning, AI fundamentals", time: "5 hours ago", location: "Bangalore, India", tags: ["Machine Learning", "Python", "Mathematics"], image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop", preferences: { inspiration: "A scientist", movie: "Documentaries", style: "Reading / Self-paced", location: "Bangalore, India" } },
-  { id: "s3", name: "Kavya Nair", email: "kavya.n@gmail.com", match: "82%", desc: "Automation, scripting, career pivot into tech", time: "1 day ago", location: "Chennai, India", tags: ["Automation", "Python", "Career Change"], image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop", preferences: { inspiration: "Family member", movie: "Action / Adventure", style: "Visual / Video courses", location: "Chennai, India" } }
-];
-
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("LOGIN");
   const [authEmail, setAuthEmail] = useState("");
@@ -137,7 +131,7 @@ export default function OnboardingFlow() {
   const [mentorQuizIndex, setMentorQuizIndex] = useState(0);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [expandedStudents, setExpandedStudents] = useState<string[]>([]);
-  const [realStudents, setRealStudents] = useState<any[]>(MOCK_STUDENTS);
+  const [realStudents, setRealStudents] = useState<any[]>([]);
 
   useEffect(() => {
     if (state === "MENTOR_MATCHING" || state === "DASHBOARD_MAIN") {
@@ -327,10 +321,10 @@ export default function OnboardingFlow() {
   }
 
   // Animation variants
-  const variants = {
-    initial: { opacity: 0, x: 15 },
-    enter: { opacity: 1, x: 0, transition: { duration: 0.25, ease: "easeOut" as const } },
-    exit: { opacity: 0, x: -15, transition: { duration: 0.15, ease: "easeIn" as const } },
+  const variants: any = {
+    initial: { opacity: 0, scale: 0.96, y: 15, filter: "blur(4px)" },
+    enter: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.96, y: -15, filter: "blur(4px)", transition: { duration: 0.4, ease: "easeIn" } },
   };
 
   // Header Component
@@ -347,8 +341,8 @@ export default function OnboardingFlow() {
   const isDashboard = state === "DASHBOARD_MAIN" || state === "DASHBOARD_AWAITING" || state === "MENTOR_MATCHING";
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex items-center justify-center p-0 md:p-6 selection:bg-slate-200 font-sans`}>
-      <div className={`w-full ${isDashboard ? 'max-w-7xl min-h-[calc(100vh-3rem)] rounded-none md:rounded-3xl' : 'max-w-lg h-screen md:h-[calc(100vh-3rem)] md:rounded-3xl'} bg-white shadow-none md:shadow-sm overflow-hidden relative flex flex-col md:border border-slate-200 transition-all duration-300 ease-in-out`}>
+    <div className={`min-h-screen mesh-bg flex items-center justify-center p-0 md:p-6 selection:bg-slate-200 font-sans`}>
+      <div className={`w-full ${isDashboard ? 'max-w-7xl min-h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-slate-50/80 backdrop-blur-3xl border-slate-200/50' : 'max-w-lg h-screen md:h-[calc(100vh-3rem)] md:rounded-[2rem] glass-card premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
         <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : 'px-6 pt-6 pb-6'}`}>
           <AnimatePresence mode="wait">
@@ -356,10 +350,10 @@ export default function OnboardingFlow() {
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
                 <div className="mb-2"><LogoHeader /></div>
                 <div className="flex flex-col gap-3">
-                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b]" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
+                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-gradient-to-r from-indigo-600 to-violet-600 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-0.5 transition-all text-white border-0" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
                     <Mail className="w-5 h-5 mr-2" /> Sign In
                   </Button>
-                  <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200 text-slate-700 hover:bg-slate-50" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>
+                  <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200/60 bg-white/50 backdrop-blur-sm text-slate-700 hover:bg-white/80 hover:shadow-sm transition-all" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>
                     Create Account
                   </Button>
                 </div>
@@ -368,7 +362,7 @@ export default function OnboardingFlow() {
                   <span className="text-[12px] text-slate-400 font-medium">or</span>
                   <div className="flex-1 h-px bg-slate-100" />
                 </div>
-                <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200 text-slate-700 hover:bg-slate-50" onClick={handleGoogleSignIn}>
+                <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200/60 bg-white/50 backdrop-blur-sm text-slate-700 hover:bg-white/80 hover:shadow-sm transition-all" onClick={handleGoogleSignIn}>
                   <GoogleIcon /> Continue with Google
                 </Button>
               </motion.div>
@@ -1885,7 +1879,7 @@ export default function OnboardingFlow() {
                                 <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {student.tags.map(tag => (
+                                {student.tags.map((tag: string) => (
                                   <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2 py-1 rounded-md font-medium">{tag}</span>
                                 ))}
                               </div>

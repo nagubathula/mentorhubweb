@@ -1,14 +1,30 @@
 import { ChevronDown, Search, ArrowRight, MessageSquare, Video, Medal, Target, MapPin, Clock, BookOpen, Layers, CheckCircle2, Star } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase";
 
 export function MentorStudents() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const supabase = createClient();
 
-  const students = [
-    { id: 1, name: "Arjun Mehta", course: "Python Masterclass", progress: 68, streak: 5, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "Active", needsAttention: false },
-    { id: 2, name: "Priya S.", course: "Data Science Fundamentals", progress: 42, streak: 2, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", status: "Pending Review", needsAttention: false },
-    { id: 3, name: "Rahul Verma", course: "Machine Learning Concepts", progress: 15, streak: 0, avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=rahul", status: "Inactive", needsAttention: true }
-  ];
+  useEffect(() => {
+    const fetchStudents = async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
+      if (data) {
+        setStudents(data.map(p => ({
+          id: p.id,
+          name: p.name || p.email?.split('@')[0] || 'Unknown Student',
+          course: (p.preferences as any)?.q1 || "Mentorship Track",
+          progress: Math.floor(Math.random() * 60) + 20,
+          streak: Math.floor(Math.random() * 10),
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.id}`,
+          status: "Active",
+          needsAttention: Math.random() > 0.8
+        })));
+      }
+    };
+    fetchStudents();
+  }, []);
 
   if (selectedStudent) {
     return (

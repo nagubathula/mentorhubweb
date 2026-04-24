@@ -1,11 +1,29 @@
 import { Users, Search, Medal, MessageCircle, Heart, Share2, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase";
 
 export function MentorCircle() {
-  const mentors = [
-    { id: 1, name: "David Chen", role: "Senior Engineer @ Google", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=david", sessions: 42, top: true },
-    { id: 2, name: "Sarah Williams", role: "Frontend Lead", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", sessions: 28, top: false },
-    { id: 3, name: "Dr. Ananya R.", role: "Data Scientist", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", sessions: 35, top: true },
-  ];
+  const [mentors, setMentors] = useState<any[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchMentors = async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('role', 'MENTOR');
+      if (data && data.length > 0) {
+        setMentors(data.map((m, index) => ({
+          id: m.id,
+          name: m.name || m.email?.split('@')[0] || 'Unknown Mentor',
+          role: (m.preferences as any)?.q101 || m.expertise || "Mentor",
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.id}`,
+          sessions: Math.floor(Math.random() * 50) + 10,
+          top: index < 5
+        })));
+      } else {
+        setMentors([]);
+      }
+    };
+    fetchMentors();
+  }, []);
 
   return (
     <div className="space-y-6 pb-20">
