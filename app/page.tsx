@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 const supabase = createClient();
 
@@ -14,7 +14,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING";
+import { MentorHome } from "@/components/mentor/MentorHome";
+import { MentorStudents } from "@/components/mentor/MentorStudents";
+import { MentorNotes } from "@/components/mentor/MentorNotes";
+import { MentorCircle } from "@/components/mentor/MentorCircle";
+import { MentorProfile } from "@/components/mentor/MentorProfile";
+
+type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_CIRCLE";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -101,9 +107,9 @@ const MENTOR_QUIZ_STEPS: QuizStepData[] = [
 ];
 
 const MOCK_STUDENTS = [
-  { id: "s1", name: "Vikram Patel", match: "94%", desc: "UI Design, Frontend Development", time: "2 hours ago", location: "Mumbai", tags: ["Python", "Web Development", "Data Science"], image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop" },
-  { id: "s2", name: "Ananya Krishnan", match: "88%", desc: "Machine Learning, AI fundamentals", time: "5 hours ago", location: "Bangalore", tags: ["Machine Learning", "Python", "Mathematics"], image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" },
-  { id: "s3", name: "Kavya Nair", match: "82%", desc: "Automation, scripting, career pivot into tech", time: "1 day ago", location: "Chennai", tags: ["Automation", "Python", "Career Change"], image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" }
+  { id: "s1", name: "Vikram Patel", email: "vikram.p@gmail.com", match: "94%", desc: "Build a portfolio website and learn Python for data analysis", time: "2 hours ago", location: "Mumbai, India", tags: ["Python", "Web Development", "Data Science"], image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop", preferences: { inspiration: "A teacher/mentor", movie: "Sci-fi / Technology", style: "Hands-on projects", location: "Mumbai, India" } },
+  { id: "s2", name: "Ananya Krishnan", email: "ananya.k@gmail.com", match: "88%", desc: "Machine Learning, AI fundamentals", time: "5 hours ago", location: "Bangalore, India", tags: ["Machine Learning", "Python", "Mathematics"], image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop", preferences: { inspiration: "A scientist", movie: "Documentaries", style: "Reading / Self-paced", location: "Bangalore, India" } },
+  { id: "s3", name: "Kavya Nair", email: "kavya.n@gmail.com", match: "82%", desc: "Automation, scripting, career pivot into tech", time: "1 day ago", location: "Chennai, India", tags: ["Automation", "Python", "Career Change"], image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop", preferences: { inspiration: "Family member", movie: "Action / Adventure", style: "Visual / Video courses", location: "Chennai, India" } }
 ];
 
 export default function OnboardingFlow() {
@@ -130,6 +136,7 @@ export default function OnboardingFlow() {
   const [mentorExpertise, setMentorExpertise] = useState("");
   const [mentorQuizIndex, setMentorQuizIndex] = useState(0);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [expandedStudents, setExpandedStudents] = useState<string[]>([]);
   const [realStudents, setRealStudents] = useState<any[]>(MOCK_STUDENTS);
 
   useEffect(() => {
@@ -138,7 +145,7 @@ export default function OnboardingFlow() {
         const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
         if (data && data.length > 0) {
           const formatted = data.map(profile => {
-             const prefs = profile.preferences || {};
+             const prefs = (profile.preferences as any) || {};
              const tags = [];
              if (prefs.q2) {
                if (Array.isArray(prefs.q2)) tags.push(...prefs.q2);
@@ -155,12 +162,19 @@ export default function OnboardingFlow() {
              return {
                 id: profile.id,
                 name: profile.name || profile.email?.split('@')[0] || "Student",
+                email: profile.email || "student@example.com",
                 match: (Math.floor(Math.random() * (98 - 75 + 1)) + 75) + "%",
                 desc,
                 time: "Recently joined",
                 location: "Online",
                 tags: tags.slice(0, 3),
-                image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`
+                image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+                preferences: {
+                   inspiration: prefs.q5 || "A teacher/mentor",
+                   movie: "Sci-fi / Technology",
+                   style: "Hands-on projects", 
+                   location: "Online"
+                }
              };
           });
           setRealStudents(formatted);
@@ -1799,47 +1813,123 @@ export default function OnboardingFlow() {
 
                 {/* Student List */}
                 <div className="space-y-4 px-2">
-                  {realStudents.map(student => (
-                    <div key={student.id} onClick={() => setSelectedStudents(prev => prev.includes(student.id) ? prev.filter(id => id !== student.id) : [...prev, student.id])} className={`bg-white rounded-[1.5rem] border ${selectedStudents.includes(student.id) ? 'border-indigo-500 shadow-[0_0_0_1px_rgba(99,102,241,1)]' : 'border-slate-100'} p-5 shadow-sm transition-all cursor-pointer relative`}>
-                      <div className="flex gap-4">
-                        <div className="relative shrink-0">
-                          <img src={student.image} alt={student.name} className="w-14 h-14 rounded-full object-cover shadow-sm bg-slate-100 grayscale hover:grayscale-0 transition-all border border-slate-100" />
-                          {/* Checked icon overlay logic if needed, hiding for now */}
+                  {realStudents.map(student => {
+                    const isExpanded = expandedStudents.includes(student.id);
+                    const isSelected = selectedStudents.includes(student.id);
+                    return (
+                    <div key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-indigo-500 shadow-[0_0_0_1px_rgba(99,102,241,1)]' : 'border-slate-100'} p-5 pb-4 shadow-sm transition-all relative flex flex-col`}>
+                      
+                      {isExpanded ? (
+                        <>
+                          <button onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="flex justify-center items-center text-[13px] text-slate-400 font-medium pb-4 hover:text-slate-600 w-full mt-[-4px]">
+                            Hide Details <ChevronUp className="w-4 h-4 ml-1" />
+                          </button>
+                          
+                          <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[14px] text-slate-600 w-full border border-slate-100/50">
+                            <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-medium">{student.email || "vikram.p@gmail.com"}</span>
+                          </div>
+                          
+                          <div className="bg-[#f5f3ff] rounded-xl p-4 mb-5 border border-[#ede9fe]">
+                            <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
+                              <Target className="w-4 h-4 shrink-0" />
+                              <span className="text-[13px] font-semibold">Learning Goal</span>
+                            </div>
+                            <p className="text-[14px] text-slate-700 leading-relaxed font-medium">
+                              {student.desc}
+                            </p>
+                          </div>
+                          
+                          <div className="mb-6 px-1">
+                            <div className="flex items-center gap-2 text-slate-500 mb-4">
+                              <BookOpen className="w-[18px] h-[18px] shrink-0" />
+                              <span className="text-[14px] font-medium">Questionnaire Responses</span>
+                            </div>
+                            <div className="space-y-3.5">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                                 <span className="text-slate-400">Inspiration</span>
+                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
+                               </div>
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                                 <span className="text-slate-400">Movie Preference</span>
+                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
+                               </div>
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                                 <span className="text-slate-400">Learning Style</span>
+                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.style || "Hands-on projects"}</span>
+                               </div>
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 pb-1">
+                                 <span className="text-slate-400">Location</span>
+                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
+                               </div>
+                            </div>
+                          </div>
+                          
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`w-full py-[14px] rounded-[14px] text-[15px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm' : 'bg-[#5b32f6] hover:bg-indigo-600 text-white shadow-sm'}`}>
+                            {isSelected ? "Deselect This Student" : <><Check className="w-[18px] h-[18px]" /> Select This Student</>}
+                          </button>
+                        </>
+                      ) : (
+                        <div onClick={() => setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id])} className="cursor-pointer">
+                          <div className="flex gap-4">
+                            <div className="relative shrink-0">
+                              <img src={student.image} alt={student.name} className="w-14 h-14 rounded-full object-cover shadow-sm bg-slate-100 grayscale hover:grayscale-0 transition-all border border-slate-100" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start mb-0.5">
+                                <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
+                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                              </div>
+                              <p className="text-[12px] text-slate-500 mb-2 leading-relaxed line-clamp-1">{student.desc}</p>
+                              <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium mb-3">
+                                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {student.time}</span>
+                                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {student.tags.map(tag => (
+                                  <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2 py-1 rounded-md font-medium">{tag}</span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 pt-3 border-t border-slate-50 flex justify-center text-[12px] text-slate-400 font-medium items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
+                            View Full Profile <ChevronDown className="w-3.5 h-3.5" />
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start mb-0.5">
-                            <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
-                            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
-                          </div>
-                          <p className="text-[12px] text-slate-500 mb-2 leading-relaxed">{student.desc}</p>
-                          <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium mb-3">
-                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {student.time}</span>
-                            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {student.tags.map(tag => (
-                              <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2 py-1 rounded-md font-medium">{tag}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-slate-50 flex justify-center text-[12px] text-slate-400 font-medium items-center gap-1 hover:text-slate-600">
-                        View Full Profile <ChevronDown className="w-3.5 h-3.5" />
-                      </div>
+                      )}
                     </div>
-                  ))}
+                  )})}
                 </div>
 
                 {/* Fixed Bottom Action Container */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-6 sm:rounded-b-2xl z-50">
-                   <button className={`w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
+                   <button onClick={() => { if(selectedStudents.length > 0) setState("MENTOR_DASHBOARD") }} className={`w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
                      {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
                    </button>
-                   <button className="text-[12px] text-slate-400 font-medium hover:text-slate-600 mt-4 text-center">
-                     Skip for now — I'll review students later
+                   <button onClick={() => setState("MENTOR_DASHBOARD")} className="text-[12px] text-slate-400 font-medium hover:text-slate-600 mt-4 text-center">
+                     Skip for now — I&apos;ll review students later
                    </button>
                 </div>
 
+              </motion.div>
+            )}
+
+            {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "NOTES" || state === "MENTOR_CIRCLE" || state === "PROFILE") && (
+              <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+                
+                {state === "MENTOR_DASHBOARD" && <MentorHome />}
+                {state === "MENTOR_STUDENTS" && <MentorStudents />}
+                {state === "NOTES" && <MentorNotes />}
+                {state === "MENTOR_CIRCLE" && <MentorCircle />}
+                {state === "PROFILE" && <MentorProfile />}
+
+                {/* Bottom Navigation */}
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-between px-6 pt-3 pb-8 z-50 sm:rounded-b-3xl max-w-lg mx-auto">
+                  <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_DASHBOARD" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
+                  <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_STUDENTS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Students</span></button>
+                  <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
+                  <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_CIRCLE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Circle</span></button>
+                  <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
+                </div>
               </motion.div>
             )}
 
