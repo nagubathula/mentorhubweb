@@ -34,7 +34,7 @@ export function MentorNotes() {
          <div className="flex items-center justify-between mt-4 px-1">
            <button onClick={() => {setIsCreating(false); setActiveNote(null);}} className="text-slate-500 hover:text-slate-700 p-2 -ml-2"><X className="w-5 h-5"/></button>
            <h2 className="text-[16px] font-semibold text-slate-800">{activeNote ? 'Edit Note' : 'New Note'}</h2>
-           <button onClick={handleSaveNote} className="text-indigo-600 font-semibold text-[14px]">Save</button>
+           <button onClick={handleSaveNote} className="text-slate-700 font-semibold text-[14px]">Save</button>
          </div>
 
          <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100 flex flex-col min-h-[60vh]">
@@ -67,7 +67,7 @@ export function MentorNotes() {
 
       <div className="flex gap-2 relative px-1">
          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Search className="w-4 h-4"/></div>
-         <input type="text" placeholder="Search notes..." className="w-full h-12 bg-white rounded-xl border border-slate-200 pl-11 text-[14px] outline-none hover:border-slate-300 focus:border-indigo-500 transition-colors shadow-sm" />
+         <input type="text" placeholder="Search notes..." className="w-full h-12 bg-white rounded-xl border border-slate-200 pl-11 text-[14px] outline-none hover:border-slate-300 focus:border-slate-400 transition-colors shadow-sm" />
       </div>
 
       <div className="grid gap-4 mt-2">
@@ -79,7 +79,7 @@ export function MentorNotes() {
         ) : notes.map(n => (
           <div key={n.id} className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100 relative group overflow-hidden">
              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur pl-2">
-                <button onClick={() => { setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setIsCreating(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4"/></button>
+                <button onClick={() => { setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setIsCreating(true); }} className="p-2 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4"/></button>
                 <button onClick={() => deleteNote(n.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4"/></button>
              </div>
              
@@ -93,9 +93,11 @@ export function MentorNotes() {
       </div>
 
       {/* Floating Action Button */}
-      <button onClick={() => { setEditTitle(''); setEditContent(''); setActiveNote(null); setIsCreating(true); }} className="fixed bottom-24 right-6 w-14 h-14 bg-[#0f172a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:bg-[#1e293b] transition-all z-40">
-        <Plus className="w-6 h-6" />
-      </button>
+      <div className="h-20 shrink-0 relative">
+        <button onClick={() => { setEditTitle(''); setEditContent(''); setActiveNote(null); setIsCreating(true); }} className="absolute bottom-4 right-2 w-14 h-14 bg-[#0f172a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:bg-[#1e293b] transition-all z-40">
+          <Plus className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 }

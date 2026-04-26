@@ -5,7 +5,8 @@
       "Bash(npx tsc *)",
       "Bash(npm run *)",
       "Bash(npm outdated *)",
-      "Bash(npm show *)"
+      "Bash(npm show *)",
+      "Bash(grep -v \"Check\\\\|comment\\\\|//\")"
     ]
   }
 }

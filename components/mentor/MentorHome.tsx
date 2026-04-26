@@ -13,41 +13,41 @@ export function MentorHome() {
       
       {/* 14. New Student Notifications */}
       {showNotification && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex gap-4 mt-6 items-start shadow-sm mx-1">
-          <div className="bg-indigo-600 rounded-full p-2 text-white shrink-0 shadow-sm">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex gap-4 mt-6 items-start mx-1">
+          <div className="bg-[#0f172a] rounded-full p-2 text-white shrink-0">
             <Bell className="w-5 h-5" />
           </div>
           <div className="flex-1 mt-0.5 min-w-0">
-             <h3 className="text-indigo-900 font-semibold text-[15px]">New Student Assigned!</h3>
-             <p className="text-indigo-700 text-[13px] mt-1 leading-relaxed">Admin has assigned "Kavya Nair" to you for the Python Web Development track. Check the Students tab!</p>
+             <h3 className="text-slate-900 font-semibold text-[15px]">New Student Assigned!</h3>
+             <p className="text-slate-500 text-[13px] mt-1 leading-relaxed">Admin has assigned "Kavya Nair" to you for the Python Web Development track. Check the Students tab!</p>
           </div>
-          <button onClick={() => setShowNotification(false)} className="text-indigo-300 hover:text-indigo-600 transition-colors p-1 shrink-0"><X className="w-4 h-4" /></button>
+          <button onClick={() => setShowNotification(false)} className="text-slate-300 hover:text-slate-600 transition-colors p-1 shrink-0"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* 7. Daily Inspiration Widget */}
-      <div className="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-[1.5rem] p-6 text-white shadow-md mx-1 mt-4 relative overflow-hidden">
-         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
-         <div className="flex items-center gap-2 mb-4 text-purple-100/80 font-medium text-[13px] tracking-wider uppercase">
-           <Zap className="w-4 h-4 text-amber-300" /> Morning Thought
+      <div className="bg-[#0f172a] rounded-[1.5rem] p-6 text-white shadow-md mx-1 mt-4 relative overflow-hidden">
+         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
+         <div className="flex items-center gap-2 mb-4 text-slate-400 font-medium text-[13px] tracking-wider uppercase">
+           <Zap className="w-4 h-4 text-amber-400" /> Morning Thought
          </div>
-         <p className="text-[17px] font-medium leading-relaxed italic opacity-95 mb-4">
+         <p className="text-[17px] font-medium leading-relaxed italic text-slate-200 mb-4">
            "The best mentors don't just give answers, they help students fall in love with the questions."
          </p>
          <div className="flex gap-4 pt-4 border-t border-white/10">
             <div className="flex flex-col">
               <span className="text-[20px] font-bold flex items-center gap-1.5"><Flame className="w-5 h-5 text-amber-400" /> 5</span>
-              <span className="text-[11px] text-purple-200">Day Streak</span>
+              <span className="text-[11px] text-slate-400">Day Streak</span>
             </div>
             <div className="w-px bg-white/10 my-1"></div>
             <div className="flex flex-col">
               <span className="text-[20px] font-bold flex items-center gap-1.5"><MessageSquare className="w-5 h-5 text-emerald-400" /> 12</span>
-              <span className="text-[11px] text-purple-200">Responses</span>
+              <span className="text-[11px] text-slate-400">Responses</span>
             </div>
             <div className="w-px bg-white/10 my-1"></div>
             <div className="flex flex-col">
-              <span className="text-[20px] font-bold flex items-center gap-1.5"><Trophy className="w-5 h-5 text-yellow-300" /> 8</span>
-              <span className="text-[11px] text-purple-200">Improved</span>
+              <span className="text-[20px] font-bold flex items-center gap-1.5"><Trophy className="w-5 h-5 text-amber-300" /> 8</span>
+              <span className="text-[11px] text-slate-400">Improved</span>
             </div>
          </div>
       </div>
@@ -170,7 +170,7 @@ export function MentorHome() {
                <p className="text-[14px] text-slate-300 font-medium line-through truncate">Module 6: Functions Deep-...</p>
                <p className="text-[13px] text-slate-300 mt-0.5">Group Session</p>
              </div>
-             <span className="bg-purple-50 text-purple-300 text-[11px] px-2 py-0.5 rounded font-medium mt-0.5 shrink-0">Group</span>
+             <span className="bg-slate-100 text-slate-400 text-[11px] px-2 py-0.5 rounded font-medium mt-0.5 shrink-0">Group</span>
            </div>
 
            <div className="flex gap-4 items-start p-4 bg-white border border-transparent">

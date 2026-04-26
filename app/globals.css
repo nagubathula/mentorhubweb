@@ -130,6 +130,14 @@
 }
 
 @layer utilities {
+  .hidden-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .glass-card {
     @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl shadow-indigo-900/5;
   }

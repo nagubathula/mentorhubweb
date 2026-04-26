@@ -64,7 +64,7 @@ export function MentorProfile() {
       {/* 6. My Courses */}
       <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
          <div className="flex items-center gap-2 mb-4 text-slate-800 font-medium text-[15px]">
-           <BookOpen className="w-[18px] h-[18px] text-indigo-500" strokeWidth={2}/> My Courses
+           <BookOpen className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> My Courses
          </div>
          <p className="text-[13px] text-slate-500 mb-6 leading-relaxed">Exclusive training materials to level up your mentoring skills.</p>
 
@@ -74,7 +74,7 @@ export function MentorProfile() {
                {course.type === "NEW" && (
                  <div className="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">NEW</div>
                )}
-               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${course.locked ? 'bg-slate-200 text-slate-400' : course.progress === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-600 text-white'}`}>
+               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${course.locked ? 'bg-slate-200 text-slate-400' : course.progress === 100 ? 'bg-emerald-100 text-emerald-600' : 'bg-[#0f172a] text-white'}`}>
                  {course.locked ? <Lock className="w-5 h-5"/> : <PlayCircle className="w-6 h-6"/>}
                </div>
                <div className="flex-1 min-w-0 pr-2">

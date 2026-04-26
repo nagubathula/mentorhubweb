@@ -20,7 +20,7 @@ import { MentorNotes } from "@/components/mentor/MentorNotes";
 import { MentorCircle } from "@/components/mentor/MentorCircle";
 import { MentorProfile } from "@/components/mentor/MentorProfile";
 
-type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_CIRCLE";
+type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -350,7 +350,7 @@ export default function OnboardingFlow() {
               <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
                 <div className="mb-2"><LogoHeader /></div>
                 <div className="flex flex-col gap-3">
-                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-gradient-to-r from-indigo-600 to-violet-600 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-0.5 transition-all text-white border-0" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
+                  <Button className="h-14 rounded-xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] transition-all text-white border-0" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
                     <Mail className="w-5 h-5 mr-2" /> Sign In
                   </Button>
                   <Button variant="outline" className="h-14 rounded-xl text-[15px] font-medium border-slate-200/60 bg-white/50 backdrop-blur-sm text-slate-700 hover:bg-white/80 hover:shadow-sm transition-all" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>
@@ -662,7 +662,7 @@ export default function OnboardingFlow() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-xl">
-                          <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl"><Mail className="w-5 h-5" /></div>
+                          <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl"><Mail className="w-5 h-5" /></div>
                           <div>
                             <p className="text-[12px] text-slate-500 uppercase font-semibold tracking-wider">Email</p>
                             <p className="text-[15px] text-slate-900 font-medium">{email || "satyasai2108@gmail.com"}</p>
@@ -777,7 +777,7 @@ export default function OnboardingFlow() {
                 {/* Top Section / Header Quote */}
                 <div className="bg-white rounded-[1.5rem] p-5 pt-8 shadow-sm border border-slate-100 flex flex-col gap-4 mt-2 mx-1 relative z-10">
                   <div className="flex gap-4">
-                    <div className="bg-purple-50 p-2.5 rounded-full text-purple-600 shrink-0 self-start">
+                    <div className="bg-slate-100 p-2.5 rounded-full text-slate-600 shrink-0 self-start">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -898,7 +898,7 @@ export default function OnboardingFlow() {
                           <p className="text-[12px] text-slate-400">5 min - Test your knowledge</p>
                         </div>
                       </div>
-                      <div className="w-10 h-10 rounded-xl bg-[#8b5cf6] text-white flex items-center justify-center shadow-sm shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-[#0f172a] text-white flex items-center justify-center shadow-sm shrink-0">
                         <Target className="w-[18px] h-[18px]" strokeWidth={2.5} />
                       </div>
                     </div>
@@ -956,11 +956,11 @@ export default function OnboardingFlow() {
 
                   {/* My Portfolio */}
                   <div className="bg-white rounded-2xl p-4 flex items-center shadow-sm border border-slate-50 cursor-pointer group">
-                    <div className="bg-indigo-50 text-indigo-400 p-3 rounded-[14px] mr-4 group-hover:scale-105 transition-transform"><Briefcase className="w-5 h-5" /></div>
+                    <div className="bg-slate-100 text-slate-500 p-3 rounded-[14px] mr-4 group-hover:scale-105 transition-transform"><Briefcase className="w-5 h-5" /></div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-[14px] font-medium text-slate-800">My Portfolio</p>
-                        <span className="bg-indigo-50 text-indigo-500 text-[11px] font-medium px-2 rounded-full">4 projects</span>
+                        <span className="bg-slate-100 text-slate-600 text-[11px] font-medium px-2 rounded-full">4 projects</span>
                       </div>
                       <p className="text-[12px] text-slate-400">Build as you learn · 3/12 modules</p>
                     </div>
@@ -1012,15 +1012,15 @@ export default function OnboardingFlow() {
                   </div>
 
                   {/* Mentor's Thought of the Day */}
-                  <div className="bg-[#f5f3ff] rounded-[1.5rem] p-5 shadow-sm mt-6 border border-purple-100/50 flex flex-col">
-                    <div className="flex items-center gap-2 text-purple-600 font-medium text-[14px] mb-3">
+                  <div className="bg-slate-50 rounded-[1.5rem] p-5 shadow-sm mt-6 border border-slate-100/50 flex flex-col">
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-[14px] mb-3">
                       <Sun className="w-4 h-4" strokeWidth={2.5} /> Mentor's Thought of the Day
                     </div>
                     <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 italic text-slate-700 text-[14px] leading-relaxed relative border border-white">
                       "Consistency beats intensity. Practice a little every day."
-                      <span className="block text-purple-400 not-italic text-[13px] mt-2">— Pradeep K.</span>
+                      <span className="block text-slate-400 not-italic text-[13px] mt-2">— Pradeep K.</span>
                     </div>
-                    <button className="w-full bg-[#8b5cf6] text-white py-3.5 rounded-xl mt-4 font-medium flex gap-2 items-center justify-center hover:bg-[#7c3aed] transition-colors shadow-sm shadow-purple-200">
+                    <button className="w-full bg-[#0f172a] text-white py-3.5 rounded-xl mt-4 font-medium flex gap-2 items-center justify-center hover:bg-[#1e293b] transition-colors shadow-sm">
                       <Heart className="w-[18px] h-[18px]" /> Read & Reflect
                     </button>
                     <div className="flex justify-between items-center mt-4 px-1">
@@ -1515,7 +1515,7 @@ export default function OnboardingFlow() {
               <motion.div key="profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
                 
                 {/* Purple Top Block */}
-                <div className="bg-[#8b5cf6] pt-8 pb-16 px-5 relative -mx-1 -mt-1 -mr-1">
+                <div className="bg-[#0f172a] pt-8 pb-16 px-5 relative -mx-1 -mt-1 -mr-1">
                   <div className="flex justify-between items-center text-white mb-6">
                     <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
                       <ArrowLeft className="w-5 h-5" />
@@ -1529,7 +1529,7 @@ export default function OnboardingFlow() {
                   <div className="flex flex-col items-center gap-3">
                      <div className="relative">
                        <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-[url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop')] bg-cover bg-center grayscale shadow-lg object-cover"></div>
-                       <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-[#8b5cf6] shadow-md border-2 border-transparent">
+                       <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-700 shadow-md border-2 border-transparent">
                          <Camera className="w-[13px] h-[13px]" strokeWidth={3} />
                        </button>
                      </div>
@@ -1587,8 +1587,8 @@ export default function OnboardingFlow() {
                          <p className="text-[11px] text-slate-500 whitespace-nowrap">Day Streak</p>
                        </div>
                      </div>
-                     <div className="bg-purple-50/50 rounded-2xl p-4 flex flex-col items-center justify-center border border-purple-100/50 shadow-sm gap-2">
-                       <Target className="w-5 h-5 text-purple-500" />
+                     <div className="bg-slate-50/50 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-100/50 shadow-sm gap-2">
+                       <Target className="w-5 h-5 text-slate-500" />
                        <div className="text-center">
                          <p className="text-[15px] font-semibold text-slate-800 leading-tight">85%</p>
                          <p className="text-[11px] text-slate-500">Quiz Avg</p>
@@ -1601,8 +1601,8 @@ export default function OnboardingFlow() {
                          <p className="text-[11px] text-slate-500">Courses</p>
                        </div>
                      </div>
-                     <div className="bg-indigo-50/50 rounded-2xl p-4 flex flex-col items-center justify-center border border-indigo-100/50 shadow-sm gap-2">
-                       <Briefcase className="w-5 h-5 text-indigo-500" />
+                     <div className="bg-slate-50 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-100 shadow-sm gap-2">
+                       <Briefcase className="w-5 h-5 text-slate-500" />
                        <div className="text-center">
                          <p className="text-[15px] font-semibold text-slate-800 leading-tight">4</p>
                          <p className="text-[11px] text-slate-500">Projects</p>
@@ -1777,8 +1777,7 @@ export default function OnboardingFlow() {
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-5 pb-4 z-30 px-2 mx-1 border-b border-slate-100">
-                  <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-[5px] bg-slate-800 rounded-full z-20"></div>
-                  <div className="flex items-center gap-4 mt-6">
+                  <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#7c3aed] flex items-center justify-center text-white shadow-sm text-lg font-semibold shrink-0">
                       <Users className="w-6 h-6" />
                     </div>
@@ -1790,11 +1789,11 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Banner */}
-                <div className="bg-[#eef2ff] rounded-[1.5rem] p-5 mt-4 mx-2 border border-[#e0e7ff] flex gap-4">
-                  <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                <div className="bg-slate-50 rounded-[1.5rem] p-5 mt-4 mx-2 border border-slate-100 flex gap-4">
+                  <Sparkles className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
                   <div>
-                     <p className="text-[13px] font-semibold text-indigo-800 mb-1">{realStudents.length} students are waiting for a mentor</p>
-                     <p className="text-[12px] text-indigo-500 leading-relaxed font-medium">Select the students you'd like to mentor. You can review their profiles and questionnaire responses below.</p>
+                     <p className="text-[13px] font-semibold text-slate-800 mb-1">{realStudents.length} students are waiting for a mentor</p>
+                     <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you'd like to mentor. You can review their profiles and questionnaire responses below.</p>
                   </div>
                 </div>
 
@@ -1811,7 +1810,7 @@ export default function OnboardingFlow() {
                     const isExpanded = expandedStudents.includes(student.id);
                     const isSelected = selectedStudents.includes(student.id);
                     return (
-                    <div key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-indigo-500 shadow-[0_0_0_1px_rgba(99,102,241,1)]' : 'border-slate-100'} p-5 pb-4 shadow-sm transition-all relative flex flex-col`}>
+                    <div key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-[0_0_0_1px_rgba(15,23,42,1)]' : 'border-slate-100'} p-5 pb-4 shadow-sm transition-all relative flex flex-col`}>
                       
                       {isExpanded ? (
                         <>
@@ -1823,8 +1822,8 @@ export default function OnboardingFlow() {
                             <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-medium">{student.email || "vikram.p@gmail.com"}</span>
                           </div>
                           
-                          <div className="bg-[#f5f3ff] rounded-xl p-4 mb-5 border border-[#ede9fe]">
-                            <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
+                          <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-[#ede9fe]">
+                            <div className="flex items-center gap-2 text-slate-700 mb-2.5">
                               <Target className="w-4 h-4 shrink-0" />
                               <span className="text-[13px] font-semibold">Learning Goal</span>
                             </div>
@@ -1858,7 +1857,7 @@ export default function OnboardingFlow() {
                             </div>
                           </div>
                           
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`w-full py-[14px] rounded-[14px] text-[15px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-sm' : 'bg-[#5b32f6] hover:bg-indigo-600 text-white shadow-sm'}`}>
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`w-full py-[14px] rounded-[14px] text-[15px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200' : 'bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-sm'}`}>
                             {isSelected ? "Deselect This Student" : <><Check className="w-[18px] h-[18px]" /> Select This Student</>}
                           </button>
                         </>
@@ -1907,22 +1906,24 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-            {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "NOTES" || state === "MENTOR_CIRCLE" || state === "PROFILE") && (
-              <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-6 px-4 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
-                
-                {state === "MENTOR_DASHBOARD" && <MentorHome />}
-                {state === "MENTOR_STUDENTS" && <MentorStudents />}
-                {state === "NOTES" && <MentorNotes />}
-                {state === "MENTOR_CIRCLE" && <MentorCircle />}
-                {state === "PROFILE" && <MentorProfile />}
+            {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
+              <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50 -mx-6 -mt-2 -mb-6">
+
+                <div className="flex-1 overflow-y-auto hidden-scrollbar px-4 pb-4">
+                  {state === "MENTOR_DASHBOARD" && <MentorHome />}
+                  {state === "MENTOR_STUDENTS" && <MentorStudents />}
+                  {state === "MENTOR_NOTES" && <MentorNotes />}
+                  {state === "MENTOR_CIRCLE" && <MentorCircle />}
+                  {state === "MENTOR_ACCOUNT" && <MentorProfile />}
+                </div>
 
                 {/* Bottom Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-between px-6 pt-3 pb-8 z-50 sm:rounded-b-3xl max-w-lg mx-auto">
+                <div className="shrink-0 bg-white border-t border-slate-100 flex justify-between px-6 pt-3 pb-8 sm:rounded-b-2xl">
                   <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_DASHBOARD" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
                   <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_STUDENTS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Students</span></button>
-                  <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
+                  <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
                   <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_CIRCLE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Circle</span></button>
-                  <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
+                  <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_ACCOUNT" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
                 </div>
               </motion.div>
             )}

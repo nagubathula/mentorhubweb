@@ -37,14 +37,14 @@ export function MentorCircle() {
         </button>
       </div>
 
-      <div className="bg-indigo-600 rounded-[1.5rem] p-6 text-white shadow-md mx-1 relative overflow-hidden">
+      <div className="bg-[#0f172a] rounded-[1.5rem] p-6 text-white shadow-md mx-1 relative overflow-hidden">
          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-10 translate-x-10"></div>
          <div className="flex items-center gap-2 mb-2 relative z-10">
-           <Users className="w-5 h-5 text-indigo-200" />
+           <Users className="w-5 h-5 text-slate-300" />
            <span className="font-semibold text-[15px]">Community Activity</span>
          </div>
          <p className="text-3xl font-bold mt-2 relative z-10">340</p>
-         <p className="text-indigo-200 text-[13px] font-medium relative z-10">Sessions completed this week across MentorHub</p>
+         <p className="text-slate-300 text-[13px] font-medium relative z-10">Sessions completed this week across MentorHub</p>
       </div>
 
       {/* 10. Top Mentors Spotlight */}
@@ -78,7 +78,7 @@ export function MentorCircle() {
            </p>
            <div className="flex gap-6 mt-4 pt-4 border-t border-slate-50">
              <button className="flex items-center gap-1.5 text-slate-400 hover:text-rose-500 transition-colors text-[13px] font-medium"><Heart className="w-4 h-4"/> 24</button>
-             <button className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-500 transition-colors text-[13px] font-medium"><MessageCircle className="w-4 h-4"/> 5</button>
+             <button className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-[13px] font-medium"><MessageCircle className="w-4 h-4"/> 5</button>
              <button className="flex items-center gap-1.5 text-slate-400 hover:text-emerald-500 transition-colors text-[13px] font-medium ml-auto"><Share2 className="w-4 h-4"/></button>
            </div>
         </div>

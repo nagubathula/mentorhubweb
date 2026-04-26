@@ -41,11 +41,11 @@ export function MentorStudents() {
               <img src={selectedStudent.avatar} className="w-full h-full object-cover bg-slate-100" alt={selectedStudent.name}/>
             </div>
             <h3 className="text-xl font-bold text-slate-900 mt-4 relative z-10">{selectedStudent.name}</h3>
-            <p className="text-[14px] text-indigo-600 font-medium mt-1 relative z-10">{selectedStudent.course}</p>
+            <p className="text-[14px] text-slate-600 font-medium mt-1 relative z-10">{selectedStudent.course}</p>
             
             <div className="flex gap-2 mt-4 relative z-10 w-full px-2">
               <button className="flex-1 bg-[#0f172a] text-white py-2.5 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#1e293b] transition-colors"><MessageSquare className="w-4 h-4"/> Message</button>
-              <button className="flex-1 bg-indigo-50 text-indigo-600 py-2.5 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors"><Video className="w-4 h-4"/> Call</button>
+              <button className="flex-1 bg-slate-50 text-slate-600 py-2.5 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors"><Video className="w-4 h-4"/> Call</button>
             </div>
          </div>
 
@@ -69,15 +69,15 @@ export function MentorStudents() {
            <div className="flex items-center gap-2 mb-4 text-slate-800 font-medium text-[15px]">
              <Layers className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Current Module
            </div>
-           <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
+           <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-4">
              <div className="flex justify-between items-start mb-2">
-               <h4 className="text-[14px] font-semibold text-indigo-900">Variables & Data Types</h4>
-               <span className="text-[11px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-md">IN PROGRESS</span>
+               <h4 className="text-[14px] font-semibold text-slate-900">Variables & Data Types</h4>
+               <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">IN PROGRESS</span>
              </div>
-             <div className="w-full h-1.5 bg-indigo-100 rounded-full mt-4 flex overflow-hidden">
-                <div className="bg-indigo-500 w-3/4 h-full"></div>
+             <div className="w-full h-1.5 bg-slate-100 rounded-full mt-4 flex overflow-hidden">
+                <div className="bg-slate-500 w-3/4 h-full"></div>
              </div>
-             <p className="text-[12px] text-indigo-500 font-medium mt-2 text-right">75% Complete</p>
+             <p className="text-[12px] text-slate-500 font-medium mt-2 text-right">75% Complete</p>
            </div>
          </div>
 
@@ -85,7 +85,7 @@ export function MentorStudents() {
             <h3 className="text-[15px] font-medium text-slate-800 mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
               <button className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left">
-                <div className="bg-purple-100 text-purple-600 p-2 rounded-lg"><Target className="w-4 h-4"/></div>
+                <div className="bg-slate-100 text-slate-600 p-2 rounded-lg"><Target className="w-4 h-4"/></div>
                 <div className="flex-1"><p className="text-[14px] font-medium text-slate-700">Set Weekly Goal</p></div>
                 <ArrowRight className="w-4 h-4 text-slate-400" />
               </button>
@@ -111,7 +111,7 @@ export function MentorStudents() {
 
       <div className="grid gap-4">
         {students.map(s => (
-          <div key={s.id} onClick={() => setSelectedStudent(s)} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer flex flex-col relative overflow-hidden group">
+          <div key={s.id} onClick={() => setSelectedStudent(s)} className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-slate-100 hover:border-slate-300 transition-colors cursor-pointer flex flex-col relative overflow-hidden group">
             {s.needsAttention && (
                <div className="absolute top-0 right-0 bg-red-50 text-red-500 text-[10px] font-bold px-3 py-1 rounded-bl-xl border-b border-l border-red-100 flex items-center gap-1 z-10">
                  NEEDS ATTENTION
@@ -135,7 +135,7 @@ export function MentorStudents() {
                  <span>{s.progress}%</span>
                </div>
                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                 <div className={`h-full rounded-full ${s.needsAttention ? 'bg-amber-400' : 'bg-indigo-500'}`} style={{ width: `${s.progress}%`}}></div>
+                 <div className={`h-full rounded-full ${s.needsAttention ? 'bg-amber-400' : 'bg-slate-500'}`} style={{ width: `${s.progress}%`}}></div>
                </div>
             </div>
           </div>
