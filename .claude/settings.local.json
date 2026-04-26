@@ -1,12 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx supabase *)",
-      "Bash(npx tsc *)",
-      "Bash(npm run *)",
-      "Bash(npm outdated *)",
-      "Bash(npm show *)",
-      "Bash(grep -v \"Check\\\\|comment\\\\|//\")"
+      "Bash(npx tsc *)"
     ]
   }
 }
