@@ -65,23 +65,36 @@ export function MentorCircle() {
       <h3 className="text-[11px] text-slate-400 tracking-widest font-semibold uppercase px-1 mt-4 mb-4">Feed</h3>
       <div className="space-y-4">
         {/* Post Mock */}
-        <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
-           <div className="flex gap-3 mb-3">
-             <img src={mentors[1].avatar} className="w-10 h-10 rounded-full object-cover" alt="Avatar"/>
-             <div>
-               <h4 className="text-[14px] font-bold text-slate-800">{mentors[1].name}</h4>
-               <p className="text-[11px] text-slate-400 font-medium">{mentors[1].role} · 2h ago</p>
+        {mentors.length > 0 ? (
+          <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
+             <div className="flex gap-3 mb-3">
+               <img src={mentors[0].avatar} className="w-10 h-10 rounded-full object-cover" alt="Avatar"/>
+               <div>
+                 <h4 className="text-[14px] font-bold text-slate-800">{mentors[0].name}</h4>
+                 <p className="text-[11px] text-slate-400 font-medium">{mentors[0].role} · 2h ago</p>
+               </div>
              </div>
-           </div>
-           <p className="text-[14px] text-slate-700 leading-relaxed">
-             Just finished a fantastic pair programming session on React hooks! Highly recommend using practical analogies when explaining `useEffect` dependency arrays to beginners.
-           </p>
-           <div className="flex gap-6 mt-4 pt-4 border-t border-slate-50">
-             <button className="flex items-center gap-1.5 text-slate-400 hover:text-rose-500 transition-colors text-[13px] font-medium"><Heart className="w-4 h-4"/> 24</button>
-             <button className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-[13px] font-medium"><MessageCircle className="w-4 h-4"/> 5</button>
-             <button className="flex items-center gap-1.5 text-slate-400 hover:text-emerald-500 transition-colors text-[13px] font-medium ml-auto"><Share2 className="w-4 h-4"/></button>
-           </div>
-        </div>
+             <p className="text-[14px] text-slate-700 leading-relaxed">
+               Just finished a fantastic pair programming session on React hooks! Highly recommend using practical analogies when explaining `useEffect` dependency arrays to beginners.
+             </p>
+             <div className="flex gap-6 mt-4 pt-4 border-t border-slate-50">
+               <button className="flex items-center gap-1.5 text-slate-400 hover:text-rose-500 transition-colors text-[13px] font-medium"><Heart className="w-4 h-4"/> 24</button>
+               <button className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-[13px] font-medium"><MessageCircle className="w-4 h-4"/> 5</button>
+               <button className="flex items-center gap-1.5 text-slate-400 hover:text-emerald-500 transition-colors text-[13px] font-medium ml-auto"><Share2 className="w-4 h-4"/></button>
+             </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-[1.5rem] p-8 shadow-sm border border-slate-100 text-center">
+            <div className="animate-pulse flex flex-col items-center gap-4">
+              <div className="w-12 h-12 bg-slate-100 rounded-full"></div>
+              <div className="space-y-2 w-full max-w-[200px]">
+                <div className="h-3 bg-slate-100 rounded w-3/4 mx-auto"></div>
+                <div className="h-2 bg-slate-100 rounded w-1/2 mx-auto"></div>
+              </div>
+              <p className="text-[13px] text-slate-400 font-medium mt-2">Connecting to community...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
