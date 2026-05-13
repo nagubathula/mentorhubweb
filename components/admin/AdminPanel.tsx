@@ -399,9 +399,7 @@ function CreateEnrollmentModal({ onClose, students, courses, circles }: { onClos
       if (selectedCourse) {
         const coursePayload = {
           title: selectedCourse.title,
-          index_code: selectedCourse.index_code || selectedCourse.shortTitle || selectedCourse.title,
           description: selectedCourse.description,
-          content: selectedCourse.modules || selectedCourse.content || [],
           status: 'Active'
         };
         const { data: newCourse, error: createError } = await supabase.from('courses').insert(coursePayload).select().single();
