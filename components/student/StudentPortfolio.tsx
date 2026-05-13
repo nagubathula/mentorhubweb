@@ -293,7 +293,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
               />
             </div>
             <p className="text-gray-400 text-[10px] font-semibold">
-              You've completed {enrollmentProgress.modules_completed || 0} modules so far. Keep it up!
+              You&apos;ve completed {enrollmentProgress.modules_completed || 0} modules so far. Keep it up!
             </p>
           </motion.div>
         )}
@@ -618,7 +618,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
           >
             <span className="text-2xl">💼</span>
             <p className="text-gray-500 text-xs mt-2 leading-relaxed font-semibold">
-              Add projects as you complete each module. By the end of the course, you'll have a full portfolio to showcase to recruiters!
+              Add projects as you complete each module. By the end of the course, you&apos;ll have a full portfolio to showcase to recruiters!
             </p>
             <p className="text-gray-300 text-[10px] font-semibold mt-1">Tap any project card to adjust its planning state</p>
           </motion.div>
