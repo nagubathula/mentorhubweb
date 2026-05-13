@@ -1768,12 +1768,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
               const payload = {
                 title: updatedData.title,
                 description: updatedData.description,
-                difficulty: updatedData.difficulty,
-                duration: updatedData.duration,
-                category: updatedData.category,
-                content: updatedData.modules || (updatedData as any).content || [],
                 status: 'Active',
-                index_code: updatedData.shortTitle || (updatedData as any).index_code || updatedData.title
               };
 
               let error;
