@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Check, Lock, ChevronDown, Play, Code2, HelpCircle, 
-  FolderOpen, BookOpen, Award, CheckCircle2, AlertCircle, Layers
+  FolderOpen, BookOpen, Award, CheckCircle2, AlertCircle, Layers, Plus
 } from "lucide-react";
 export interface ExtendedLesson {
   id: string;
@@ -120,16 +120,26 @@ export function CourseDetailsScreen({
         </div>
 
         {/* Hero flex columns */}
-        <div className="flex items-start gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
-            <Layers className="w-6 h-6 text-white" />
+        <div className="flex items-start justify-between gap-3.5">
+          <div className="flex items-start gap-3.5 flex-1 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+              <Layers className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-slate-900 font-black text-sm leading-tight truncate">{course.title}</p>
+              <p className="text-slate-400 text-[10.5px] leading-relaxed mt-1 font-medium">
+                Master curriculum from zero to confident. {course.modules.length} modules · {totalLessons} lessons
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-slate-900 font-black text-sm leading-tight truncate">{course.title}</p>
-            <p className="text-slate-400 text-[10.5px] leading-relaxed mt-1 font-medium">
-              Master curriculum from zero to confident. {course.modules.length} modules · {totalLessons} lessons
-            </p>
-          </div>
+          {secondaryActionButtonText && (
+            <button 
+              onClick={onSecondaryActionClick}
+              className="h-8 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0 border border-slate-100"
+            >
+              <Plus className="w-3 h-3" /> {secondaryActionButtonText}
+            </button>
+          )}
         </div>
 
         {/* Dynamic Stats Row */}
