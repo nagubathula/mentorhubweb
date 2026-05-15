@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard, GraduationCap, UserCheck, Users, FileText,
   ArrowRightLeft, BookOpen, Gamepad2, HelpCircle, Circle as CircleIcon,
@@ -9,10 +9,14 @@ import {
   TrendingUp, Zap, Target, Clock, Flame, Trophy,
   ChevronDown, CheckCircle, ArrowRight, Video,
   UserPlus, Shield, RefreshCw, Download, Upload,
-  MapPin, BookMarked, Layers, BarChart2,
+  MapPin, BookMarked, Layers, BarChart2, Activity, ChevronRight,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { mentorCoursesCatalog, MentorCourse } from "@/lib/mentorCoursesData";
+import { CourseDetailsScreen } from "./CourseDetailsScreen";
+import { CourseCustomizer } from "./CourseCustomizer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AdminPage =
@@ -23,7 +27,8 @@ type AdminPage =
 
 type ModalKey =
   | "add-student" | "add-mentor" | "schedule-session"
-  | "send-inspiration" | "create-enrollment" | "create-circle" | null;
+  | "send-inspiration" | "create-enrollment" | "create-circle" | "create-mapping" 
+  | "edit-course" | null;
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 const NAV_MAIN = [
@@ -89,28 +94,25 @@ function initials(name = "") {
 
 function courseColor(title = "") {
   const t = title.toLowerCase();
-  if (t.includes("data") || t.includes("analytic")) return { bg: "bg-blue-500",    ring: "ring-blue-100" };
-  if (t.includes("vlsi") || t.includes("hardware")) return { bg: "bg-red-500",     ring: "ring-red-100" };
-  if (t.includes("embed") || t.includes("iot"))     return { bg: "bg-teal-500",    ring: "ring-teal-100" };
-  if (t.includes("ux") || t.includes("design"))     return { bg: "bg-violet-500",  ring: "ring-violet-100" };
-  if (t.includes("python") || t.includes("ml"))     return { bg: "bg-amber-500",   ring: "ring-amber-100" };
-  if (t.includes("cloud") || t.includes("devops"))  return { bg: "bg-cyan-500",    ring: "ring-cyan-100" };
-  if (t.includes("back") || t.includes("node"))     return { bg: "bg-orange-500",  ring: "ring-orange-100" };
-  return { bg: "bg-slate-500", ring: "ring-slate-100" };
+  if (t.includes("data") || t.includes("analytic")) return { bg: "bg-blue-500",    text: "text-blue-600",    light: "bg-blue-50",    ring: "ring-blue-100" };
+  if (t.includes("vlsi") || t.includes("hardware")) return { bg: "bg-red-500",     text: "text-red-600",     light: "bg-red-50",     ring: "ring-red-100" };
+  if (t.includes("embed") || t.includes("iot"))     return { bg: "bg-teal-500",    text: "text-teal-600",    light: "bg-teal-50",    ring: "ring-teal-100" };
+  if (t.includes("ux") || t.includes("design"))     return { bg: "bg-violet-500",  text: "text-violet-600",  light: "bg-violet-50",  ring: "ring-violet-100" };
+  if (t.includes("python") || t.includes("ml"))     return { bg: "bg-amber-500",   text: "text-amber-600",   light: "bg-amber-50",   ring: "ring-amber-100" };
+  if (t.includes("cloud") || t.includes("devops"))  return { bg: "bg-cyan-500",    text: "text-cyan-600",    light: "bg-cyan-50",    ring: "ring-cyan-100" };
+  if (t.includes("comm") || t.includes("signal"))   return { bg: "bg-emerald-500", text: "text-emerald-600", light: "bg-emerald-50", ring: "ring-emerald-100" };
+  if (t.includes("digit") || t.includes("circuit")) return { bg: "bg-indigo-500",  text: "text-indigo-600",  light: "bg-indigo-50",  ring: "ring-indigo-100" };
+  return { bg: "bg-slate-500", text: "text-slate-600", light: "bg-slate-50", ring: "ring-slate-100" };
 }
-
-const COURSE_ICON_MAP: Record<string, any> = {
-  default: BarChart2, data: BarChart2, design: Sparkles,
-  python: Layers, cloud: Shield, hardware: Zap,
-};
 
 function courseIcon(title = "") {
   const t = title.toLowerCase();
-  if (t.includes("data")) return BarChart2;
+  if (t.includes("data") || t.includes("analytic")) return BarChart2;
   if (t.includes("design") || t.includes("ux")) return Sparkles;
   if (t.includes("python") || t.includes("ml")) return Layers;
   if (t.includes("cloud") || t.includes("devops")) return Shield;
-  if (t.includes("vlsi") || t.includes("embed")) return Zap;
+  if (t.includes("vlsi") || t.includes("micro")) return Zap;
+  if (t.includes("comm") || t.includes("signal") || t.includes("digit")) return Activity;
   return BookMarked;
 }
 
@@ -168,29 +170,35 @@ function PBar({ value, max = 100, color = "bg-slate-700", height = "h-1.5" }: {
   );
 }
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card as ShadcnCard, CardContent as ShadcnCardContent } from "@/components/ui/card";
+
 function Card({ children, className, onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <div onClick={onClick} className={cn("bg-white rounded-2xl border border-slate-100 shadow-sm", onClick && "cursor-pointer hover:shadow-md hover:border-slate-200 transition-all", className)}>
-      {children}
-    </div>
+    <ShadcnCard onClick={onClick} className={cn("rounded-2xl border border-slate-100 shadow-sm bg-white overflow-hidden hover:translate-y-0", onClick && "cursor-pointer hover:shadow-md hover:border-slate-200 transition-all", className)}>
+      <ShadcnCardContent className="p-0">
+        {children}
+      </ShadcnCardContent>
+    </ShadcnCard>
   );
 }
 
 function BtnPrimary({ children, onClick, type = "button" }: { children: React.ReactNode; onClick?: () => void; type?: "button"|"submit" }) {
   return (
-    <button type={type} onClick={onClick}
-      className="h-9 px-4 bg-[#0f172a] text-white text-[13px] font-medium rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shrink-0">
+    <Button type={type} onClick={onClick} className="h-9 px-4 bg-[#0f172a] text-white text-[13px] font-medium rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shrink-0">
       {children}
-    </button>
+    </Button>
   );
 }
 
 function BtnSecondary({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick}
-      className="h-9 px-4 bg-white border border-slate-200 text-slate-600 text-[13px] font-medium rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0">
+    <Button variant="outline" type="button" onClick={onClick} className="h-9 px-4 border border-slate-200 text-slate-600 text-[13px] font-medium rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0 bg-white">
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -217,8 +225,8 @@ function SearchInput({ value, onChange, placeholder = "Search..." }: {
   return (
     <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full h-9 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 text-[13px] outline-none focus:border-slate-400 transition-colors" />
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full h-9 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 text-[13px] outline-none focus:border-slate-400 transition-colors shadow-none" />
     </div>
   );
 }
@@ -236,8 +244,8 @@ function TInput({ value, onChange, placeholder, type = "text" }: {
   value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
 }) {
   return (
-    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-      className="h-9 w-full border border-slate-200 rounded-lg px-3 text-[13px] outline-none focus:border-slate-400 bg-white" />
+    <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      className="h-9 w-full border border-slate-200 rounded-lg px-3 text-[13px] outline-none focus:border-slate-400 bg-white shadow-none" />
   );
 }
 
@@ -257,8 +265,8 @@ function TAInput({ value, onChange, placeholder, rows = 3 }: {
   value: string; onChange: (v: string) => void; placeholder?: string; rows?: number;
 }) {
   return (
-    <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={rows}
-      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] outline-none focus:border-slate-400 bg-white resize-none" />
+    <Textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={rows}
+      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] outline-none focus:border-slate-400 bg-white resize-none shadow-none min-h-16" />
   );
 }
 
@@ -266,19 +274,18 @@ function ModalWrap({ title, onClose, onSave, children }: {
   title: string; onClose: () => void; onSave: () => void; children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="text-[16px] font-bold text-slate-900">{title}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="px-5 py-4 flex flex-col gap-4">{children}</div>
-        <div className="flex justify-end gap-2 px-5 pb-5">
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-white border border-slate-100 rounded-2xl shadow-2xl">
+        <DialogHeader className="px-5 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
+          <DialogTitle className="text-[16px] font-bold text-slate-900">{title}</DialogTitle>
+        </DialogHeader>
+        <div className="px-5 py-4 flex flex-col gap-4 text-slate-700">{children}</div>
+        <DialogFooter className="flex justify-end gap-2 px-5 pb-5 pt-2 bg-slate-50 border-t border-slate-100">
           <BtnSecondary onClick={onClose}>Cancel</BtnSecondary>
           <BtnPrimary onClick={onSave}>Save</BtnPrimary>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -379,11 +386,32 @@ function SendInspirationModal({ onClose, students, mentors }: { onClose: () => v
 
 function CreateEnrollmentModal({ onClose, students, courses, circles }: { onClose: () => void; students: any[]; courses: any[]; circles: any[] }) {
   const [student, setStudent] = useState(""); const [course, setCourse] = useState("");
-  const [circle, setCircle] = useState(""); const [status, setStatus] = useState("active");
+  const [circle, setCircle] = useState(""); const [status, setStatus] = useState("Active");
   const supabase = createClient();
   const save = async () => {
     if (!student || !course) return;
-    await supabase.from("enrollments").insert({ student_id: student, course_id: course, circle_id: circle||null, status });
+    
+    let actualCourseId = course;
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(actualCourseId);
+
+    if (!isUUID) {
+      const selectedCourse = courses.find(c => c.id === course);
+      if (selectedCourse) {
+        const coursePayload = {
+          title: selectedCourse.title,
+          description: selectedCourse.description,
+          status: 'Active'
+        };
+        const { data: newCourse, error: createError } = await supabase.from('courses').insert(coursePayload).select().single();
+        if (createError) {
+          alert("Error creating course: " + createError.message);
+          return;
+        }
+        actualCourseId = newCourse.id;
+      }
+    }
+
+    await supabase.from("enrollments").insert({ student_id: student, course_id: actualCourseId, circle_id: circle||null, status });
     onClose();
   };
   return (
@@ -391,7 +419,7 @@ function CreateEnrollmentModal({ onClose, students, courses, circles }: { onClos
       <FieldRow label="Student"><SInput value={student} onChange={setStudent} options={students.map((s) => ({ value: s.id, label: s.name||s.email }))} /></FieldRow>
       <FieldRow label="Course"><SInput value={course} onChange={setCourse} options={courses.map((c) => ({ value: c.id, label: c.title||c.id }))} /></FieldRow>
       <FieldRow label="Circle (optional)"><SInput value={circle} onChange={setCircle} options={circles.map((c) => ({ value: c.id, label: c.name||c.id }))} /></FieldRow>
-      <FieldRow label="Status"><SInput value={status} onChange={setStatus} options={[{ value:"active",label:"Active"},{ value:"paused",label:"Paused"},{ value:"completed",label:"Completed"},{ value:"dropped",label:"Dropped"}]} /></FieldRow>
+      <FieldRow label="Status"><SInput value={status} onChange={setStatus} options={[{ value:"Active",label:"Active"},{ value:"Paused",label:"Paused"},{ value:"Completed",label:"Completed"},{ value:"Dropped",label:"Dropped"}]} /></FieldRow>
     </ModalWrap>
   );
 }
@@ -409,6 +437,32 @@ function CreateCircleModal({ onClose, mentors }: { onClose: () => void; mentors:
       <FieldRow label="Circle Name"><TInput value={name} onChange={setName} placeholder="e.g. Python Beginners Q4" /></FieldRow>
       <FieldRow label="Description"><TAInput value={desc} onChange={setDesc} placeholder="What is this circle about?" /></FieldRow>
       <FieldRow label="Assign Mentor"><SInput value={mentor} onChange={setMentor} options={mentors.map((m) => ({ value: m.id, label: m.name||m.email }))} /></FieldRow>
+    </ModalWrap>
+  );
+}
+
+function CreateMappingModal({ onClose, students, mentors, circles }: { onClose: () => void; students: any[]; mentors: any[]; circles: any[] }) {
+  const [student, setStudent] = useState(""); 
+  const [mentor, setMentor] = useState("");
+  const [circle, setCircle] = useState(""); 
+  const [status, setStatus] = useState("Active");
+  const supabase = createClient();
+  const save = async () => {
+    if (!student || !mentor) return;
+    const { error } = await supabase.from("mapping").insert({ student_id: student, mentor_id: mentor, circle_id: circle||null, status });
+    if (error) {
+      alert("Error mapping student: " + error.message);
+    } else {
+      alert("Student mapped successfully!");
+      onClose();
+    }
+  };
+  return (
+    <ModalWrap title="Assign Mentor to Student" onClose={onClose} onSave={save}>
+      <FieldRow label="Student"><SInput value={student} onChange={setStudent} options={students.map((s) => ({ value: s.id, label: s.name||s.email }))} /></FieldRow>
+      <FieldRow label="Mentor"><SInput value={mentor} onChange={setMentor} options={mentors.map((m) => ({ value: m.id, label: m.name||m.email }))} /></FieldRow>
+      <FieldRow label="Circle (optional)"><SInput value={circle} onChange={setCircle} options={circles.map((c) => ({ value: c.id, label: c.name||c.id }))} /></FieldRow>
+      <FieldRow label="Status"><SInput value={status} onChange={setStatus} options={[{ value:"Active",label:"Active"},{ value:"Inactive",label:"Inactive"}]} /></FieldRow>
     </ModalWrap>
   );
 }
@@ -441,7 +495,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
     { label: "+ Mentor",   bg: "bg-rose-500 hover:bg-rose-600",    modal: "add-mentor" as ModalKey },
     { label: "+ Session",  bg: "bg-violet-500 hover:bg-violet-600",modal: "schedule-session" as ModalKey },
     { label: "+ Inspire",  bg: "bg-pink-500 hover:bg-pink-600",    modal: "send-inspiration" as ModalKey },
-    { label: "+ Map",      bg: "bg-emerald-500 hover:bg-emerald-600", modal: null as ModalKey },
+    { label: "+ Map",      bg: "bg-emerald-500 hover:bg-emerald-600", modal: "create-mapping" as ModalKey },
   ];
 
   const stats = [
@@ -646,87 +700,118 @@ function DashboardPage({ data, onNavigate, openModal }: {
 }
 
 // ─── Courses ──────────────────────────────────────────────────────────────────
-function CoursesPage({ data }: { data: any }) {
-  const { courses = [], enrollments = [] } = data;
-  const [filter, setFilter] = useState<"all"|"enrolled"|"available">("all");
+function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group flex items-center gap-5 p-4 bg-white hover:bg-slate-50 transition-all cursor-pointer border-b border-slate-50 last:border-0"
+      onClick={() => onView(course)}
+    >
+      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", course.bgColor || "bg-indigo-600")}>
+        {React.isValidElement(course.icon) ? React.cloneElement(course.icon as React.ReactElement<{ className?: string }>, { className: "w-7 h-7 text-white" }) : <BookMarked className="w-7 h-7 text-white" />}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start mb-1">
+          <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+            {course.title}
+          </h3>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{course.difficulty}</span>
+        </div>
+        <p className="text-[13px] text-slate-500 line-clamp-1 mb-2">{course.description}</p>
+        <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {course.duration}</span>
+          <span className="flex items-center gap-1.5"><Layers className="w-3 h-3" /> {course.modules?.length} Modules</span>
+          {course.progress > 0 && <span className="text-blue-600">{course.progress}% Complete</span>}
+        </div>
+      </div>
+
+      <div className="p-2 rounded-full group-hover:bg-blue-50 transition-all">
+        <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500" />
+      </div>
+    </motion.div>
+  );
+}
+
+function CoursesPage({ data, onView, onEdit }: { data: any; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
+  const [filter, setFilter] = useState<string>("All Categories");
   const [q, setQ] = useState("");
 
-  const enriched = courses.map((c: any) => {
-    const modules = seedNum(c.id, 4, 8);
-    const lessons = modules * seedNum(c.id + "l", 2, 3) + seedNum(c.id + "x", 6, 2);
-    const hours = Math.round(lessons * seedNum(c.id + "h", 2, 1) + seedNum(c.id + "y", 10, 5));
-    const difficulty = ["Beginner","Intermediate","Advanced"][seedNum(c.id, 2)];
-    const enrolled = enrollments.some((e: any) => e.course_id === c.id);
-    const progress = enrolled ? seedNum(c.id + "p", 80, 10) : 0;
-    const category = (c.description || c.title || "").split(" ").slice(0,2).join(" ") || "General";
-    return { ...c, modules, lessons, hours, difficulty, enrolled, progress, category };
+  const allCourses = [...(data.courses || []), ...mentorCoursesCatalog.filter(c => !(data.courses || []).find((sc: any) => sc.title === c.title))];
+  const categories = ["All Categories", ...Array.from(new Set(allCourses.map(c => c.category)))];
+
+  const filtered = allCourses.filter(c => {
+    const matchesFilter = filter === "All Categories" || c.category === filter;
+    const matchesSearch = (c.title || "").toLowerCase().includes(q.toLowerCase()) || (c.description || "").toLowerCase().includes(q.toLowerCase());
+    return matchesFilter && matchesSearch;
   });
 
-  const filtered = enriched
-    .filter((c: any) => !q || c.title?.toLowerCase().includes(q.toLowerCase()))
-    .filter((c: any) => filter === "all" ? true : filter === "enrolled" ? c.enrolled : !c.enrolled);
-
-  const CIcon = (title: string) => {
-    const Ic = courseIcon(title);
-    const { bg } = courseColor(title);
-    return (
-      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", bg)}>
-        <Ic className="w-5 h-5 text-white" />
-      </div>
-    );
-  };
-
   return (
-    <PageShell title="Course Library" subtitle={`${courses.length} courses · ${enrollments.length} enrolled`}
-      action={<><BtnSecondary><Upload className="w-4 h-4" />Upload Course</BtnSecondary><BtnPrimary><Plus className="w-4 h-4" />Add Course</BtnPrimary></>}>
-      <Card>
-        <div className="p-4 flex items-center justify-between border-b border-slate-100">
-          <div className="flex gap-2">
-            {(["all","enrolled","available"] as const).map((f) => (
-              <button key={f} onClick={() => setFilter(f)}
-                className={cn("h-8 px-4 rounded-full text-[13px] font-medium capitalize transition-colors",
-                  filter === f ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800")}>
-                {f}
+    <PageShell 
+      title="Engineering Catalog" 
+      subtitle={`Empowering mentors with ${allCourses.length} premium industrial paths`}
+      action={
+        <div className="flex gap-3">
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="h-11 px-6 bg-white border border-slate-200 text-slate-600 text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-sm flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" /> Batch Import
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onEdit({} as any)}
+            className="h-11 px-6 bg-[#0f172a] text-white text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-slate-200 flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" /> Architect Path
+          </motion.button>
+        </div>
+      }
+    >
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex gap-2 bg-white p-1.5 rounded-[1.25rem] border border-slate-100 shadow-sm overflow-x-auto max-w-full">
+            {categories.map((cat) => (
+              <button 
+                key={cat} 
+                onClick={() => setFilter(cat)}
+                className={cn(
+                  "px-5 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all",
+                  filter === cat ? "bg-slate-900 text-white shadow-lg" : "text-slate-500 hover:bg-slate-50"
+                )}
+              >
+                {cat}
               </button>
             ))}
           </div>
+          <div className="w-full md:w-80">
+            <SearchInput value={q} onChange={setQ} placeholder="Search engineering paths..." />
+          </div>
         </div>
-        <div className="divide-y divide-slate-50">
-          {filtered.map((c: any) => (
-            <div key={c.id} className="px-5 py-4 flex items-start gap-4 hover:bg-slate-50/50 transition-colors">
-              {CIcon(c.title)}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-[15px] font-bold text-slate-900">{c.title}</h3>
-                  <Pill color={c.difficulty==="Beginner"?"green":c.difficulty==="Advanced"?"red":"blue"}>{c.difficulty}</Pill>
-                  {c.enrolled && <Pill color="green">Enrolled</Pill>}
-                </div>
-                <p className="text-[13px] text-slate-500 mb-2 line-clamp-1">{c.description || "No description"}</p>
-                <div className="flex items-center gap-3 text-[12px] text-slate-400 flex-wrap">
-                  <span>{c.modules} modules</span>
-                  <span>·</span><span>{c.lessons} lessons</span>
-                  <span>·</span><span>{c.hours} hours</span>
-                  <span>·</span><span>{c.category}</span>
-                  <span>·</span><span className="flex items-center gap-1"><BookMarked className="w-3 h-3 text-emerald-500" />5 quiz Q</span>
-                </div>
-                {c.enrolled && (
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={cn("h-full rounded-full", progressColor(c.progress))} style={{ width: `${c.progress}%` }} />
-                    </div>
-                    <span className="text-[12px] font-medium text-slate-500 shrink-0">{c.progress}%</span>
-                  </div>
-                )}
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
-            </div>
+
+        <div className="bg-white border border-slate-100 rounded-[1.85rem] overflow-hidden divide-y divide-slate-50 shadow-sm">
+          {filtered.map(c => (
+            <CourseItem key={c.id} course={c} onView={onView} onEdit={onEdit} />
           ))}
-          {filtered.length === 0 && <div className="py-16 text-center text-slate-400 text-[13px]">No courses found</div>}
         </div>
-      </Card>
+
+        {filtered.length === 0 && (
+          <div className="py-32 text-center bg-white rounded-[2.25rem] border border-slate-100 shadow-sm">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+              <Search className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No paths found</h3>
+            <p className="text-slate-400 text-[14px] font-medium">Try adjusting your search or category filters.</p>
+          </div>
+        )}
+      </div>
     </PageShell>
   );
 }
+
 
 // ─── Mentors ──────────────────────────────────────────────────────────────────
 function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) => void }) {
@@ -736,7 +821,7 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   const enriched = mentors
     .filter((m: any) => !q || (m.name || m.email || "").toLowerCase().includes(q.toLowerCase()))
     .map((m: any) => {
-      const activeMentees = mapping.filter((mp: any) => mp.mentor_id === m.id && mp.status !== "inactive").length;
+      const activeMentees = mapping.filter((mp: any) => mp.mentor_id === m.id && mp.status !== "Inactive").length;
       const totalMentees = activeMentees + seedNum(m.id, 30, 10);
       const rating = (4.5 + seedNum(m.id, 4) * 0.1).toFixed(1);
       const status = seedNum(m.id, 10) > 8 ? "On Leave" : "Active";
@@ -1043,7 +1128,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   });
 
   const stats = [
-    { label: "Active Mappings",      value: mapping.filter((m: any) => m.status !== "inactive").length, color: "text-emerald-600", icon: ArrowRightLeft, iconBg: "bg-emerald-100" },
+    { label: "Active Mappings",      value: mapping.filter((m: any) => m.status !== "Inactive").length, color: "text-emerald-600", icon: ArrowRightLeft, iconBg: "bg-emerald-100" },
     { label: "Awaiting Students",    value: awaitingStudents.length, color: "text-amber-600", icon: Clock, iconBg: "bg-amber-100" },
     { label: "Mentors with Capacity",value: availableMentors.length, color: "text-blue-600",  icon: Users, iconBg: "bg-blue-100" },
     { label: "Total Mentors",        value: mentors.length,          color: "text-violet-600",icon: UserCheck, iconBg: "bg-violet-100" },
@@ -1058,7 +1143,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
 
   return (
     <PageShell title="Mentor-Student Mapping" subtitle="Assign mentors to students and manage mentorship pairings."
-      action={<BtnPrimary><ArrowRightLeft className="w-4 h-4" />Assign Mentor</BtnPrimary>}>
+      action={<BtnPrimary onClick={() => openModal("create-mapping")}><ArrowRightLeft className="w-4 h-4" />Assign Mentor</BtnPrimary>}>
 
       <div className="grid grid-cols-4 gap-4">
         {stats.map((s) => (
@@ -1111,7 +1196,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                         <p className="text-[13px] font-semibold text-slate-800">{s.name || "—"}</p>
                         <p className="text-[11px] text-slate-400">{s.courseName} · Since {s.created_at ? new Date(s.created_at).toLocaleDateString() : "—"}</p>
                       </div>
-                      <button className="h-8 px-3 bg-slate-900 text-white text-[12px] font-medium rounded-lg flex items-center gap-1 hover:bg-slate-700 transition-colors">
+                      <button onClick={() => openModal("create-mapping")} className="h-8 px-3 bg-slate-900 text-white text-[12px] font-medium rounded-lg flex items-center gap-1 hover:bg-slate-700 transition-colors">
                         <ArrowRightLeft className="w-3 h-3" />Assign
                       </button>
                     </div>
@@ -1175,7 +1260,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                       <td className="px-4 py-3 text-[13px] text-slate-600">{mentor?.name || m.mentor_id || "—"}</td>
                       <td className="px-4 py-3 text-[13px] text-slate-500">{m.circle_id || "Direct"}</td>
                       <td className="px-4 py-3 text-[13px] text-slate-500">{m.mapped_at ? new Date(m.mapped_at).toLocaleDateString() : "—"}</td>
-                      <td className="px-4 py-3"><Pill color={m.status === "inactive" ? "red" : "green"}>{m.status || "active"}</Pill></td>
+                      <td className="px-4 py-3"><Pill color={m.status === "Inactive" ? "red" : "green"}>{m.status || "Active"}</Pill></td>
                     </tr>
                   );
                 })}
@@ -1592,74 +1677,9 @@ function SettingsPage() {
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ page, onNavigate }: { page: AdminPage; onNavigate: (p: AdminPage) => void }) {
-  return (
-    <aside className="w-52 h-full bg-white border-r border-slate-100 flex flex-col shrink-0">
-      <div className="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
-        <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-          <Shield className="w-4 h-4 text-white" />
-        </div>
-        <span className="text-[15px] font-bold text-slate-900">MentorHub</span>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto py-3">
-        {NAV_MAIN.map((item) => {
-          const active = page === item.key;
-          return (
-            <button key={item.key} onClick={() => onNavigate(item.key as AdminPage)}
-              className={cn("w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium transition-colors text-left rounded-lg mx-1",
-                active ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50")}
-              style={{ width: "calc(100% - 8px)" }}>
-              <item.icon className="w-4 h-4 shrink-0" />
-              {item.label}
-            </button>
-          );
-        })}
-        <p className="px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-4 mb-2">Others</p>
-        {NAV_OTHERS.map((item) => {
-          const active = page === item.key;
-          return (
-            <button key={item.key} onClick={() => onNavigate(item.key as AdminPage)}
-              className={cn("w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium transition-colors text-left rounded-lg mx-1",
-                active ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50")}
-              style={{ width: "calc(100% - 8px)" }}>
-              <item.icon className="w-4 h-4 shrink-0" />
-              {item.label}
-            </button>
-          );
-        })}
-      </nav>
-    </aside>
-  );
-}
-
-// ─── Top Header ───────────────────────────────────────────────────────────────
-function TopHeader() {
-  return (
-    <header className="h-14 bg-white border-b border-slate-100 flex items-center gap-4 px-6 shrink-0">
-      <div className="flex-1 max-w-xs">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input placeholder="Search..." className="w-full h-9 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 text-[13px] outline-none focus:border-slate-400" />
-        </div>
-      </div>
-      <div className="flex-1" />
-      <button className="text-[13px] font-medium text-slate-600 hover:text-slate-900">Mobile App</button>
-      <button className="relative w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500">
-        <Bell className="w-4 h-4" />
-        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-      </button>
-      <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
-        <span className="text-[11px] font-bold text-white">M</span>
-      </div>
-    </header>
-  );
-}
-
-// ─── Main AdminPanel ──────────────────────────────────────────────────────────
-export function AdminPanel() {
-  const [page, setPage] = useState<AdminPage>("dashboard");
+// Main AdminPanel component rendered within a layout
+export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminPage }) {
+  const [page, setPage] = useState<AdminPage>(initialPage);
   const [modal, setModal] = useState<ModalKey>(null);
   const [data, setData] = useState<any>({
     students: [], mentors: [], courses: [], sessions: [], enrollments: [],
@@ -1667,6 +1687,9 @@ export function AdminPanel() {
     questionnaires: [], inspiration: [], gratitude_messages: [], csr_sponsors: [],
     games: [], studentQuiz: [], mentorQuiz: [],
   });
+
+  const [selectedCourse, setSelectedCourse] = useState<MentorCourse | null>(null);
+  const [courseViewMode, setCourseViewMode] = useState<"list" | "detail" | "edit">("list");
 
   const supabase = createClient();
 
@@ -1704,13 +1727,82 @@ export function AdminPanel() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  useEffect(() => {
+    setPage(initialPage);
+  }, [initialPage]);
+
   const openModal = (m: ModalKey) => setModal(m);
   const closeModal = () => { setModal(null); fetchAll(); };
 
   const renderPage = () => {
     switch (page) {
       case "dashboard":      return <DashboardPage data={data} onNavigate={setPage} openModal={openModal} />;
-      case "courses":        return <CoursesPage data={data} />;
+      case "courses":        
+        if (courseViewMode === "detail" && selectedCourse) {
+          return <CourseDetailsScreen 
+            course={selectedCourse as any} 
+            onBack={() => setCourseViewMode("list")} 
+          />;
+        }
+        if (courseViewMode === "edit") {
+          return <CourseCustomizer 
+            initialCourse={selectedCourse || {
+              id: `c-${Date.now()}`,
+              title: "New Course",
+              shortTitle: "New Path",
+              description: "Course description here",
+              color: "text-blue-600",
+              bgColor: "bg-blue-500",
+              icon: <BookOpen className="w-5 h-5" />,
+              category: "Engineering",
+              difficulty: "Beginner",
+              duration: "10 hours",
+              modules: [],
+              enrolled: false,
+              progress: 0
+            }} 
+            onSave={async (updatedData) => { 
+              console.log("Saving course data:", updatedData); 
+              
+              const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(updatedData.id);
+              const payload = {
+                title: updatedData.title,
+                description: updatedData.description,
+                status: 'Active',
+              };
+
+              let error;
+              if (isUUID) {
+                const { error: err } = await supabase
+                  .from('courses')
+                  .update(payload)
+                  .eq('id', updatedData.id);
+                error = err;
+              } else {
+                const { error: err } = await supabase
+                  .from('courses')
+                  .insert({
+                    ...payload,
+                    id: updatedData.id
+                  });
+                error = err;
+              }
+
+              if (error) {
+                alert("Error saving course: " + error.message);
+              } else {
+                setCourseViewMode("list"); 
+                fetchAll();
+              }
+            }} 
+            onCancel={() => setCourseViewMode("list")} 
+          />;
+        }
+        return <CoursesPage 
+          data={data} 
+          onView={(c) => { setSelectedCourse(c); setCourseViewMode("detail"); }}
+          onEdit={(c) => { setSelectedCourse(c); setCourseViewMode("edit"); }}
+        />;
       case "mentors":        return <MentorsPage data={data} openModal={openModal} />;
       case "mentees":        return <MenteesPage data={data} openModal={openModal} />;
       case "registrations":  return <RegistrationsPage data={data} />;
@@ -1731,15 +1823,8 @@ export function AdminPanel() {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
-      <Sidebar page={page} onNavigate={setPage} />
-
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <TopHeader />
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderPage()}
-        </main>
-      </div>
+    <div className="flex flex-col flex-1 min-w-0">
+      {renderPage()}
 
       {modal === "add-student"       && <AddStudentModal onClose={closeModal} courses={data.courses} />}
       {modal === "add-mentor"        && <AddMentorModal onClose={closeModal} />}
@@ -1747,6 +1832,7 @@ export function AdminPanel() {
       {modal === "send-inspiration"  && <SendInspirationModal onClose={closeModal} students={data.students} mentors={data.mentors} />}
       {modal === "create-enrollment" && <CreateEnrollmentModal onClose={closeModal} students={data.students} courses={data.courses} circles={data.circles} />}
       {modal === "create-circle"     && <CreateCircleModal onClose={closeModal} mentors={data.mentors} />}
+      {modal === "create-mapping"    && <CreateMappingModal onClose={closeModal} students={data.students} mentors={data.mentors} circles={data.circles} />}
     </div>
   );
 }

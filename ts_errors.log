@@ -1,0 +1,18 @@
+app/page.tsx(220,29): error TS2345: Argument of type 'string | number | true | { [key: string]: Json | undefined; } | Json[]' is not assignable to parameter of type 'SetStateAction<string[]>'.
+  Type 'string' is not assignable to type 'SetStateAction<string[]>'.
+components/admin/AdminPanel.tsx(686,102): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+components/admin/CourseCustomizer.tsx(1264,16): error TS2304: Cannot find name 'Sparkles'.
+components/admin/CourseCustomizer.tsx(1425,103): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+components/admin/CourseDetailsScreen.tsx(74,106): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+components/mentor/MentorCourses.tsx(133,110): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+components/mentor/MentorCourses.tsx(180,126): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
