@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Read(//c/Users/satya/AppData/Local/**)",
+      "Read(//c/Users/satya/AppData/Roaming/**)",
+      "Read(//c/Users/satya/AppData/**)",
+      "Bash(VERCEL_CONFIG_DIR=\"/c/Users/satya/AppData/Roaming/xdg.data/com.vercel.cli\" npx --yes vercel@54.0.0 inspect dpl_42AikUL9yMmpoe7xJXTVT1aYbq4B --logs)",
+      "Bash(grep -n \"^      [a-z_]*: {$\\\\|^      [a-z_]*:\" \"C:/Users/satya/Documents/GitHub/mentorhubweb/lib/database.types.ts\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
