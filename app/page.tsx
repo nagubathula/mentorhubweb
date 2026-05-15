@@ -283,7 +283,7 @@ export default function OnboardingFlow() {
             if (enrolls.length > 0 && !enrolledCourse) {
               setEnrollmentId(enrolls[0].id);
               setEnrolledCourse(enrolls[0].course);
-              setCourseProgress(enrolls[0].progress || []);
+              setCourseProgress((enrolls[0].progress as string[]) || []);
             }
           }
 
