@@ -276,7 +276,7 @@ export function MentorCourses() {
       difficulty: activeCourse.difficulty,
       duration: activeCourse.duration,
       category: activeCourse.category,
-      content: activeCourse.modules, // Save modified syllabus
+      content: activeCourse.modules as unknown as import("@/lib/database.types").Json,
       mentor_id: session?.user?.id,
       status: 'Active'
     };
@@ -467,7 +467,7 @@ export function MentorCourses() {
         title: assigningCourse.title,
         index_code: assigningCourse.shortTitle,
         description: assigningCourse.description,
-        content: assigningCourse.modules,
+        content: assigningCourse.modules as unknown as import("@/lib/database.types").Json,
         mentor_id: session?.user?.id,
         status: 'Active'
       };
