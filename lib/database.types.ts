@@ -124,6 +124,11 @@ export type Database = {
           status: string | null
           title: string
           total_modules: number | null
+          content: Json | null
+          index_code: string | null
+          difficulty: string | null
+          duration: string | null
+          category: string | null
         }
         Insert: {
           created_at?: string
@@ -133,6 +138,11 @@ export type Database = {
           status?: string | null
           title: string
           total_modules?: number | null
+          content?: Json | null
+          index_code?: string | null
+          difficulty?: string | null
+          duration?: string | null
+          category?: string | null
         }
         Update: {
           created_at?: string
@@ -142,6 +152,11 @@ export type Database = {
           status?: string | null
           title?: string
           total_modules?: number | null
+          content?: Json | null
+          index_code?: string | null
+          difficulty?: string | null
+          duration?: string | null
+          category?: string | null
         }
         Relationships: [
           {
@@ -1139,6 +1154,9 @@ export type Database = {
           project_name: string
           status: string | null
           submitted_at: string
+          feedback: string | null
+          rating: number | null
+          reviewed_at: string | null
         }
         Insert: {
           id?: string
@@ -1148,6 +1166,9 @@ export type Database = {
           project_name: string
           status?: string | null
           submitted_at?: string
+          feedback?: string | null
+          rating?: number | null
+          reviewed_at?: string | null
         }
         Update: {
           id?: string
@@ -1157,6 +1178,9 @@ export type Database = {
           project_name?: string
           status?: string | null
           submitted_at?: string
+          feedback?: string | null
+          rating?: number | null
+          reviewed_at?: string | null
         }
         Relationships: [
           {
@@ -1178,6 +1202,76 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      custom_todos: {
+        Row: {
+          id: string
+          student_id: string | null
+          title: string | null
+          notes: string | null
+          status: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id?: string | null
+          title?: string | null
+          notes?: string | null
+          status?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string | null
+          title?: string | null
+          notes?: string | null
+          status?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_todos_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      student_notes: {
+        Row: {
+          id: string
+          student_id: string | null
+          type: string | null
+          title: string | null
+          content: string | null
+          timestamp: number | null
+        }
+        Insert: {
+          id?: string
+          student_id?: string | null
+          type?: string | null
+          title?: string | null
+          content?: string | null
+          timestamp?: number | null
+        }
+        Update: {
+          id?: string
+          student_id?: string | null
+          type?: string | null
+          title?: string | null
+          content?: string | null
+          timestamp?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           }
         ]

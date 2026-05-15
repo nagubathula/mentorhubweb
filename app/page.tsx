@@ -283,7 +283,7 @@ export default function OnboardingFlow() {
             if (enrolls.length > 0 && !enrolledCourse) {
               setEnrollmentId(enrolls[0].id);
               setEnrolledCourse(enrolls[0].course);
-              setCourseProgress(enrolls[0].progress || []);
+              setCourseProgress((enrolls[0].progress as string[]) || []);
             }
           }
 
@@ -1231,7 +1231,9 @@ export default function OnboardingFlow() {
       };
       
       // Save to localStorage
-      const updatedLocal = [enrollData, ...localEnrollments];
+      const existingLocalStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+      const existingLocal = existingLocalStr ? JSON.parse(existingLocalStr) : [];
+      const updatedLocal = [enrollData, ...existingLocal];
       localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(updatedLocal));
     } else {
       enrollData = dbEnrollData;
@@ -2037,7 +2039,7 @@ export default function OnboardingFlow() {
                     (m.lessons || m.topics || []).every((l: any) => courseProgress.includes(l.id))
                   ).length;
 
-                  const nextLesson = allLessons.find(l => !courseProgress.includes(l.id));
+                  const nextLesson = allLessons.find((l: any) => !courseProgress.includes(l.id));
 
                   return (
                     <div className="mt-6 flex flex-col">

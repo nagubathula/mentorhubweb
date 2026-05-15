@@ -79,7 +79,7 @@ export function MentorCircle() {
       const { data, error } = await supabase.from('circles').insert({
         name: newCircleName.trim(),
         description: newCircleDesc.trim(),
-        created_by: currentUser.id
+        mentor_id: currentUser.id
       }).select().single();
 
       if (error) {
