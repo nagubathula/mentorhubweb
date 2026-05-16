@@ -308,6 +308,21 @@ export default function OnboardingFlow() {
           if (dbTodos) setCustomTodos(dbTodos);
         }
 
+        // Fetch assigned students for mentor to determine landing page
+        if (profile.role === "MENTOR") {
+          const { data: mappings } = await supabase
+            .from('mapping')
+            .select('student_id')
+            .eq('mentor_id', session.user.id);
+          
+          if (mappings && mappings.length > 0) {
+             // If already has students, dashboard is the better default
+             if (!profile.last_state || profile.last_state === "MENTOR_MATCHING") {
+               setState("MENTOR_DASHBOARD");
+             }
+          }
+        }
+
         // Auto-redirect based on role if still in auth screens and no saved state
         if (["LOGIN", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
           setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
@@ -3350,8 +3365,24 @@ export default function OnboardingFlow() {
             )}
 
              {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
-               <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50 relative">
-                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
+                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                   
+                   {/* Mentor Portal Shared Header (only for main dashboard) */}
+                   {state === "MENTOR_DASHBOARD" && (
+                     <div className="w-full flex flex-col pt-6 pb-2 gap-4">
+                        <div className="w-full flex justify-between items-center">
+                          <div className="space-y-1">
+                            <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Mentor'}! 👋</h2>
+                            <p className="text-[13px] font-medium text-slate-400">Your guidance makes all the difference today.</p>
+                          </div>
+                          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            <span className="text-sm font-bold text-slate-700">5.0</span>
+                          </div>
+                        </div>
+                     </div>
+                   )}
                   {state === "MENTOR_DASHBOARD" && <MentorHome />}
                   {state === "MENTOR_STUDENTS" && <MentorStudents />}
                   {state === "MENTOR_COURSES" && <MentorCourses />}
@@ -3360,15 +3391,33 @@ export default function OnboardingFlow() {
                   {state === "MENTOR_ACCOUNT" && <MentorProfile onSignOut={handleSignOut} />}
                 </div>
 
-                 {/* Bottom Navigation */}
-                 <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-between px-6 pt-3 pb-8 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
-                   <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_DASHBOARD" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
-                   <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_STUDENTS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Students</span></button>
-                   <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_COURSES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><GraduationCap className="w-5 h-5" strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
-                   <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
-                   <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_CIRCLE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Circle</span></button>
-                   <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_ACCOUNT" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
-                 </div>
+                  {/* Bottom Navigation - Premium Mentor Style */}
+                  <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 flex justify-between px-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                    <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-bold" : "font-semibold"}`}>Home</span>
+                    </button>
+                    <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-bold" : "font-semibold"}`}>Students</span>
+                    </button>
+                    <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <GraduationCap className={`w-5 h-5 ${state === "MENTOR_COURSES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-bold" : "font-semibold"}`}>Courses</span>
+                    </button>
+                    <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-bold" : "font-semibold"}`}>Notes</span>
+                    </button>
+                    <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <Users className={`w-5 h-5 ${state === "MENTOR_CIRCLE" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-bold" : "font-semibold"}`}>Circle</span>
+                    </button>
+                    <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <User className={`w-5 h-5 ${state === "MENTOR_ACCOUNT" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
+                      <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-bold" : "font-semibold"}`}>Profile</span>
+                    </button>
+                  </div>
               </motion.div>
             )}
 

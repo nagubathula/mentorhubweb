@@ -1,4 +1,4 @@
-import { ChevronDown, Search, ArrowRight, MessageSquare, Video, Medal, Target, MapPin, Clock, BookOpen, Layers, CheckCircle2, Star } from "lucide-react";
+import { ChevronDown, Search, ArrowRight, MessageSquare, Video, Medal, Target, MapPin, Clock, BookOpen, Layers, CheckCircle2, Star, Users, Zap, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -127,110 +127,146 @@ export function MentorStudents() {
 
     return (
       <div className="space-y-6 pb-20">
-         <div className="flex items-center gap-3 mt-4 px-1">
+         <div className="flex items-center gap-4 mt-6 px-1">
            <Button 
              variant="ghost" 
              size="icon" 
              onClick={() => setSelectedStudent(null)} 
-             className="w-10 h-10 rounded-full"
+             className="w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600 active:scale-90 transition-transform"
            >
              <ChevronDown className="w-5 h-5 rotate-90" />
            </Button>
-           <h2 className="text-[18px] font-semibold text-slate-800">Student Profile</h2>
+           <h2 className="text-xl font-bold font-volkhov text-slate-900 tracking-tight">Student Profile</h2>
          </div>
 
-         <Card className="p-6 flex flex-col items-center relative overflow-hidden shadow-sm hover:translate-y-0">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md relative z-10 bg-slate-100">
+         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl translate-y-12 -translate-x-12"></div>
+            
+            <div className="w-28 h-28 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-100 group-hover:scale-105 transition-transform duration-500">
               <img src={selectedStudent.avatar} className="w-full h-full object-cover" alt={selectedStudent.name}/>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mt-4 relative z-10">{selectedStudent.name}</h3>
-            <p className="text-[14px] text-slate-600 font-medium mt-1 relative z-10">{studentEnrollment?.course?.title || "No Active Course"}</p>
+            <h3 className="text-2xl font-bold text-slate-900 mt-6 relative z-10 font-volkhov">{selectedStudent.name}</h3>
+            <p className="text-[13px] text-slate-400 font-bold uppercase tracking-[0.15em] mt-2 relative z-10">
+              {studentEnrollment?.course?.title || "No Active Course"}
+            </p>
             
-            <div className="flex gap-2 mt-4 relative z-10 w-full px-2">
-              <Button className="flex-1 bg-[#0f172a] text-white py-2.5 h-10 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-[#1e293b] transition-colors">
-                <MessageSquare className="w-4 h-4"/> Message
+            <div className="flex gap-3 mt-8 relative z-10 w-full">
+              <Button className="flex-1 bg-slate-900 text-white py-6 rounded-2xl text-[14px] font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-[0.98]">
+                <MessageSquare className="w-4.5 h-4.5 fill-white/20"/> Message
               </Button>
-              <Button variant="outline" className="flex-1 py-2.5 h-10 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
-                <Video className="w-4 h-4"/> Call
+              <Button variant="outline" className="flex-1 py-6 rounded-2xl text-[14px] font-bold flex items-center justify-center gap-2 border-slate-100 bg-white hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]">
+                <Video className="w-4.5 h-4.5 text-indigo-500"/> Call
               </Button>
             </div>
-         </Card>
+         </div>
 
          {/* Student Detail View Key Metrics */}
          <div className="flex gap-3 px-1">
-            <Card className="flex-1 p-4 text-center hover:translate-y-0 shadow-sm">
-              <p className="text-[24px] font-bold text-slate-800">{selectedStudent.streak}</p>
-              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Day Streak</p>
-            </Card>
-            <Card className="flex-1 p-4 text-center hover:translate-y-0 shadow-sm">
-              <p className="text-[24px] font-bold text-slate-800">85%</p>
-              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Quiz Avg</p>
-            </Card>
-            <Card className="flex-1 p-4 text-center hover:translate-y-0 shadow-sm">
-              <p className="text-[24px] font-bold text-slate-800">
+            <div className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 text-center shadow-sm">
+              <p className="text-2xl font-black text-slate-900 font-volkhov">{selectedStudent.streak}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Streak</p>
+            </div>
+            <div className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 text-center shadow-sm">
+              <p className="text-2xl font-black text-slate-900 font-volkhov">85%</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Quiz</p>
+            </div>
+            <div className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 text-center shadow-sm">
+              <p className="text-2xl font-black text-slate-900 font-volkhov">
                 {completedTopics}/{totalTopics}
               </p>
-              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-1">Topics</p>
-            </Card>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Topics</p>
+            </div>
          </div>
 
-         <Card className="p-5 shadow-sm hover:translate-y-0">
-            <div className="flex items-center gap-2 mb-4 text-slate-800 font-medium text-[15px]">
-              <Layers className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> {studentEnrollment ? 'Active Course' : 'No Active Course'}
-            </div>
-            {studentEnrollment ? (
-              <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="text-[14px] font-semibold text-slate-900">{studentEnrollment.course.title}</h4>
-                  <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">IN PROGRESS</span>
+         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                  <Layers className="w-5 h-5" />
                 </div>
-                <Progress value={progressPercent} className="mt-4" />
-                <p className="text-[12px] text-slate-500 font-medium mt-2 text-right">
-                  {progressPercent}% Complete
-                </p>
+                <p className="text-[15px] font-bold text-slate-900">{studentEnrollment ? 'Active Curriculum' : 'No Active Curriculum'}</p>
+              </div>
+              {studentEnrollment && (
+                <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 shadow-3xs uppercase tracking-wider">
+                  In Progress
+                </span>
+              )}
+            </div>
+
+            {studentEnrollment ? (
+              <div className="space-y-5">
+                <div className="flex justify-between items-end">
+                   <div className="space-y-1">
+                     <h4 className="text-[14px] font-bold text-slate-900 leading-tight">{studentEnrollment.course.title}</h4>
+                     <p className="text-[12px] text-slate-400 font-medium">Started {new Date(studentEnrollment.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
+                   </div>
+                   <span className="text-xl font-black text-indigo-600 font-volkhov">{progressPercent}%</span>
+                </div>
+                <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden shadow-inner border border-slate-100/50">
+                  <div className="bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${progressPercent}%` }}></div>
+                </div>
               </div>
             ) : (
-              <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                 <p className="text-[13px] text-slate-400">Assign a course to start tracking progress.</p>
+              <div className="py-8 flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                 <BookOpen className="w-8 h-8 text-slate-300 mb-2" />
+                 <p className="text-[13px] text-slate-400 font-medium">Assign a curriculum to track progress.</p>
               </div>
             )}
-         </Card>
+         </div>
 
-         <Card className="p-5 shadow-sm hover:translate-y-0">
-            <h3 className="text-[15px] font-medium text-slate-800 mb-4">Quick Actions</h3>
-            <div className="flex flex-col gap-3">
-              <div className="p-3 rounded-xl border border-slate-100 bg-slate-50 flex flex-col gap-3">
+         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                <Zap className="w-5 h-5" />
+              </div>
+              <p className="text-[15px] font-bold text-slate-900">Mentor Actions</p>
+            </div>
+            
+            <div className="flex flex-col gap-4">
+              <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-slate-100 text-slate-600 p-2 rounded-lg"><BookOpen className="w-4 h-4"/></div>
-                  <div className="flex-1"><p className="text-[14px] font-medium text-slate-700">Assign Course</p></div>
+                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-3xs"><BookOpen className="w-4 h-4"/></div>
+                  <p className="text-[13px] font-bold text-slate-700">Assign New Course</p>
                 </div>
                 <div className="flex gap-2">
                   <Select value={selectedCourseId} onValueChange={(val) => setSelectedCourseId(val || "")}>
-                    <SelectTrigger className="flex-1 bg-white py-2 px-3 text-[13px] border border-slate-200 rounded-lg outline-none h-10 min-w-[200px]">
-                      <SelectValue placeholder="Select a course..." />
+                    <SelectTrigger className="flex-1 bg-white border-slate-200 rounded-xl text-[13px] font-medium h-11 focus:ring-2 focus:ring-indigo-100 transition-all shadow-sm">
+                      <SelectValue placeholder="Choose curriculum..." />
                     </SelectTrigger>
                     <SelectContent>
                       {courses.map(c => (
-                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                        <SelectItem key={c.id} value={c.id} className="text-[13px] font-medium">{c.title}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <Button 
                     onClick={handleAssignCourse}
                     disabled={isAssigning || !selectedCourseId}
-                    className="bg-[#0f172a] text-white px-4 h-10 rounded-lg text-[13px] font-medium disabled:opacity-50 shrink-0"
+                    className="bg-slate-900 text-white px-5 h-11 rounded-xl text-[13px] font-bold disabled:opacity-50 shrink-0 shadow-lg shadow-slate-900/5 active:scale-95 transition-all"
                   >
                     {isAssigning ? "..." : "Assign"}
                   </Button>
                 </div>
               </div>
-              <button className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors text-left bg-white">
-                <div className="bg-slate-100 text-slate-600 p-2 rounded-lg"><Target className="w-4 h-4"/></div>
-                <div className="flex-1"><p className="text-[14px] font-medium text-slate-700">Set Weekly Goal</p></div>
-                <ArrowRight className="w-4 h-4 text-slate-400" />
+              
+              <button className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 transition-all group active:scale-[0.98] shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-3xs"><Target className="w-4 h-4"/></div>
+                  <p className="text-[13px] font-bold text-slate-700">Set Weekly Milestone</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition-colors" />
+              </button>
+
+              <button className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 transition-all group active:scale-[0.98] shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shadow-3xs"><Heart className="w-4 h-4"/></div>
+                  <p className="text-[13px] font-bold text-slate-700">Send Kudos</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition-colors" />
               </button>
             </div>
-         </Card>
+         </div>
       </div>
     );
   }
@@ -238,36 +274,63 @@ export function MentorStudents() {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between mt-6 px-1">
-        <h2 className="text-[20px] font-semibold text-slate-800">My Students</h2>
-        <Button variant="outline" size="icon" className="w-10 h-10 rounded-full shadow-sm">
+        <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight">My Students</h2>
+        <Button variant="outline" size="icon" className="w-10 h-10 rounded-full shadow-sm bg-white border-slate-100 text-slate-400 hover:text-slate-600 active:scale-95 transition-transform">
           <Search className="w-4 h-4" />
         </Button>
       </div>
 
-      <div className="grid gap-4">
-        {students.map(s => (
-          <Card key={s.id} onClick={() => setSelectedStudent(s)} className="p-4 cursor-pointer hover:border-slate-300 transition-colors flex flex-col relative overflow-hidden">
-            <div className="flex gap-4">
-              <img src={s.avatar} className="w-14 h-14 rounded-full object-cover border border-slate-100 bg-slate-50" alt={s.name} />
-              <div className="flex-1">
-                 <h3 className="text-[15px] font-bold text-slate-800">{s.name}</h3>
-                 <p className="text-[13px] text-slate-500 font-medium mb-1 line-clamp-1">{s.course}</p>
-                 <div className="flex items-center gap-2 text-[11px] mt-2">
-                   <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold">{s.status}</span>
-                   <span className="flex items-center gap-1 text-slate-400 font-medium"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400"/> {s.streak} day streak</span>
+      <div className="grid gap-4 px-1">
+        {students.length === 0 ? (
+          <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+             <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300">
+               <Users className="w-10 h-10" />
+             </div>
+             <p className="text-slate-400 font-medium">No students assigned to you yet.</p>
+          </div>
+        ) : (
+          students.map(s => (
+            <div 
+              key={s.id} 
+              onClick={() => setSelectedStudent(s)} 
+              className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group active:scale-[0.98]"
+            >
+              <div className="flex gap-4">
+                <div className="relative">
+                  <img src={s.avatar} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-sm bg-slate-100 group-hover:scale-105 transition-transform" alt={s.name} />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+                    <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={3} />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                   <div className="flex justify-between items-start">
+                     <h3 className="text-[16px] font-bold text-slate-900 font-volkhov">{s.name}</h3>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">{s.status}</span>
+                   </div>
+                   <p className="text-[13px] text-slate-500 font-medium mt-1 line-clamp-1">{s.course}</p>
+                   <div className="flex items-center gap-3 mt-3">
+                     <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">
+                       <Star className="w-3.5 h-3.5 fill-amber-500"/> {s.streak} Day Streak
+                     </div>
+                     <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">
+                       <Target className="w-3.5 h-3.5" /> {s.progress}%
+                     </div>
+                   </div>
+                </div>
+              </div>
+              
+              <div className="mt-5">
+                 <div className="flex justify-between items-center text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5">
+                   <span>Curriculum Progress</span>
+                   <span className="text-slate-900">{s.progress}%</span>
+                 </div>
+                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                   <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${s.progress}%` }}></div>
                  </div>
               </div>
             </div>
-            
-            <div className="mt-4 pt-4 border-t border-slate-100">
-               <div className="flex justify-between items-center text-[12px] font-medium text-slate-500 mb-2">
-                 <span>Course Progress</span>
-                 <span>{s.progress}%</span>
-               </div>
-               <Progress value={s.progress} />
-            </div>
-          </Card>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

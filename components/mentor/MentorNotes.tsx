@@ -108,88 +108,112 @@ export function MentorNotes() {
   if (isCreating) {
     return (
       <div className="space-y-6 pb-20">
-         <div className="flex items-center justify-between mt-4 px-1">
+         <div className="flex items-center justify-between mt-6 px-1">
            <Button 
              variant="ghost" 
              size="icon" 
              onClick={() => {setIsCreating(false); setActiveNote(null);}} 
-             className="w-10 h-10 rounded-full"
+             className="w-10 h-10 rounded-full bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600 active:scale-90 transition-transform"
            >
              <X className="w-5 h-5"/>
            </Button>
-           <h2 className="text-[16px] font-semibold text-slate-800">{activeNote ? 'Edit Note' : 'New Note'}</h2>
-           <Button variant="ghost" onClick={handleSaveNote} className="font-semibold text-[14px]">Save</Button>
+           <h2 className="text-xl font-bold font-volkhov text-slate-900 tracking-tight">{activeNote ? 'Edit Note' : 'New Note'}</h2>
+           <Button 
+             onClick={handleSaveNote} 
+             className="bg-slate-900 text-white px-5 h-10 rounded-xl text-[13px] font-bold shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
+           >
+             Save
+           </Button>
          </div>
 
-         <Card className="p-5 shadow-sm hover:translate-y-0 min-h-[60vh] flex flex-col gap-4">
+         <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-h-[60vh] flex flex-col gap-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
+            
             <Input 
               type="text" 
               placeholder="Note Title" 
-              className="text-xl font-bold text-slate-900 border-none outline-none bg-transparent placeholder:text-slate-300 h-auto p-0 focus-visible:ring-0 shadow-none focus-visible:border-transparent"
+              className="text-2xl font-bold text-slate-900 border-none outline-none bg-transparent placeholder:text-slate-200 h-auto p-0 focus-visible:ring-0 shadow-none focus-visible:border-transparent font-volkhov relative z-10"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
             />
-            <div className="flex items-center gap-2 text-[12px] text-slate-400 font-medium">
-              <Clock className="w-3.5 h-3.5"/> {activeNote ? activeNote.time : 'Just now'}
+            <div className="flex items-center gap-2 text-[11px] text-slate-400 font-bold uppercase tracking-widest relative z-10">
+              <Clock className="w-4 h-4 text-indigo-400"/> {activeNote ? activeNote.time : 'New Session Note'}
             </div>
+            <div className="w-full h-px bg-slate-50 relative z-10"></div>
             <Textarea 
-               placeholder="Start typing your session notes here..." 
-               className="flex-1 w-full resize-none text-[15px] leading-relaxed text-slate-700 bg-transparent border-none outline-none placeholder:text-slate-300 p-0 focus-visible:ring-0 min-h-[40vh] shadow-none focus-visible:border-transparent"
+               placeholder="Start typing your session notes, student feedback, or industry insights here..." 
+               className="flex-1 w-full resize-none text-[15px] font-medium leading-relaxed text-slate-700 bg-transparent border-none outline-none placeholder:text-slate-300 p-0 focus-visible:ring-0 min-h-[40vh] shadow-none focus-visible:border-transparent relative z-10"
                value={editContent}
                onChange={(e) => setEditContent(e.target.value)}
             />
-         </Card>
+         </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between mt-6 px-1">
-        <h2 className="text-[20px] font-semibold text-slate-800">Session Notes</h2>
+      <div className="flex items-center justify-between mt-8 px-1">
+        <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Session Notes</h2>
+        <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 shadow-3xs">
+          <FileText className="w-4 h-4" />
+          <span className="text-[11px] font-black uppercase tracking-wider">{notes.length} Total</span>
+        </div>
       </div>
 
       <div className="flex gap-2 relative px-1">
-         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Search className="w-4 h-4"/></div>
+         <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><Search className="w-4 h-4" strokeWidth={2.5}/></div>
          <Input 
            type="text" 
-           placeholder="Search notes..." 
+           placeholder="Search through your mentorship archive..." 
            value={searchQuery}
            onChange={(e) => setSearchQuery(e.target.value)}
-           className="w-full h-12 bg-white pl-11 text-[14px] rounded-xl outline-none transition-colors border border-slate-200" 
+           className="w-full h-14 bg-white pl-12 text-[14px] font-medium rounded-2xl outline-none transition-all border border-slate-100 shadow-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200" 
          />
       </div>
 
-      <div className="grid gap-4 mt-2">
+      <div className="grid gap-5 px-1 mt-2">
         {filteredNotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center text-slate-400">
-            <FileText className="w-12 h-12 mb-4 opacity-50" />
-            <p>No notes found</p>
+          <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+             <div className="w-20 h-20 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
+               <FileText className="w-10 h-10" />
+             </div>
+             <div>
+               <p className="text-slate-900 font-bold font-volkhov">No notes found</p>
+               <p className="text-slate-400 text-xs font-medium mt-1">Start recording your session insights today.</p>
+             </div>
           </div>
         ) : filteredNotes.map(n => (
-          <Card key={n.id} className="p-5 shadow-sm relative group overflow-hidden">
-             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur pl-2">
-                <Button variant="ghost" size="icon" onClick={() => { setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setIsCreating(true); }} className="w-8 h-8 rounded-lg text-slate-700"><Edit2 className="w-4 h-4"/></Button>
-                <Button variant="ghost" size="icon" onClick={() => deleteNote(n.id)} className="w-8 h-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4"/></Button>
+          <div key={n.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative group overflow-hidden transition-all hover:shadow-md hover:border-slate-200 active:scale-[0.98] cursor-pointer">
+             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 bg-white/90 backdrop-blur px-2 py-1 rounded-xl shadow-sm border border-slate-100">
+                <Button variant="ghost" size="icon" onClick={() => { setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setIsCreating(true); }} className="w-9 h-9 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"><Edit2 className="w-4 h-4"/></Button>
+                <Button variant="ghost" size="icon" onClick={() => deleteNote(n.id)} className="w-9 h-9 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"><Trash2 className="w-4 h-4"/></Button>
              </div>
              
-             <h3 className="text-[16px] font-bold text-slate-800 mb-2 truncate pr-16">{n.title}</h3>
-             <p className="text-[14px] text-slate-500 leading-relaxed mb-4 line-clamp-3">{n.content}</p>
-             <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-               <Clock className="w-3.5 h-3.5"/> {n.time}
+             <div className="flex flex-col gap-3">
+               <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                 <h3 className="text-[16px] font-bold text-slate-900 font-volkhov truncate pr-12">{n.title}</h3>
+               </div>
+               <p className="text-[14px] text-slate-500 font-medium leading-relaxed line-clamp-2">{n.content}</p>
+               <div className="flex items-center gap-2 mt-2">
+                 <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                   <Clock className="w-3.5 h-3.5 text-indigo-400"/> {n.time}
+                 </div>
+               </div>
              </div>
-          </Card>
+          </div>
         ))}
       </div>
 
-      {/* Floating Action Button */}
-      <div className="h-20 shrink-0 relative">
+      {/* Floating Action Button - Premium Style */}
+      <div className="fixed bottom-28 right-6 z-40">
         <Button 
           onClick={() => { setEditTitle(''); setEditContent(''); setActiveNote(null); setIsCreating(true); }} 
-          className="absolute bottom-4 right-2 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-105 hover:bg-[#1e293b] transition-all z-40 bg-[#0f172a] text-white"
+          className="w-16 h-16 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-slate-900/20 hover:scale-105 hover:-rotate-6 transition-all duration-300 bg-slate-900 text-white active:scale-95 group"
           size="icon"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-500" strokeWidth={3} />
         </Button>
       </div>
     </div>

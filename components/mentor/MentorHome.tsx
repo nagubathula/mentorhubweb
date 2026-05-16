@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2 } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -313,73 +313,88 @@ export function MentorHome() {
   return (
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       
-      {/* 14. New Student Notifications (Real Data) */}
+      {/* 14. New Student Notifications (Real Data) - Premium Light Theme */}
       {showNotification && assignedStudents.length > 0 && (
-        <Card className="bg-slate-50 border border-slate-200 p-4 flex gap-4 mt-6 items-start mx-1 hover:translate-y-0 shadow-none">
-          <div className="bg-[#0f172a] rounded-full p-2 text-white shrink-0">
-            <Bell className="w-5 h-5" />
-          </div>
-          <div className="flex-1 mt-0.5 min-w-0">
-             <h3 className="text-slate-900 font-semibold text-[15px]">You have {assignedStudents.length} assigned student{assignedStudents.length > 1 ? 's' : ''}!</h3>
-             <p className="text-slate-500 text-[13px] mt-1 leading-relaxed">
-               Latest student: "{assignedStudents[0].name || assignedStudents[0].email.split('@')[0]}". Check the Students tab for details.
-             </p>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setShowNotification(false)} 
-            className="text-slate-300 hover:text-slate-600 transition-colors p-1 shrink-0 w-8 h-8 rounded-full"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </Card>
+        <div className="bg-white border border-slate-100 p-6 mx-1 mt-6 relative overflow-hidden rounded-[2rem] shadow-xl shadow-slate-200/50 group flex gap-5 items-start">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
+           
+           <div className="bg-slate-950 rounded-2xl p-3 text-white shrink-0 shadow-lg relative z-10">
+             <Bell className="w-5 h-5 text-indigo-300" />
+           </div>
+           
+           <div className="flex-1 min-w-0 relative z-10 pt-1">
+              <h3 className="text-slate-900 font-bold text-[16px] font-volkhov tracking-tight">You have {assignedStudents.length} assigned student{assignedStudents.length > 1 ? 's' : ''}!</h3>
+              <p className="text-slate-500 text-[13px] mt-1.5 leading-relaxed font-medium">
+                Latest student: <span className="text-indigo-600 font-bold">"{assignedStudents[0].name || assignedStudents[0].email.split('@')[0]}"</span>. Check the Students tab for details.
+              </p>
+           </div>
+
+           <Button 
+             variant="ghost" 
+             size="icon" 
+             onClick={() => setShowNotification(false)} 
+             className="text-slate-300 hover:text-slate-600 transition-colors p-1 shrink-0 w-9 h-9 rounded-full hover:bg-slate-50 relative z-10"
+           >
+             <X className="w-4.5 h-4.5" />
+           </Button>
+        </div>
       )}
 
-      {/* 7. Daily Inspiration Widget */}
-      <Card 
+      {/* 7. Daily Inspiration Widget - Premium Light Theme */}
+      <div 
         onClick={() => setShowInspiration(true)}
-        className="bg-[#0f172a] text-white p-6 mx-1 mt-4 relative overflow-hidden cursor-pointer hover:bg-slate-900 active:scale-[0.99] transition-all"
+        className="bg-white border border-slate-100 p-7 mx-1 mt-4 relative overflow-hidden cursor-pointer hover:shadow-2xl hover:border-indigo-100 active:scale-[0.99] transition-all rounded-[2rem] shadow-xl shadow-slate-200/50 group"
       >
-         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
-         <div className="flex items-center gap-2 mb-4 text-slate-400 font-medium text-[13px] tracking-wider uppercase">
-           <Zap className="w-4 h-4 text-amber-400" /> Morning Thought
+         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50 rounded-full blur-[80px] -translate-y-24 translate-x-20"></div>
+         <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50 rounded-full blur-[60px] translate-y-16 -translate-x-16"></div>
+         
+         <div className="flex items-center gap-2 mb-5 text-slate-400 font-black text-[10px] tracking-[0.2em] uppercase relative z-10">
+           <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> Morning Thought
          </div>
-         <p className="text-[17px] font-medium leading-relaxed italic text-slate-200 mb-4">
+         <p className="text-[20px] font-medium leading-relaxed italic text-slate-800 mb-8 font-volkhov relative z-10">
            "The best mentors don't just give answers, they help students fall in love with the questions."
          </p>
-         <div className="flex gap-4 pt-4 border-t border-white/10">
-            <div className="flex flex-col">
-              <span className="text-[20px] font-bold flex items-center gap-1.5"><Flame className="w-5 h-5 text-amber-400" /> 5</span>
-              <span className="text-[11px] text-slate-400">Day Streak</span>
+         <div className="flex justify-between pt-6 border-t border-slate-100 relative z-10">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Day Streak</span>
+              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><Flame className="w-5 h-5 text-orange-500 fill-orange-500" /> 5</span>
             </div>
-            <div className="w-px bg-white/10 my-1"></div>
-            <div className="flex flex-col">
-              <span className="text-[20px] font-bold flex items-center gap-1.5"><MessageSquare className="w-5 h-5 text-emerald-400" /> 12</span>
-              <span className="text-[11px] text-slate-400">Responses</span>
+            <div className="w-px bg-slate-100 my-1"></div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Responses</span>
+              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><MessageSquare className="w-5 h-5 text-indigo-500 fill-indigo-500" /> 12</span>
             </div>
-            <div className="w-px bg-white/10 my-1"></div>
-            <div className="flex flex-col">
-              <span className="text-[20px] font-bold flex items-center gap-1.5"><Trophy className="w-5 h-5 text-amber-300" /> 8</span>
-              <span className="text-[11px] text-slate-400">Improved</span>
+            <div className="w-px bg-slate-100 my-1"></div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Improved</span>
+              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><Trophy className="w-5 h-5 text-amber-500 fill-amber-500" /> 8</span>
             </div>
          </div>
-      </Card>
+      </div>
 
       {/* 8. Mentor Stats */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4 px-1">
-         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
-            <div className="flex items-center gap-2 text-slate-500 mb-2"><BookOpen className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Students</span></div>
-            <div className="text-2xl font-bold text-slate-800">{stats.students}</div>
-         </Card>
-         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
-            <div className="flex items-center gap-2 text-slate-500 mb-2"><Clock className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Hours</span></div>
-            <div className="text-2xl font-bold text-slate-800">{stats.hours}</div>
-         </Card>
-         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
-            <div className="flex items-center gap-2 text-slate-500 mb-2"><Star className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Rating</span></div>
-            <div className="text-2xl font-bold text-slate-800">{stats.rating}</div>
-         </Card>
+         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-2">
+              <BookOpen className="w-5 h-5"/>
+            </div>
+            <div className="text-xl font-bold text-slate-900 leading-none">{stats.students}</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Mentees</div>
+         </div>
+         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 mb-2">
+              <Clock className="w-5 h-5"/>
+            </div>
+            <div className="text-xl font-bold text-slate-900 leading-none">{stats.hours}</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Hours</div>
+         </div>
+         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 mb-2">
+              <Star className="w-5 h-5 fill-emerald-500"/>
+            </div>
+            <div className="text-xl font-bold text-slate-900 leading-none">{stats.rating}</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Rating</div>
+         </div>
       </div>
 
       {/* 1. Student Messages (Real Data) */}
@@ -404,33 +419,35 @@ export function MentorHome() {
             </div>
           ) : (
             messages.filter(m => m.from_user_id !== mentorId).slice(0, 1).map((msg) => (
-              <div key={msg.id} className="flex gap-4 relative group">
-                <div className="w-[42px] h-[42px] rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 uppercase font-bold text-[14px]">
+              <div key={msg.id} className="flex gap-4 relative group items-start">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 uppercase font-bold text-[14px] shadow-sm">
                   {msg.sender_name?.substring(0, 2) || "S"}
                 </div>
-                <div className="flex-1 mt-0.5">
-                  <div className="flex items-center gap-2 text-[14px]">
-                    <span className="font-medium text-slate-800">{msg.sender_name}</span> 
-                    <span className="text-slate-300 text-[12px]">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-slate-900 text-[14px]">{msg.sender_name}</span> 
+                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span> 
-                    {!msg.is_read && <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>}
+                    {!msg.is_read && <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>}
                     <Button 
                       variant="ghost" 
                       size="icon" 
                       onClick={() => handleDeleteMessage(msg.id)} 
-                      className="ml-auto opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity w-8 h-8 rounded-full" 
+                      className="ml-auto opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all w-8 h-8 rounded-full" 
                       title="Delete Message"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <p className="text-[14px] text-slate-500 mt-1 leading-relaxed">{msg.body}</p>
+                  <div className="bg-slate-50 rounded-2xl rounded-tl-none p-4 border border-slate-100 shadow-sm">
+                    <p className="text-[14px] text-slate-600 leading-relaxed font-medium">{msg.body}</p>
+                  </div>
                   
-                  <div className="mt-3">
+                  <div className="mt-4">
                     {sendSuccess ? (
-                      <div className="text-[12px] text-emerald-500 font-medium flex items-center gap-1 py-2">
-                        <Check className="w-3 h-3" /> Reply sent successfully!
+                      <div className="text-[12px] text-emerald-500 font-bold flex items-center gap-1.5 bg-emerald-50 p-3 rounded-xl border border-emerald-100 animate-in fade-in slide-in-from-top-1">
+                        <Check className="w-4 h-4" strokeWidth={3} /> Reply sent successfully!
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -440,15 +457,15 @@ export function MentorHome() {
                           onKeyDown={(e) => e.key === 'Enter' && handleReply(msg.from_user_id, msg.sender_name)}
                           placeholder={`Reply to ${msg.sender_name}...`}
                           disabled={isSending}
-                          className="flex-1 bg-slate-50 hover:bg-slate-100 focus:bg-white text-[14px] outline-none transition-all disabled:opacity-50 h-12 px-4 rounded-xl border border-slate-200"
+                          className="flex-1 bg-white hover:border-slate-300 focus:ring-2 focus:ring-indigo-100 text-[14px] transition-all disabled:opacity-50 h-12 px-4 rounded-2xl border-slate-200 shadow-sm"
                         />
                         <Button 
                           onClick={() => handleReply(msg.from_user_id, msg.sender_name)}
                           disabled={isSending || !replyInput.trim()}
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all shrink-0 ${replyInput.trim() && !isSending ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-300'}`}
+                          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shrink-0 shadow-lg ${replyInput.trim() && !isSending ? 'bg-slate-900 text-white hover:bg-slate-800 scale-100 active:scale-95' : 'bg-slate-100 text-slate-300'}`}
                           size="icon"
                         >
-                          {isSending ? <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
+                          {isSending ? <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" strokeWidth={2.5} />}
                         </Button>
                       </div>
                     )}
@@ -473,26 +490,35 @@ export function MentorHome() {
         </div>
 
         {/* 3. Mentees */}
-        <p className="text-[11px] text-slate-400 tracking-widest font-semibold mb-4 uppercase">Mentees</p>
-        <div className="flex gap-6 mb-6 overflow-x-auto pb-2 scrollbar-none">
+        <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black mb-5 uppercase">My Mentees</p>
+        <div className="flex gap-5 mb-8 overflow-x-auto pb-4 hidden-scrollbar">
           {assignedStudents.length === 0 ? (
-            <span className="text-[13px] text-slate-400">No assigned mentees yet.</span>
+            <div className="w-full py-6 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <Users className="w-8 h-8 text-slate-300 mb-2" />
+              <span className="text-[13px] text-slate-400 font-medium">No assigned mentees yet.</span>
+            </div>
           ) : (
             assignedStudents.map((stud, idx) => (
-              <div key={stud.id} className="flex flex-col items-center min-w-[60px]">
+              <div key={stud.id} className="flex flex-col items-center min-w-[70px] group cursor-pointer">
                 <div className="relative">
-                  <img 
-                    className="w-12 h-12 rounded-full border border-slate-200 object-cover bg-slate-50" 
-                    src={stud.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${stud.id}`} 
-                    alt={stud.name}
-                  />
-                  {idx === 0 && <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full ring-[2.5px] ring-white"></div>}
+                  <div className="w-16 h-16 rounded-3xl overflow-hidden border-2 border-white shadow-sm bg-slate-100 group-hover:shadow-md transition-all group-active:scale-95">
+                    <img 
+                      className="w-full h-full object-cover" 
+                      src={stud.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${stud.id}`} 
+                      alt={stud.name}
+                    />
+                  </div>
+                  {idx === 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                    </div>
+                  )}
                 </div>
-                <span className="text-[12px] text-slate-600 mt-2 font-medium truncate max-w-[70px]" title={stud.name}>
+                <span className="text-[12px] text-slate-900 mt-2.5 font-bold truncate max-w-[75px]">
                   {stud.name?.split(" ")[0]}
                 </span>
-                <div className="w-[30px] h-1 bg-slate-200 rounded-full mt-1.5 overflow-hidden">
-                   <div className="bg-blue-600 h-full" style={{ width: `${stud.progress || 0}%` }}></div>
+                <div className="w-10 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
+                   <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${stud.progress || 0}%` }}></div>
                 </div>
               </div>
             ))
@@ -502,8 +528,8 @@ export function MentorHome() {
         <div className="border-t border-slate-50 my-6"></div>
 
         {/* Sessions */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] text-slate-400 tracking-widest font-semibold uppercase">Sessions</p>
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black uppercase">Upcoming Sessions</p>
           <Button
             variant="outline"
             size="xs"
@@ -516,14 +542,17 @@ export function MentorHome() {
               setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
               setIsScheduleOpen(true);
             }}
-            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 font-bold h-7 px-2.5 rounded-full"
+            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-black h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
           >
-            + Schedule Session
+            + New Session
           </Button>
         </div>
         <div className="space-y-4">
           {sessions.length === 0 ? (
-            <p className="text-sm text-slate-400 py-4 text-center bg-slate-50 rounded-xl border border-slate-100 border-dashed">No upcoming sessions scheduled yet.</p>
+            <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+               <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+               <p className="text-xs text-slate-400 font-medium">No upcoming sessions scheduled yet.</p>
+            </div>
           ) : (
             sessions.map((sess) => {
               const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
@@ -532,20 +561,22 @@ export function MentorHome() {
               const dateStr = schedDate ? schedDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
 
               return (
-                <div key={sess.id} className={`flex gap-4 items-start p-4 rounded-xl border transition-all ${isCompleted ? 'bg-emerald-50/10 border-transparent' : 'bg-slate-50 border-slate-100/50'}`}>
-                  {isCompleted ? (
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white mt-1 shrink-0"><Check className="w-3.5 h-3.5" strokeWidth={3} /></div>
-                  ) : (
-                    <Circle className="w-5 h-5 text-slate-300 mt-1 shrink-0" />
-                  )}
-                  <div className="text-[12px] text-slate-400 font-bold mt-1.5 w-[70px] shrink-0">{timeStr}<br/><span className="text-[10px] text-slate-400">{dateStr}</span></div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[14px] font-bold truncate ${isCompleted ? 'text-slate-300 line-through' : 'text-slate-800'}`}>{sess.title}</p>
-                    <p className="text-[13px] text-slate-400 mt-0.5">{sess.student?.name || "Student"}</p>
+                <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                    <span className="text-[13px] font-bold leading-none">{timeStr.split(' ')[0]}</span>
+                    <span className="text-[9px] font-black uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
                   </div>
-                  <span className={`text-[11px] px-2 py-0.5 rounded font-medium mt-0.5 shrink-0 ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-500'}`}>
-                    {sess.duration_minutes || 30}m
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[14px] font-bold truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900 font-volkhov'}`}>{sess.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{sess.student?.name || "Student"}</span>
+                      <span className="text-slate-200 text-[10px]">|</span>
+                      <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{dateStr}</span>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-xl font-bold text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                    {sess.duration_minutes || 30}M
+                  </div>
                 </div>
               );
             })
@@ -577,45 +608,51 @@ export function MentorHome() {
       </Card>
 
       {/* 9. Student Gratitude Wall */}
-      <Card className="bg-emerald-50 border border-emerald-100 p-5 relative overflow-hidden shadow-none hover:translate-y-0">
-        <Heart className="absolute -bottom-4 -right-4 w-24 h-24 text-emerald-200/50 -rotate-12" />
-        <div className="flex items-center gap-2 mb-4 text-emerald-800 font-semibold text-[15px] relative z-10">
-          <Heart className="w-[18px] h-[18px] fill-emerald-200 text-emerald-600" strokeWidth={2}/> Community Gratitude Wall
+      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-all rounded-[1.5rem]">
+        <Heart className="absolute -bottom-6 -right-6 w-28 h-28 text-emerald-200/40 -rotate-12" />
+        <div className="flex items-center gap-2 mb-4 text-emerald-800 font-black text-[13px] uppercase tracking-widest relative z-10">
+          <Heart className="w-4 h-4 fill-emerald-500 text-emerald-500" strokeWidth={2.5}/> Gratitude Wall
         </div>
-        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-emerald-50 relative z-10">
-          <p className="text-[14px] text-emerald-900 italic leading-relaxed">
+        <div className="bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-white/50 relative z-10 shadow-sm">
+          <p className="text-[15px] text-slate-800 italic leading-relaxed font-volkhov font-medium">
             "{latestGratitude?.message_content || latestGratitude?.message || "Honestly transformed how I approach debugging. Thanks for being so patient with me during our session yesterday!"}"
           </p>
-          <div className="flex items-center gap-2 mt-4">
-             <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center text-[10px] uppercase shrink-0">
+          <div className="flex items-center gap-3 mt-5">
+             <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-[11px] uppercase shrink-0 shadow-3xs">
                {(latestGratitude?.display_name || latestGratitude?.name || "Priya S.").substring(0, 2)}
              </div>
-             <span className="text-[12px] font-medium text-emerald-700">
-               - {latestGratitude?.display_name || latestGratitude?.name || "Priya S."}
+             <span className="text-[12px] font-black text-emerald-800 tracking-wide uppercase">
+               — {latestGratitude?.display_name || latestGratitude?.name || "Priya S."}
              </span>
           </div>
         </div>
       </Card>
 
       {/* 11. Mentor Best Practices */}
-      <Card 
-        onClick={() => setShowPlaybook(true)}
-        className="p-5 shadow-sm hover:border-slate-300 transition-colors cursor-pointer active:scale-[0.99]"
-      >
-        <div className="flex items-center gap-2 mb-4 text-slate-800 font-medium text-[15px]">
-          <Lightbulb className="w-[18px] h-[18px] text-amber-500" strokeWidth={2}/> Mentor Playbook
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
-            <span className="text-[14px] text-slate-700 font-medium">The 5-Minute Debug Method</span>
-            <span className="text-slate-400 text-[18px]">&rarr;</span>
+      <div className="px-1">
+        <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black mb-4 uppercase">Resources & Playbook</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div 
+            onClick={() => setShowPlaybook(true)}
+            className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer group active:scale-[0.98]"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
+              <Lightbulb className="w-5 h-5 fill-indigo-500"/>
+            </div>
+            <p className="text-[13px] font-bold text-slate-900 leading-tight">Mentor Playbook</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Best Practices</p>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
-            <span className="text-[14px] text-slate-700 font-medium">Handling Imposter Syndrome</span>
-            <span className="text-slate-400 text-[18px]">&rarr;</span>
+          <div 
+            className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-amber-200 transition-all cursor-pointer group active:scale-[0.98]"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 mb-3 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-5 h-5 fill-amber-500"/>
+            </div>
+            <p className="text-[13px] font-bold text-slate-900 leading-tight">Activity Ideas</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Engagement</p>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Full-Screen Overlays */}
       <AnimatePresence>
