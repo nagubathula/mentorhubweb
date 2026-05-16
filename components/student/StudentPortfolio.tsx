@@ -205,7 +205,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-5"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -234,7 +234,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
       </div>
 
       {/* Main Panel scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-24 space-y-4">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] space-y-4">
         {/* Gamified Profile Metrics */}
         {profile && (
           <motion.div

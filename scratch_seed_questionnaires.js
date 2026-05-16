@@ -39,19 +39,81 @@ async function seedQuestionnaires() {
     },
     {
       title: "Student Behavioral Screening",
-      description: "Screening questions assessing curiosity and drive to explore beyond the syllabus.",
+      description: "Screening questions assessing curiosity, focus, and learning mindset.",
       target_role: "STUDENT",
       is_active: true,
       questions: [
         {
-          step: 1, title: "Curiosity", icon: "Lightbulb",
-          text: "When you see something you don't understand, what do you do?",
-          options: ["Search online to understand it", "Ask someone who knows", "Try to explore it yourself", "Ignore it and move on"]
+          step: 1, title: "Curiosity", icon: "Lightbulb", color: "#3b82f6",
+          questions: [
+            { id: "b1", number: "Q1.", text: "When you see something you don't understand, what do you do?", type: "chips", options: ["Search online to understand it", "Ask someone who knows", "Try to explore it yourself", "Ignore it and move on"] }
+          ]
         },
         {
-          step: 2, title: "Exploring Beyond Syllabus", icon: "BookOpenCheck",
-          text: "How often do you explore topics beyond your school or college syllabus?",
-          options: ["Very often", "Sometimes", "Occasionally", "Never"]
+          step: 2, title: "Exploring Beyond Syllabus", icon: "BookOpenCheck", color: "#8b5cf6",
+          questions: [
+            { id: "b2", number: "Q2.", text: "How often do you explore topics beyond your school or college syllabus?", type: "chips", options: ["Very often", "Sometimes", "Occasionally", "Never"] }
+          ]
+        },
+        {
+          step: 3, title: "Learning Excitement", icon: "Sparkles", color: "#f59e0b",
+          questions: [
+            { id: "b3", number: "Q3.", text: "What excites you most when learning something new?", type: "chips", options: ["Understanding how it works", "Applying it in real life", "Creating something with it", "Just finishing it quickly without caring about learning"] }
+          ]
+        },
+        {
+          step: 4, title: "Activity Interest", icon: "Target", color: "#ef4444",
+          questions: [
+            { id: "b4", number: "Q4.", text: "Which activity sounds most interesting to you?", type: "chips", options: ["Solving puzzles", "Building a project", "Designing something creative", "Doing nothing and waiting for others to do it"] }
+          ]
+        },
+        {
+          step: 5, title: "Focus Duration", icon: "Clock", color: "#10b981",
+          questions: [
+            { id: "b5", number: "Q5.", text: "How long can you usually focus on a task?", type: "chips", options: ["20-40 minutes", "40-60 minutes", "More than 1 hour", "Less than 5 minutes"] }
+          ]
+        },
+        {
+          step: 6, title: "Distractions", icon: "Zap", color: "#ef4444",
+          questions: [
+            { id: "b6", number: "Q6.", text: "When studying, how often do you get distracted by social media?", type: "chips", options: ["Rarely", "Sometimes", "Occasionally", "Always and I don't try to control it"] }
+          ]
+        },
+        {
+          step: 7, title: "Handling Difficult Problems", icon: "Brain", color: "#3b82f6",
+          questions: [
+            { id: "b7", number: "Q7.", text: "If a problem is difficult, what do you do?", type: "chips", options: ["Keep trying until I solve it", "Take a short break and try again", "Ask someone for help after trying", "Immediately give up"] }
+          ]
+        },
+        {
+          step: 8, title: "Learning Discipline", icon: "Target", color: "#8b5cf6",
+          questions: [
+            { id: "b8", number: "Q8.", text: "When you start learning a new skill, how likely are you to continue practicing?", type: "chips", options: ["Very likely", "Likely if I find it interesting", "Sometimes", "I usually quit quickly"] }
+          ]
+        },
+        {
+          step: 9, title: "Motivation", icon: "Sparkles", color: "#f59e0b",
+          questions: [
+            { id: "b9", number: "Q9.", text: "What motivates you most while learning?", type: "chips", options: ["Curiosity", "Career goals", "Building something useful", "Just passing time without learning anything"] }
+          ]
+        },
+        {
+          step: 10, title: "Learning Style", icon: "BookOpen", color: "#10b981",
+          questions: [
+            { id: "b10", number: "Q10.", text: "How do you prefer to learn?", type: "chips", options: ["Hands-on practice", "Watching tutorials", "Learning from mentors", "Not interested in learning actively"] }
+          ]
+        },
+        {
+          step: 11, title: "Self Improvement", icon: "RefreshCw", color: "#0f172a",
+          questions: [
+            { id: "b11", number: "Q11.", text: "If you realize you made a mistake, what do you do?", type: "chips", options: ["Try to fix it", "Learn why it happened", "Ask for feedback", "Ignore it completely"] }
+          ]
+        },
+        {
+          step: 12, title: "Curiosity Level", icon: "Lightbulb", color: "#3b82f6",
+          questions: [
+            { id: "b12", number: "Q12.", text: "How curious are you about learning new skills or technologies?", type: "chips", options: ["Very curious", "Moderately curious", "Slightly curious", "Not curious at all"] }
+          ]
         }
       ]
     },

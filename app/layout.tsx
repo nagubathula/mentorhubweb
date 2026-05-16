@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Volkhov, Mulish, Lato, Open_Sans, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Volkhov, Mulish, Lato, Open_Sans, Inter, Poppins } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -40,6 +40,12 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const poppins = Poppins({
+  variable: "--font-poppins",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -47,8 +53,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "MentorHub | Connect & Grow",
+  title: "Kind Mentor | Connect & Grow",
   description: "Connect with verified mentors, learn new skills, and level up your tech career.",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
@@ -59,9 +68,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-poppins">
         <TooltipProvider>
           {children}
         </TooltipProvider>

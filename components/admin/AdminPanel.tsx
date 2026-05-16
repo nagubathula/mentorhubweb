@@ -7,9 +7,10 @@ import {
   CalendarDays, Star, Sparkles, MessageCircle, Heart, Handshake,
   Settings, Search, Bell, Plus, X, Menu, Send,
   TrendingUp, Zap, Target, Clock, Flame, Trophy,
-  ChevronDown, CheckCircle, ArrowRight, Video,
+  ChevronDown, CheckCircle, ArrowRight, ArrowLeft, Check, Video,
   UserPlus, Shield, RefreshCw, Download, Upload,
   MapPin, BookMarked, Layers, BarChart2, Activity, ChevronRight,
+  ChevronLeft, Cpu, Lightbulb, Save, Trash2, Edit3,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
@@ -352,7 +353,7 @@ function ScheduleSessionModal({ onClose, students, mentors }: { onClose: () => v
 }
 
 function SendInspirationModal({ onClose, students, mentors }: { onClose: () => void; students: any[]; mentors: any[] }) {
-  const [target, setTarget] = useState("all"); const [category, setCategory] = useState("quote");
+  const [target, setTarget] = useState("all"); const [category, setCategory] = useState("Quote");
   const [emoji, setEmoji] = useState("🌟"); const [message, setMessage] = useState(""); const [author, setAuthor] = useState("");
   const supabase = createClient();
   const save = async () => {
@@ -363,7 +364,7 @@ function SendInspirationModal({ onClose, students, mentors }: { onClose: () => v
   return (
     <ModalWrap title="Send Inspiration" onClose={onClose} onSave={save}>
       <FieldRow label="Target"><SInput value={target} onChange={setTarget} options={[{ value:"all",label:"Everyone"}, ...students.map((s) => ({ value: s.id, label: `Student: ${s.name||s.email}` })), ...mentors.map((m) => ({ value: m.id, label: `Mentor: ${m.name||m.email}` }))]} /></FieldRow>
-      <FieldRow label="Category"><SInput value={category} onChange={setCategory} options={[{ value:"quote",label:"Quote"},{ value:"tip",label:"Tip"},{ value:"challenge",label:"Challenge"},{ value:"story",label:"Story"}]} /></FieldRow>
+      <FieldRow label="Category"><SInput value={category} onChange={setCategory} options={[{ value:"Quote",label:"Quote"},{ value:"Tip",label:"Tip"},{ value:"Challenge",label:"Challenge"},{ value:"Story",label:"Story"}]} /></FieldRow>
       <FieldRow label="Emoji">
         <div className="flex flex-wrap gap-1.5">
           {EMOJIS.map((e) => (
@@ -523,10 +524,10 @@ function DashboardPage({ data, onNavigate, openModal }: {
           <h1 className="text-[22px] font-bold text-slate-900">Admin Dashboard</h1>
           <p className="text-[13px] text-slate-500 mt-0.5">Welcome back! Here's your overview for today.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           {quickActions.map((a) => (
             <button key={a.label} onClick={() => a.modal && openModal(a.modal)}
-              className={cn("h-9 px-4 text-white text-[13px] font-semibold rounded-xl transition-colors", a.bg)}>
+              className={cn("h-9 px-4 text-white text-[13px] font-semibold rounded-xl transition-colors whitespace-nowrap", a.bg)}>
               {a.label}
             </button>
           ))}
@@ -534,7 +535,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.label} onClick={() => onNavigate(s.page)} className="p-5">
             <div className="flex items-start justify-between mb-3">
@@ -550,7 +551,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
       </div>
 
       {/* Metrics strip */}
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {metrics.map((m) => (
           <Card key={m.label} className="p-3 flex flex-col items-center text-center gap-1">
             <m.icon className="w-4 h-4 text-slate-400" />
@@ -561,7 +562,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Weekly Activity – horizontal bars */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
@@ -636,7 +637,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
       </div>
 
       {/* Leaderboards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Streak Leaders */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
@@ -701,110 +702,133 @@ function DashboardPage({ data, onNavigate, openModal }: {
 
 // ─── Courses ──────────────────────────────────────────────────────────────────
 function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
+  const iconMap: Record<string, any> = {
+    "Data Analytics": BarChart2,
+    "VLSI Design": Zap,
+    "Embedded Systems": Cpu,
+    "UX Design": Lightbulb,
+  };
+  const Icon = iconMap[course.title] || GraduationCap;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group flex items-center gap-5 p-4 bg-white hover:bg-slate-50 transition-all cursor-pointer border-b border-slate-50 last:border-0"
+      className="group p-6 bg-white hover:bg-slate-50 transition-all cursor-pointer border-b border-slate-50 last:border-0 relative"
       onClick={() => onView(course)}
     >
-      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", course.bgColor || "bg-indigo-600")}>
-        {React.isValidElement(course.icon) ? React.cloneElement(course.icon as React.ReactElement<{ className?: string }>, { className: "w-7 h-7 text-white" }) : <BookMarked className="w-7 h-7 text-white" />}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-            {course.title}
-          </h3>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{course.difficulty}</span>
+      <div className="flex items-start gap-6">
+        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105", course.bgColor || "bg-blue-600")}>
+           <Icon className="w-8 h-8 text-white" />
         </div>
-        <p className="text-[13px] text-slate-500 line-clamp-1 mb-2">{course.description}</p>
-        <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {course.duration}</span>
-          <span className="flex items-center gap-1.5"><Layers className="w-3 h-3" /> {course.modules?.length} Modules</span>
-          {course.progress > 0 && <span className="text-blue-600">{course.progress}% Complete</span>}
+        
+        <div className="flex-1 min-w-0 pt-1">
+          <div className="flex items-center gap-3 mb-1.5">
+            <h3 className="text-[18px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors tracking-tight">{course.title}</h3>
+            <span className="px-3 py-0.5 rounded-lg bg-blue-50 text-blue-600 text-[11px] font-bold uppercase tracking-wider">{course.difficulty}</span>
+            {course.enrolled && <span className="px-3 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-[11px] font-bold uppercase tracking-wider">Enrolled</span>}
+          </div>
+          
+          <p className="text-[14px] text-slate-500 line-clamp-1 mb-4 leading-relaxed font-medium">{course.description}</p>
+          
+          <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-[12px] font-semibold text-slate-400">
+             <span>{course.modules?.length || 10} modules</span>
+             <span>35 lessons</span>
+             <span>42 hours</span>
+             <span className="text-slate-500">{course.category || "General"}</span>
+             <span className="flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg">
+                <HelpCircle className="w-3.5 h-3.5" /> 5 quiz Q
+             </span>
+          </div>
         </div>
+        
+        <ChevronDown className="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors mt-2" />
       </div>
-
-      <div className="p-2 rounded-full group-hover:bg-blue-50 transition-all">
-        <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500" />
+      
+      {/* Progress Bar at the bottom */}
+      <div className="mt-6 flex items-center gap-4">
+         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className={cn("h-full rounded-full transition-all duration-1000", course.bgColor || "bg-blue-600")} style={{ width: `${course.progress || 0}%` }} />
+         </div>
+         <span className="text-[12px] font-bold text-slate-400">{course.progress || 0}%</span>
       </div>
     </motion.div>
   );
 }
 
-function CoursesPage({ data, onView, onEdit }: { data: any; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
-  const [filter, setFilter] = useState<string>("All Categories");
+function CoursesPage({ data, setSelectedCourse, setCourseViewMode, onEdit }: { 
+  data: any; 
+  setSelectedCourse: (c: MentorCourse | null) => void;
+  setCourseViewMode: (m: "list" | "detail" | "edit") => void;
+  onEdit: (c: MentorCourse) => void 
+}) {
+  const [activeTab, setActiveTab] = useState<"All" | "Enrolled" | "Available">("All");
   const [q, setQ] = useState("");
 
   const allCourses = [...(data.courses || []), ...mentorCoursesCatalog.filter(c => !(data.courses || []).find((sc: any) => sc.title === c.title))];
-  const categories = ["All Categories", ...Array.from(new Set(allCourses.map(c => c.category)))];
 
   const filtered = allCourses.filter(c => {
-    const matchesFilter = filter === "All Categories" || c.category === filter;
+    const matchesTab = activeTab === "All" || (activeTab === "Enrolled" ? c.enrolled : !c.enrolled);
     const matchesSearch = (c.title || "").toLowerCase().includes(q.toLowerCase()) || (c.description || "").toLowerCase().includes(q.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesTab && matchesSearch;
   });
+
+  const enrolledCount = allCourses.filter(c => c.enrolled).length;
 
   return (
     <PageShell 
-      title="Engineering Catalog" 
-      subtitle={`Empowering mentors with ${allCourses.length} premium industrial paths`}
+      title="Course Library" 
+      subtitle={`${allCourses.length} courses · ${enrolledCount} enrolled`}
       action={
         <div className="flex gap-3">
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="h-11 px-6 bg-white border border-slate-200 text-slate-600 text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-sm flex items-center gap-2"
-          >
-            <Upload className="w-4 h-4" /> Batch Import
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onEdit({} as any)}
-            className="h-11 px-6 bg-[#0f172a] text-white text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-slate-200 flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" /> Architect Path
-          </motion.button>
+          <button className="h-11 px-6 bg-white border border-slate-200 text-slate-600 text-[13px] font-bold rounded-2xl flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+            <Upload className="w-4 h-4 text-slate-400" /> Upload Course
+          </button>
+          <button onClick={() => onEdit({} as any)} className="h-11 px-6 bg-[#0f172a] text-white text-[13px] font-bold rounded-2xl flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+            <Plus className="w-5 h-5" /> Add Course
+          </button>
         </div>
       }
     >
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex gap-2 bg-white p-1.5 rounded-[1.25rem] border border-slate-100 shadow-sm overflow-x-auto max-w-full">
-            {categories.map((cat) => (
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+          <div className="flex gap-3 p-1 bg-white rounded-full border border-slate-100 shadow-sm">
+            {["All", "Enrolled", "Available"].map((t) => (
               <button 
-                key={cat} 
-                onClick={() => setFilter(cat)}
+                key={t} 
+                onClick={() => setActiveTab(t as any)}
                 className={cn(
-                  "px-5 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all",
-                  filter === cat ? "bg-slate-900 text-white shadow-lg" : "text-slate-500 hover:bg-slate-50"
+                  "px-6 py-2 rounded-full text-[13px] font-bold transition-all",
+                  activeTab === t ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-800"
                 )}
               >
-                {cat}
+                {t}
               </button>
             ))}
           </div>
           <div className="w-full md:w-80">
-            <SearchInput value={q} onChange={setQ} placeholder="Search engineering paths..." />
+            <SearchInput value={q} onChange={setQ} placeholder="Search courses..." />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-[1.85rem] overflow-hidden divide-y divide-slate-50 shadow-sm">
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden divide-y divide-slate-50 shadow-sm">
           {filtered.map(c => (
-            <CourseItem key={c.id} course={c} onView={onView} onEdit={onEdit} />
+            <CourseItem 
+              key={c.id} 
+              course={c} 
+              onView={(course) => { setSelectedCourse(course); setCourseViewMode("detail"); }} 
+              onEdit={onEdit} 
+            />
           ))}
         </div>
 
         {filtered.length === 0 && (
-          <div className="py-32 text-center bg-white rounded-[2.25rem] border border-slate-100 shadow-sm">
+          <div className="py-32 text-center bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
               <Search className="w-10 h-10" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No paths found</h3>
-            <p className="text-slate-400 text-[14px] font-medium">Try adjusting your search or category filters.</p>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No courses found</h3>
+            <p className="text-slate-400 text-[14px] font-medium">Try adjusting your filters or search query.</p>
           </div>
         )}
       </div>
@@ -832,9 +856,10 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   return (
     <PageShell title="Mentors" subtitle={`${mentors.length} active mentors`}
       action={<BtnPrimary onClick={() => openModal("add-mentor")}><Plus className="w-4 h-4" />Add Mentor</BtnPrimary>}>
-      <Card>
+      <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100"><SearchInput value={q} onChange={setQ} placeholder="Search mentors…" /></div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
               <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Mentor</th>
@@ -886,6 +911,7 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </PageShell>
   );
@@ -911,9 +937,10 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   return (
     <PageShell title="Mentees" subtitle={`${students.length} active students`}
       action={<BtnPrimary onClick={() => openModal("add-student")}><Plus className="w-4 h-4" />Add Mentee</BtnPrimary>}>
-      <Card>
+      <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100"><SearchInput value={q} onChange={setQ} placeholder="Search mentees…" /></div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
               <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Student</th>
@@ -967,6 +994,7 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </PageShell>
   );
@@ -1354,30 +1382,212 @@ function EnrollmentsPage({ data, openModal }: { data: any; openModal: (m: ModalK
 }
 
 // ─── Remaining pages (simpler implementations) ────────────────────────────────
-function GamesPage({ data }: { data: any }) {
+function GamesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
   const { games = [] } = data;
+  const supabase = createClient();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = games.find((g: any) => g.id === selectedId);
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editType, setEditType] = useState("");
+  const [editQuestions, setEditQuestions] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (selected) {
+      setEditTitle(selected.title || "");
+      setEditType(selected.type || "quiz");
+      setEditQuestions(Array.isArray(selected.questions) ? selected.questions : []);
+    }
+  }, [selected]);
+
+  const handleSave = async () => {
+    if (!selectedId) return;
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("games_quizzes")
+      .update({
+        title: editTitle,
+        type: editType,
+        questions: editQuestions
+      })
+      .eq("id", selectedId);
+    
+    setIsSaving(false);
+    if (error) {
+      alert("Error saving: " + error.message);
+    } else {
+      fetchAll();
+      setSelectedId(null);
+    }
+  };
+
+  if (selectedId && selected) {
+    return (
+      <PageShell 
+        title="Edit Game/Quiz" 
+        subtitle={`Modifying ${selected.title}`}
+        action={
+          <div className="flex gap-3">
+             <BtnSecondary onClick={() => setSelectedId(null)}>Cancel</BtnSecondary>
+             <BtnPrimary onClick={handleSave} disabled={isSaving}>
+               {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
+             </BtnPrimary>
+          </div>
+        }
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="p-6">
+              <h3 className="text-[14px] font-bold text-slate-900 mb-4 uppercase tracking-widest">Settings</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[12px] font-bold text-slate-400 uppercase mb-1.5 block">Game Title</label>
+                  <input 
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-medium focus:ring-2 focus:ring-slate-200 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] font-bold text-slate-400 uppercase mb-1.5 block">Game Type</label>
+                  <select 
+                    value={editType}
+                    onChange={(e) => setEditType(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-medium focus:ring-2 focus:ring-slate-200 outline-none"
+                  >
+                    <option value="quiz">Standard Quiz</option>
+                    <option value="kbc">KBC Style</option>
+                    <option value="coding">Coding Challenge</option>
+                  </select>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">Question Bank</h3>
+                <BtnSecondary onClick={() => setEditQuestions([...editQuestions, { 
+                  id: `q-${Date.now()}`, 
+                  question: "New Question Text", 
+                  options: ["Option A", "Option B", "Option C", "Option D"], 
+                  correctIndex: 0, 
+                  difficulty: "easy" 
+                }])}>
+                  <Plus className="w-4 h-4" /> Add Question
+                </BtnSecondary>
+              </div>
+
+              <div className="space-y-6">
+                {editQuestions.map((q, idx) => (
+                  <div key={q.id || idx} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 group relative">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[12px] font-bold text-slate-400 shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <input 
+                          value={q.question}
+                          onChange={(e) => {
+                            const newQ = [...editQuestions];
+                            newQ[idx].question = e.target.value;
+                            setEditQuestions(newQ);
+                          }}
+                          className="w-full bg-transparent border-none text-[16px] font-bold text-slate-900 focus:ring-0 p-0 mb-4"
+                          placeholder="What is the question?"
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                           {q.options.map((opt: string, oIdx: number) => (
+                             <div key={oIdx} className="flex items-center gap-2">
+                               <input 
+                                 type="radio" 
+                                 name={`correct-${idx}`} 
+                                 checked={q.correctIndex === oIdx}
+                                 onChange={() => {
+                                   const newQ = [...editQuestions];
+                                   newQ[idx].correctIndex = oIdx;
+                                   setEditQuestions(newQ);
+                                 }}
+                                 className="w-4 h-4 text-blue-600"
+                               />
+                               <input 
+                                 value={opt}
+                                 onChange={(e) => {
+                                   const newQ = [...editQuestions];
+                                   newQ[idx].options[oIdx] = e.target.value;
+                                   setEditQuestions(newQ);
+                                 }}
+                                 className="flex-1 h-9 px-3 bg-white border border-slate-100 rounded-lg text-[13px] font-medium outline-none focus:border-blue-200"
+                               />
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setEditQuestions(editQuestions.filter((_, i) => i !== idx))}
+                        className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-4 pt-4 border-t border-slate-200/50">
+                       <select 
+                         value={q.difficulty}
+                         onChange={(e) => {
+                           const newQ = [...editQuestions];
+                           newQ[idx].difficulty = e.target.value;
+                           setEditQuestions(newQ);
+                         }}
+                         className="text-[11px] font-bold uppercase tracking-wider bg-white border border-slate-200 rounded-lg px-3 py-1.5 outline-none"
+                       >
+                         <option value="easy">Easy</option>
+                         <option value="medium">Medium</option>
+                         <option value="hard">Hard</option>
+                       </select>
+                       <span className="text-[11px] font-bold text-slate-400 uppercase">Difficulty</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
-    <PageShell title="Games & Quizzes" subtitle={`${games.length} games`}>
-      <Card>
+    <PageShell title="Games & Quizzes" subtitle={`${games.length} content templates`}>
+      <Card className="overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Title</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Type</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Questions</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Game Title</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Type</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Questions</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {games.map((g: any) => (
-              <tr key={g.id} className="hover:bg-slate-50/30">
-                <td className="px-5 py-3 text-[14px] font-semibold text-slate-800">{g.title}</td>
-                <td className="px-4 py-3"><Pill color="violet">{g.type || "quiz"}</Pill></td>
-                <td className="px-4 py-3 text-[13px] text-slate-600">{Array.isArray(g.questions) ? g.questions.length : 5}</td>
-                <td className="px-4 py-3"><Pill color={g.is_active ? "green" : "slate"}>{g.is_active ? "Active" : "Inactive"}</Pill></td>
+              <tr key={g.id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4 text-[15px] font-bold text-slate-900 group-hover:text-violet-600 transition-colors">{g.title}</td>
+                <td className="px-6 py-4"><Pill color="violet">{g.type || "quiz"}</Pill></td>
+                <td className="px-6 py-4 text-[13px] font-bold text-slate-600">{Array.isArray(g.questions) ? g.questions.length : 0} Items</td>
+                <td className="px-6 py-4"><Pill color={g.is_active ? "green" : "slate"}>{g.is_active ? "Live" : "Inactive"}</Pill></td>
+                <td className="px-6 py-4 text-right">
+                   <button 
+                     onClick={() => setSelectedId(g.id)}
+                     className="px-4 py-2 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                   >
+                     Manage
+                   </button>
+                </td>
               </tr>
             ))}
-            {games.length === 0 && <tr><td colSpan={4} className="px-4 py-16 text-center text-[13px] text-slate-400">No games yet</td></tr>}
           </tbody>
         </table>
       </Card>
@@ -1385,33 +1595,370 @@ function GamesPage({ data }: { data: any }) {
   );
 }
 
-function QuestionnairesPage({ data }: { data: any }) {
-  const { questionnaires = [] } = data;
+function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire: any, onBack: () => void, onSave: () => void }) {
+  const [title, setTitle] = useState(questionnaire.title || "");
+  const [description, setDescription] = useState(questionnaire.description || "");
+  const [questions, setQuestions] = useState<any[]>(Array.isArray(questionnaire.questions) ? JSON.parse(JSON.stringify(questionnaire.questions)) : []);
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = createClient();
+
+  const saveChanges = async () => {
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('questionnaires')
+      .update({ title, description, questions })
+      .eq('id', questionnaire.id);
+
+    setIsSaving(false);
+    if (error) {
+      alert("Error saving: " + error.message);
+    } else {
+      onSave();
+      onBack();
+    }
+  };
+
+  const addPhase = () => {
+    setQuestions([...questions, {
+      step: questions.length + 1,
+      title: "New Phase",
+      icon: "Star",
+      color: "#3b82f6",
+      questions: []
+    }]);
+  };
+
+  const removePhase = (idx: number) => {
+    if (!confirm("Are you sure you want to remove this entire phase?")) return;
+    setQuestions(questions.filter((_, i) => i !== idx));
+  };
+
+  const addQuestion = (phaseIdx: number) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions.push({
+      id: `q-${Date.now()}`,
+      text: "New Question Text?",
+      type: "chips",
+      options: ["Option 1", "Option 2"]
+    });
+    setQuestions(newQs);
+  };
+
+  const removeQuestion = (phaseIdx: number, qIdx: number) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions = newQs[phaseIdx].questions.filter((_: any, i: number) => i !== qIdx);
+    setQuestions(newQs);
+  };
+
+  const updateQuestion = (phaseIdx: number, qIdx: number, field: string, val: any) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions[qIdx][field] = val;
+    setQuestions(newQs);
+  };
+
   return (
-    <PageShell title="Questionnaires" subtitle="Onboarding questionnaire templates">
-      <Card>
+    <div className="space-y-6 pb-32 max-w-5xl mx-auto">
+      {/* Premium Header */}
+      <Card className="p-8 bg-slate-900 border-none shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/20 rounded-full -mr-40 -mt-40 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-32 -mb-32 blur-2xl" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="flex-1 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg shadow-blue-500/30">
+                LIVE EDITOR
+              </div>
+              <div className="h-1 w-1 rounded-full bg-white/20" />
+              <h1 className="text-white/40 text-[12px] font-bold uppercase tracking-widest">Questionnaire Settings</h1>
+            </div>
+            
+            <div className="space-y-2">
+              <input 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                className="w-full bg-transparent border-none text-3xl md:text-5xl font-black text-white p-0 focus:ring-0 placeholder:text-white/10 tracking-tight" 
+                placeholder="Questionnaire Title"
+              />
+              <textarea 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                className="w-full bg-transparent border-none text-slate-400 text-[16px] p-0 focus:ring-0 resize-none min-h-[40px] placeholder:text-white/20 leading-relaxed" 
+                placeholder="Brief description of this questionnaire..."
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={onBack}
+              className="h-12 px-6 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl flex items-center gap-2 transition-all border border-white/10"
+            >
+              <ArrowLeft className="w-4 h-4" /> Cancel
+            </button>
+            <button 
+              onClick={saveChanges}
+              disabled={isSaving}
+              className="h-12 px-8 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+            >
+              {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              SAVE CHANGES
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Main Content Areas */}
+      <div className="space-y-16 mt-12">
+        {questions.map((step: any, sIdx: number) => (
+          <div key={sIdx} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${sIdx * 100}ms` }}>
+            <div className="flex items-center gap-6 group">
+              <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-[18px] shadow-xl ring-4 ring-slate-100">
+                {sIdx + 1}
+              </div>
+              <div className="flex-1 flex items-center gap-4">
+                <input 
+                  value={step.title}
+                  onChange={(e) => {
+                    const newQs = [...questions];
+                    newQs[sIdx].title = e.target.value;
+                    setQuestions(newQs);
+                  }}
+                  className="text-[24px] font-black text-slate-800 bg-transparent border-none p-0 focus:ring-0 flex-1 placeholder:text-slate-200"
+                  placeholder="Phase Title (e.g. Education & Language)"
+                />
+                <button 
+                  onClick={() => removePhase(sIdx)}
+                  className="opacity-0 group-hover:opacity-100 p-3 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="hidden md:block h-[2px] bg-slate-100 flex-[0.5] rounded-full" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-8">
+              {step.questions.map((q: any, qIdx: number) => (
+                <Card key={qIdx} className="p-8 border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500 group/q bg-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-2 h-full bg-slate-50 group-hover/q:bg-blue-600 transition-colors" />
+                  
+                  <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-row lg:flex-col items-center justify-between lg:justify-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 group-hover/q:text-blue-600 group-hover/q:bg-blue-50 flex items-center justify-center font-black text-[15px] transition-all border border-slate-100 group-hover/q:border-blue-100">
+                        {String(qIdx + 1).padStart(2, '0')}
+                      </div>
+                      <button 
+                        onClick={() => removeQuestion(sIdx, qIdx)}
+                        className="p-3 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all lg:mt-2"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="flex-1 space-y-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                        <div className="w-full sm:w-[220px]">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Display Type</label>
+                          <select 
+                            value={q.type} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "type", e.target.value)}
+                            className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer"
+                          >
+                            <option value="input">Standard Text Input</option>
+                            <option value="chips">Multiple Choice Chips</option>
+                          </select>
+                        </div>
+                        <div className="w-full sm:w-[120px]">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Q-Label</label>
+                          <input 
+                            value={q.number || `Q${qIdx + 1}.`} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "number", e.target.value)}
+                            className="w-full h-11 text-[13px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 border border-blue-100 rounded-xl px-4 outline-none focus:ring-2 focus:ring-blue-200 transition-all text-center"
+                          />
+                        </div>
+                        <div className="flex-1" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Question Content</label>
+                        <textarea 
+                          value={q.text || q.question || ""} 
+                          onChange={(e) => updateQuestion(sIdx, qIdx, q.text ? "text" : "question", e.target.value)}
+                          placeholder="What would you like to ask students?"
+                          rows={2}
+                          className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-6 py-4 text-[18px] font-bold text-slate-900 focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 transition-all outline-none placeholder:text-slate-200 leading-relaxed"
+                        />
+                      </div>
+
+                      {(q.type === "chips" || q.options) && (
+                        <div className="space-y-4 pt-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Options List</label>
+                            <span className="text-[10px] text-slate-300 font-medium">Separate with commas</span>
+                          </div>
+                          <input 
+                            value={Array.isArray(q.options) ? q.options.join(", ") : ""} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "options", e.target.value.split(",").map(s => s.trim()))}
+                            placeholder="e.g. Option A, Option B, Option C..."
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-blue-400 transition-all outline-none shadow-sm"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {Array.isArray(q.options) && q.options.filter(Boolean).map((opt: string, oi: number) => (
+                              <div key={oi} className="px-4 py-1.5 bg-blue-50/50 border border-blue-100 rounded-xl text-[12px] text-blue-600 font-bold flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                {opt}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {q.type === "input" && (
+                        <div className="space-y-2 pt-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Input Hint (Placeholder)</label>
+                          <input 
+                            value={q.placeholder || ""} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "placeholder", e.target.value)}
+                            placeholder="e.g. Type your college name here..."
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-blue-400 transition-all outline-none shadow-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+              <button 
+                onClick={() => addQuestion(sIdx)}
+                className="w-full py-6 bg-white border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-300 flex items-center justify-center gap-3 font-black text-[15px] uppercase tracking-widest"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all">
+                  <Plus className="w-5 h-5" />
+                </div>
+                Add New Question to this phase
+              </button>
+            </div>
+          </div>
+        ))}
+
+        <button 
+          onClick={addPhase}
+          className="w-full py-12 bg-slate-50/50 border-4 border-dashed border-slate-100 rounded-[40px] text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all duration-500 flex flex-col items-center justify-center gap-4 group"
+        >
+          <div className="w-16 h-16 rounded-[24px] bg-white shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Plus className="w-8 h-8" />
+          </div>
+          <span className="font-black text-[18px] uppercase tracking-[0.2em] ml-2">Create New Phase</span>
+        </button>
+      </div>
+
+      {/* Sticky Bottom Actions */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-[32px] shadow-2xl flex items-center gap-6 animate-in slide-in-from-bottom-10 duration-700">
+        <div className="hidden md:block">
+          <p className="text-white text-[14px] font-bold tracking-tight">{questions.length} Phases</p>
+          <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Live Configuration</p>
+        </div>
+        <div className="w-px h-8 bg-white/10 hidden md:block" />
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="text-white/60 hover:text-white text-[14px] font-bold px-4">Discard</button>
+          <button 
+            onClick={saveChanges}
+            disabled={isSaving}
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-3 shadow-xl shadow-blue-900/40 transition-all active:scale-95"
+          >
+            {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            FINALIZE & PUBLISH
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function QuestionnairesPage({ data, onView, onEdit }: { data: any, onView: (q: any) => void, onEdit: (q: any) => void }) {
+  const { questionnaires = [] } = data;
+
+  const courseQuestions = questionnaires.filter((q: any) => 
+    q.title.toLowerCase().includes("course") || 
+    q.title.toLowerCase().includes("bank")
+  );
+  
+  const onboardingQuestionnaires = questionnaires.filter((q: any) => 
+    !courseQuestions.some((cq: any) => cq.id === q.id)
+  );
+
+  const renderTable = (list: any[], title: string) => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 px-2">
+        <div className="h-6 w-1 bg-blue-600 rounded-full" />
+        <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400">{title}</h3>
+      </div>
+      <Card className="overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Title</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Target Role</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Description</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Active</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Flow Title</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Target Role</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Questions</th>
+              <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {questionnaires.map((q: any) => (
-              <tr key={q.id} className="hover:bg-slate-50/30">
-                <td className="px-5 py-3 text-[14px] font-semibold text-slate-800">{q.title}</td>
-                <td className="px-4 py-3"><Pill color="blue">{q.target_role || "all"}</Pill></td>
-                <td className="px-4 py-3 text-[13px] text-slate-500">{(q.description || "—").slice(0, 80)}</td>
-                <td className="px-4 py-3"><Pill color={q.is_active ? "green" : "slate"}>{q.is_active ? "Yes" : "No"}</Pill></td>
+            {list.map((q: any) => {
+              const totalQs = Array.isArray(q.questions) 
+                ? q.questions.reduce((acc: number, step: any) => acc + (step.questions?.length || 0), 0)
+                : 0;
+              
+              return (
+                <tr key={q.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-[15px] font-bold text-slate-900">{q.title}</span>
+                      <span className="text-[12px] text-slate-400 font-medium truncate max-w-[300px]">{q.description}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4"><Pill color="blue">{q.target_role || "all"}</Pill></td>
+                  <td className="px-6 py-4 text-[13px] font-bold text-slate-600">{totalQs} Questions</td>
+                  <td className="px-6 py-4"><Pill color={q.is_active ? "green" : "slate"}>{q.is_active ? "Live" : "Draft"}</Pill></td>
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <button 
+                      onClick={() => onView(q)}
+                      className="text-[11px] font-extrabold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={() => onEdit(q)}
+                      className="text-[11px] font-extrabold text-slate-600 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {list.length === 0 && (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-slate-400 text-[13px] font-medium italic">
+                  No {title.toLowerCase()} found.
+                </td>
               </tr>
-            ))}
-            {questionnaires.length === 0 && <tr><td colSpan={4} className="px-4 py-16 text-center text-[13px] text-slate-400">No questionnaires</td></tr>}
+            )}
           </tbody>
         </table>
       </Card>
+    </div>
+  );
+
+  return (
+    <PageShell title="Questionnaires" subtitle="Onboarding and Course question templates">
+      <div className="space-y-12">
+        {renderTable(onboardingQuestionnaires, "Onboarding Flow")}
+        {renderTable(courseQuestions, "Course Questions")}
+      </div>
     </PageShell>
   );
 }
@@ -1642,7 +2189,7 @@ function SettingsPage() {
     <PageShell title="Settings" subtitle="Platform configuration">
       <div className="grid grid-cols-2 gap-6">
         {[
-          { label:"Platform Name",             key:"platform_name",             placeholder:"MentorHub" },
+          { label:"Platform Name",             key:"platform_name",             placeholder:"Kind Mentor" },
           { label:"Support Email",             key:"support_email",             placeholder:"support@kindmentor.in" },
           { label:"Max Students per Mentor",   key:"max_students",              placeholder:"10" },
           { label:"Default Session Duration",  key:"session_duration",          placeholder:"60 minutes" },
@@ -1690,6 +2237,9 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
   const [selectedCourse, setSelectedCourse] = useState<MentorCourse | null>(null);
   const [courseViewMode, setCourseViewMode] = useState<"list" | "detail" | "edit">("list");
+
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<any | null>(null);
+  const [qViewMode, setQViewMode] = useState<"list" | "detail" | "edit">("list");
 
   const supabase = createClient();
 
@@ -1742,6 +2292,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
           return <CourseDetailsScreen 
             course={selectedCourse as any} 
             onBack={() => setCourseViewMode("list")} 
+            adminData={data}
           />;
         }
         if (courseViewMode === "edit") {
@@ -1800,7 +2351,8 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
         }
         return <CoursesPage 
           data={data} 
-          onView={(c) => { setSelectedCourse(c); setCourseViewMode("detail"); }}
+          setSelectedCourse={setSelectedCourse}
+          setCourseViewMode={setCourseViewMode}
           onEdit={(c) => { setSelectedCourse(c); setCourseViewMode("edit"); }}
         />;
       case "mentors":        return <MentorsPage data={data} openModal={openModal} />;
@@ -1808,8 +2360,20 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "registrations":  return <RegistrationsPage data={data} />;
       case "mapping":        return <MappingPage data={data} openModal={openModal} />;
       case "enrollments":    return <EnrollmentsPage data={data} openModal={openModal} />;
-      case "games":          return <GamesPage data={data} />;
-      case "questionnaires": return <QuestionnairesPage data={data} />;
+      case "games":          return <GamesPage data={data} fetchAll={fetchAll} />;
+      case "questionnaires": 
+        if ((qViewMode === "detail" || qViewMode === "edit") && selectedQuestionnaire) {
+          return <QuestionnaireManager 
+            questionnaire={selectedQuestionnaire} 
+            onBack={() => setQViewMode("list")} 
+            onSave={fetchAll}
+          />;
+        }
+        return <QuestionnairesPage 
+          data={data} 
+          onView={(q) => { setSelectedQuestionnaire(q); setQViewMode("detail"); }}
+          onEdit={(q) => { setSelectedQuestionnaire(q); setQViewMode("edit"); }}
+        />;
       case "circles":        return <CirclesPage data={data} openModal={openModal} />;
       case "sessions":       return <SessionsPage data={data} openModal={openModal} />;
       case "reviews":        return <ReviewsPage data={data} />;

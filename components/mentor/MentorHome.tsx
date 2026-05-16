@@ -311,7 +311,7 @@ export function MentorHome() {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       
       {/* 14. New Student Notifications (Real Data) */}
       {showNotification && assignedStudents.length > 0 && (
@@ -367,16 +367,16 @@ export function MentorHome() {
       </Card>
 
       {/* 8. Mentor Stats */}
-      <div className="flex gap-4 px-1">
-         <Card className="flex-1 p-4 shadow-sm hover:translate-y-[-2px]">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 px-1">
+         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
             <div className="flex items-center gap-2 text-slate-500 mb-2"><BookOpen className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Students</span></div>
             <div className="text-2xl font-bold text-slate-800">{stats.students}</div>
          </Card>
-         <Card className="flex-1 p-4 shadow-sm hover:translate-y-[-2px]">
+         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
             <div className="flex items-center gap-2 text-slate-500 mb-2"><Clock className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Hours</span></div>
             <div className="text-2xl font-bold text-slate-800">{stats.hours}</div>
          </Card>
-         <Card className="flex-1 p-4 shadow-sm hover:translate-y-[-2px]">
+         <Card className="p-4 shadow-sm hover:translate-y-[-2px]">
             <div className="flex items-center gap-2 text-slate-500 mb-2"><Star className="w-4 h-4"/> <span className="text-[11px] font-bold uppercase tracking-wider">Rating</span></div>
             <div className="text-2xl font-bold text-slate-800">{stats.rating}</div>
          </Card>

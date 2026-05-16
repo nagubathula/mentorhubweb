@@ -118,7 +118,7 @@ export function MentalWellness({ onBack, coins, onCoinsEarned }: MentalWellnessP
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-5"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}

@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Clock, Dices, Trophy, Award, Lock, Sparkles, Coins, Gamepad2, Play, ChevronRight, X, Heart, ShieldAlert, BadgeHelp, CheckCircle2, User, Flame, Users } from "lucide-react";
+import { ArrowLeft, Clock, Dices, Trophy, Award, Lock, Sparkles, Coins, Gamepad2, Play, ChevronRight, X, Heart, ShieldAlert, BadgeHelp, CheckCircle2, User, Flame, Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+
+const supabase = createClient();
 
 // --- Types ---
 type GameType = "snakes" | "ludo" | "kbc" | "leaderboard";
@@ -14,6 +18,7 @@ interface GameProps {
   onCoinsEarned: (coins: number) => void;
   onBack: () => void;
   onPlayComplete?: (game: "snakes" | "ludo" | "kbc", score: number, coinsEarned: number) => void;
+  enrolledCourse?: any;
 }
 
 // --- Constants ---
@@ -194,9 +199,55 @@ export function CustomCoin({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 // --- Main Container Component ---
-export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPlayComplete }: GameProps) {
+export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPlayComplete, enrolledCourse }: GameProps) {
   const [activeTab, setActiveTab] = useState<GameType>("snakes");
   const [dailyPlays, setDailyPlays] = useState<Record<string, number>>({ snakes: 0, ludo: 0, kbc: 0 });
+  
+  const [dbGames, setDbGames] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRelevantGames = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch all course question banks from questionnaires table
+        const { data, error } = await supabase
+          .from('questionnaires')
+          .select('*')
+          .ilike('title', '%Question Bank%')
+          .eq('is_active', true);
+        
+        if (data) {
+          // Flatten the phases into a single question list for each questionnaire
+          const processedBanks = data.map(q => {
+            const allQs = Array.isArray(q.questions) 
+              ? q.questions.flatMap((phase: any) => 
+                  Array.isArray(phase.questions) ? phase.questions.map((pq: any) => ({
+                    ...pq,
+                    coins: pq.difficulty === "hard" ? 20 : pq.difficulty === "medium" ? 10 : 5
+                  })) : []
+                )
+              : [];
+            return { ...q, flattenedQuestions: allQs };
+          });
+
+          // Filter for the enrolled course
+          const courseTitle = enrolledCourse?.title?.toLowerCase() || "";
+          const relevant = processedBanks.filter(b => 
+            b.title.toLowerCase().includes(courseTitle) || 
+            courseTitle.includes(b.title.toLowerCase().replace(" question bank", ""))
+          );
+
+          setDbGames(relevant.length > 0 ? relevant : processedBanks);
+        }
+      } catch (e) {
+        console.error("Error fetching games:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRelevantGames();
+  }, [enrolledCourse]);
 
   // Load daily plays on mount
   useEffect(() => {
@@ -320,7 +371,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
       </div>
 
       {/* Main Game Screen Render */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait">
           {activeTab === "snakes" && (
             <motion.div key="snakes-tab" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
@@ -332,6 +383,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
                   onCoinsEarned={onCoinsEarned}
                   onPlayComplete={(score, coins) => recordPlay("snakes", score, coins)}
                   firstLetter={firstLetter}
+                  dbGames={dbGames}
                 />
               ) : (
                 <LimitReachedView gameName="Snake & Ladder" />
@@ -349,6 +401,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
                   onCoinsEarned={onCoinsEarned}
                   onPlayComplete={(score, coins) => recordPlay("ludo", score, coins)}
                   firstLetter={firstLetter}
+                  dbGames={dbGames}
                 />
               ) : (
                 <LimitReachedView gameName="Ludo Quiz" />
@@ -365,6 +418,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
                   userCoins={userCoins}
                   onCoinsEarned={onCoinsEarned}
                   onPlayComplete={(score, coins) => recordPlay("kbc", score, coins)}
+                  dbGames={dbGames}
                 />
               ) : (
                 <LimitReachedView gameName="KBC Tech Edition" />
@@ -392,9 +446,10 @@ interface SubGameProps {
   onCoinsEarned: (coins: number) => void;
   onPlayComplete: (score: number, coins: number) => void;
   firstLetter: string;
+  dbGames?: any[];
 }
 
-function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter }: SubGameProps) {
+function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter, dbGames }: SubGameProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerPosition, setPlayerPosition] = useState(0);
   const [aiPosition, setAiPosition] = useState(0);
@@ -437,12 +492,16 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
   };
 
   const selectRandomQuestion = useCallback(() => {
-    const unasked = SNAKES_QUESTIONS.filter((q) => !questionPool.has(q.id));
-    const pool = unasked.length > 0 ? unasked : SNAKES_QUESTIONS;
+    // Combine questions from all dbGames
+    const dbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    const source = dbQuestions.length > 0 ? dbQuestions : SNAKES_QUESTIONS;
+    
+    const unasked = source.filter((q: any) => !questionPool.has(q.id || q.question));
+    const pool = unasked.length > 0 ? unasked : source;
     const picked = pool[Math.floor(Math.random() * pool.length)];
-    setQuestionPool((prev) => new Set(prev).add(picked.id));
+    setQuestionPool((prev) => new Set(prev).add(picked.id || picked.question));
     return picked;
-  }, [questionPool]);
+  }, [questionPool, dbGames]);
 
   // Check for snakes or ladders landing
   const checkGridEffects = useCallback((pos: number) => {
@@ -1013,7 +1072,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
 // ==========================================
 // 2. LUDO QUIZ MINI-GAME
 // ==========================================
-function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter }: SubGameProps) {
+function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter, dbGames }: SubGameProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerPosition, setPlayerPosition] = useState(0);
   const [aiPosition, setAiPosition] = useState(0);
@@ -1049,12 +1108,16 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
   };
 
   const selectRandomQuestion = useCallback(() => {
-    const unasked = LUDO_QUESTIONS.filter((q) => !questionPool.has(q.id));
-    const pool = unasked.length > 0 ? unasked : LUDO_QUESTIONS;
+    // Combine questions from all dbGames
+    const dbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    const source = dbQuestions.length > 0 ? dbQuestions : LUDO_QUESTIONS;
+    
+    const unasked = source.filter((q: any) => !questionPool.has(q.id || q.question));
+    const pool = unasked.length > 0 ? unasked : source;
     const picked = pool[Math.floor(Math.random() * pool.length)];
-    setQuestionPool((prev) => new Set(prev).add(picked.id));
+    setQuestionPool((prev) => new Set(prev).add(picked.id || picked.question));
     return picked;
-  }, [questionPool]);
+  }, [questionPool, dbGames]);
 
   const getCoordinates = (step: number, isPlayer: boolean) => {
     if (step <= 0) return null;
@@ -1567,7 +1630,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 // ==========================================
 // 3. KAUN BANEGA CROREPATHI (KBC) TECH GAME
 // ==========================================
-function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete }: Omit<SubGameProps, "firstLetter">) {
+function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }: Omit<SubGameProps, "firstLetter">) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [level, setLevel] = useState(0);
   const [questions, setQuestions] = useState<any[]>([]);
@@ -1606,12 +1669,28 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete }: Omit<Su
     }
   }, [timerActive, timer]);
 
+  const [dbQuestions, setDbQuestions] = useState<any[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+
+  useEffect(() => {
+    // Combine questions from all dbGames
+    const allDbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    setDbQuestions(allDbQuestions);
+  }, [dbGames]);
+
   const selectRandomQuestions = useCallback(() => {
-    const easy = [...KBC_QUESTIONS].filter((q) => q.difficulty === "easy").sort(() => Math.random() - 0.5).slice(0, 5);
-    const medium = [...KBC_QUESTIONS].filter((q) => q.difficulty === "medium").sort(() => Math.random() - 0.5).slice(0, 5);
-    const hard = [...KBC_QUESTIONS].filter((q) => q.difficulty === "hard").sort(() => Math.random() - 0.5).slice(0, 5);
+    const source = dbQuestions.length > 0 ? dbQuestions : KBC_QUESTIONS;
+    const easy = [...source].filter((q) => q.difficulty === "easy").sort(() => Math.random() - 0.5).slice(0, 5);
+    const medium = [...source].filter((q) => q.difficulty === "medium").sort(() => Math.random() - 0.5).slice(0, 5);
+    const hard = [...source].filter((q) => q.difficulty === "hard").sort(() => Math.random() - 0.5).slice(0, 5);
+    
+    // If we don't have enough difficulty-specific questions, just take random ones
+    if (easy.length + medium.length + hard.length < 15) {
+       return [...source].sort(() => Math.random() - 0.5).slice(0, 15);
+    }
+    
     return [...easy, ...medium, ...hard];
-  }, []);
+  }, [dbQuestions]);
 
   const startKbc = () => {
     const qList = selectRandomQuestions();
@@ -1760,7 +1839,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete }: Omit<Su
             </motion.div>
             <p className="text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-1">KAUN BANEGA</p>
             <h3 className="text-white text-[18px] font-black tracking-wide">CROREPATHI</h3>
-            <p className="text-purple-300 text-[10px] font-semibold mt-1">MentorHub Tech Edition</p>
+            <p className="text-purple-300 text-[10px] font-semibold mt-1">Kind Mentor Tech Edition</p>
           </div>
 
           <div className="bg-slate-50 rounded-2xl p-4.5 space-y-3 mb-5 border border-slate-100/50">
@@ -1789,8 +1868,10 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete }: Omit<Su
 
           <Button
             onClick={startKbc}
+            disabled={isLoadingQuestions}
             className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-500/10 active:scale-[0.98] transition-all"
           >
+            {isLoadingQuestions ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             Play KBC Tech Edition
           </Button>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 const supabase = createClient();
 const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
@@ -72,53 +72,18 @@ type QuizStepData = {
   questions: QuizQuestion[];
 };
 
-const QUIZ_STEPS: QuizStepData[] = [
-  {
-    step: 1, title: "Education & Language", icon: GraduationCap, color: "#0cb4ce",
-    questions: [
-      { id: "q1", number: "Q1.", text: "Which college are you studying at or have studied at?", type: "input", placeholder: "e.g. IIT Bombay..." },
-      { id: "q2", number: "Q2.", text: "Which branch / department are you from?", type: "chips", options: ["Computer Science / IT", "Electronics / ECE", "Mechanical", "Electrical", "Civil", "Commerce / BBA", "Arts", "Science", "Other"] },
-      { id: "q3", number: "Q3.", text: "What is your mother tongue?", type: "chips", options: ["Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Marathi", "English", "Other"] }
-    ]
-  },
-  {
-    step: 2, title: "Personal Inspiration", icon: Star, color: "#f59e0b",
-    questions: [
-      { id: "q5", number: "Q5.", text: "Who inspires you the most in life?", type: "chips", options: ["Family member", "Teacher/mentor", "Entrepreneur", "Scientist/engineer", "Celebrity"] },
-      { id: "q6", number: "Q6.", text: "Which famous personality do you admire most?", type: "input", placeholder: "e.g. Elon Musk..." }
-    ]
-  }
-];
+// Icon mapping helper for dynamic questionnaires
+const IconMap: Record<string, any> = {
+  GraduationCap, Star, Lightbulb, BookOpenCheck, Users, Target, Layout, Sparkles, MessageSquare, BookOpen, Brain, Code, Zap, Video, Trophy
+};
 
-const SCREENING_STEPS = [
-  {
-    step: 1, title: "Curiosity", icon: Lightbulb,
-    text: "When you see something you don't understand, what do you do?",
-    options: ["Search online to understand it", "Ask someone who knows", "Try to explore it yourself", "Ignore it and move on"]
-  },
-  {
-    step: 2, title: "Exploring Beyond Syllabus", icon: BookOpenCheck,
-    text: "How often do you explore topics beyond your school or college syllabus?",
-    options: ["Very often", "Sometimes", "Occasionally", "Never"]
-  }
-];
-
-const MENTOR_QUIZ_STEPS: QuizStepData[] = [
-  {
-    step: 1, title: "Education, Language & Contact", icon: GraduationCap, color: "#0cb4ce",
-    questions: [
-      { id: "q101", number: "Q101.", text: "Which company are you currently working at?", type: "input", placeholder: "e.g. Google, TCS, Infosys, Startup..." },
-      { id: "q102", number: "Q102.", text: "Which college did you study at?", type: "input", placeholder: "e.g. IIT Delhi, NIT Trichy, BITS Pilani..." },
-      { id: "q103", number: "Q103.", text: "Which branch / department did you study?", type: "chips", options: ["Computer Science / IT", "Electronics / ECE", "Mechanical Engineering", "Electrical Engineering", "Civil Engineering", "Commerce / BBA / MBA", "Arts / Humanities", "Science (BSc / MSc)", "Other"] },
-      { id: "q104", number: "Q104.", text: "What is your mother tongue?", type: "chips", options: ["Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Marathi", "English", "Other"] }
-    ]
-  }
-];
+const getIcon = (iconName: string) => IconMap[iconName] || HelpCircle;
 
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
 
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("LOGIN");
+  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES"].includes(state);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -216,6 +181,38 @@ export default function OnboardingFlow() {
   const [scheduleDuration, setScheduleDuration] = useState("30");
   const [sendSuccess, setSendSuccess] = useState(false);
 
+  // Dynamic Questionnaires State
+  const [studentQuizSteps, setStudentQuizSteps] = useState<QuizStepData[]>([]);
+  const [studentScreeningSteps, setStudentScreeningSteps] = useState<any[]>([]);
+  const [mentorQuizSteps, setMentorQuizSteps] = useState<QuizStepData[]>([]);
+  const [isLoadingQuestionnaires, setIsLoadingQuestionnaires] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestionnaires = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('questionnaires')
+          .select('*')
+          .eq('is_active', true);
+        
+        if (data) {
+          const studentQuiz = data.find(q => q.title.includes("Student Onboarding"));
+          const studentScreening = data.find(q => q.title.includes("Student Behavioral"));
+          const mentorQuiz = data.find(q => q.title.includes("Mentor Onboarding"));
+
+          if (studentQuiz) setStudentQuizSteps(studentQuiz.questions);
+          if (studentScreening) setStudentScreeningSteps(studentScreening.questions);
+          if (mentorQuiz) setMentorQuizSteps(mentorQuiz.questions);
+        }
+      } catch (err) {
+        console.error("Failed to fetch questionnaires:", err);
+      } finally {
+        setIsLoadingQuestionnaires(false);
+      }
+    };
+    fetchQuestionnaires();
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -270,6 +267,11 @@ export default function OnboardingFlow() {
         setRole(profile.role as any);
         setCoinsCount(profile.coins || 0);
         
+        // Restore last known state if available
+        if (profile.last_state) {
+          setState(profile.last_state as any);
+        }
+        
         // Fetch enrollments for student
         if (profile.role === "STUDENT") {
           const { data: enrolls } = await supabase
@@ -306,8 +308,8 @@ export default function OnboardingFlow() {
           if (dbTodos) setCustomTodos(dbTodos);
         }
 
-        // Auto-redirect based on role if still in auth screens
-        if (["LOGIN", "SIGNIN", "SIGNUP", "ROLE"].includes(state)) {
+        // Auto-redirect based on role if still in auth screens and no saved state
+        if (["LOGIN", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
           setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
         }
       } else {
@@ -320,6 +322,21 @@ export default function OnboardingFlow() {
       console.error("Session sync error:", e);
     }
   };
+
+  // Sync state changes to DB for persistence
+  useEffect(() => {
+    const syncState = async () => {
+      if (!isDashboard) return; // Only sync dashboard-level states
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from('profiles').update({
+          last_state: state
+        }).eq('id', session.user.id);
+      }
+    };
+    syncState();
+  }, [state, isDashboard]);
 
   // Student Running Notes State and Handlers
   const [notes, setNotes] = useState<any[]>(() => {
@@ -972,7 +989,7 @@ export default function OnboardingFlow() {
     if (error) {
       console.error("Error updating progress:", error);
     } else {
-      const coinDelta = isAdding ? 1 : -1;
+      const coinDelta = isAdding ? 2 : -2;
       const nextCoins = Math.max(0, coinsCount + coinDelta);
       await updateCoinsInDb(nextCoins);
     }
@@ -1339,28 +1356,22 @@ export default function OnboardingFlow() {
   };
 
   const nextQuizStep = () => {
-    if (quizIndex < QUIZ_STEPS.length - 1) {
+    if (quizIndex < studentQuizSteps.length - 1) {
       setQuizIndex(quizIndex + 1);
     } else {
       setState("STUDENT_SCREENING");
+      setQuizIndex(0);
     }
   };
 
-  const prevQuizStep = () => {
-    if (quizIndex > 0) {
-      setQuizIndex(quizIndex - 1);
-    } else {
-      setState("STUDENT_PROFILE");
-    }
-  };
-  
-  const nextScreeningStep = async () => {
-    if (screeningIndex < SCREENING_STEPS.length - 1) {
+  const handleNextScreening = () => {
+    if (screeningIndex < studentScreeningSteps.length - 1) {
       setScreeningIndex(screeningIndex + 1);
     } else {
-      await saveProfileData("STUDENT");
+      saveProfileData("STUDENT");
     }
-  }
+  };
+
 
   // Animation variants
   const variants: any = {
@@ -1372,19 +1383,18 @@ export default function OnboardingFlow() {
   // Header Component
   const LogoHeader = () => (
     <div className="flex flex-col items-center mb-6">
-      <div className="bg-gradient-to-tr from-orange-500 via-amber-500 to-rose-600 text-white p-4 rounded-3xl mb-4 shadow-xl shadow-orange-500/20 hover:scale-105 hover:rotate-3 transition-all duration-300">
-        <Sparkles className="w-10 h-10 animate-pulse" strokeWidth={1.5} />
+      <div className="mb-4 hover:scale-105 transition-all duration-300">
+        <img src="/logo.svg" alt="Kind Mentor Logo" className="w-28 h-28 object-contain" />
       </div>
-      <h1 className="text-3xl font-bold font-volkhov text-slate-900 mb-1 tracking-tight">Learning Place</h1>
-      <p className="text-slate-400 text-xs font-semibold font-mulish uppercase tracking-widest">at MentorHub</p>
+      <h1 className="text-3xl font-bold font-volkhov text-slate-900 mb-1 tracking-tight">Kind Mentor</h1>
+      <p className="text-slate-400 text-xs font-semibold font-mulish uppercase tracking-widest">Connect & Grow</p>
     </div>
   );
 
-  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES"].includes(state);
 
   return (
     <div className="min-h-screen mesh-bg flex items-center justify-center p-0 md:p-6 selection:bg-orange-200 font-inter">
-      <div className={`w-full ${isDashboard ? 'max-w-7xl h-screen md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-screen md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
+      <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-screen md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-screen md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
         <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : 'px-8 py-8 flex flex-col justify-center'}`}>
           <AnimatePresence mode="wait">
@@ -1538,142 +1548,139 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-            {state === "STUDENT_QUIZ" && (() => {
-              const currentData = QUIZ_STEPS[quizIndex];
-              const Icon = currentData.icon;
-              return (
-                <motion.div key={`quiz_${quizIndex}`} variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0">
-                  <div className="mb-6 shrink-0 mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <button onClick={prevQuizStep} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 flex items-center gap-1.5 focus:outline-none">
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="text-sm font-medium text-slate-500">{currentData.step} of 8</span>
-                      </button>
-                      <button className="text-[13px] text-slate-400 flex items-center gap-1.5 hover:text-slate-600 focus:outline-none font-medium">
-                        <SkipForward className="w-3.5 h-3.5" /> Skip All
-                      </button>
-                    </div>
-                    <div className="w-full flex gap-1.5 mb-6">
-                      {[1,2,3,4,5,6,7,8].map(i => <div key={i} className={`h-1 flex-1 rounded-full ${i <= currentData.step ? 'bg-slate-900' : 'bg-slate-200'}`} />)}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-full text-white`} style={{ backgroundColor: currentData.color }}>
-                        <Icon className="w-5 h-5" />
+            {state === "STUDENT_QUIZ" && studentQuizSteps.length > 0 && (
+              <div className="w-full">
+                {(() => {
+                  const currentData = studentQuizSteps[quizIndex];
+                  const Icon = getIcon(currentData.icon as any);
+                  return (
+                    <>
+                      <div className="flex items-center gap-4 mb-10">
+                        <div 
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100"
+                          style={{ backgroundColor: currentData.color || '#3b82f6' }}
+                        >
+                          <Icon className="w-7 h-7" />
+                        </div>
+                        <div>
+                          <p className="text-blue-600 text-[11px] font-bold uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
+                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentData.title}</h2>
+                        </div>
                       </div>
-                      <h2 className="text-lg font-medium text-slate-900">{currentData.title}</h2>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto pr-3 -mr-3 pb-8 space-y-8 scrollbar-thin">
-                    {currentData.questions.map((q) => (
-                      <div key={q.id} className="space-y-3.5">
-                        <p className="text-[14px] text-slate-700 font-medium leading-relaxed">
-                          <span className="text-slate-400 font-normal mr-1">{q.number}</span>{q.text}
-                        </p>
-                        {q.type === "input" ? (
-                          <Input placeholder={q.placeholder} value={(selections[q.id] as string) || ""} onChange={(e) => handleInputChange(q.id, e.target.value)} className="h-[50px] rounded-xl border-slate-200 text-[15px] bg-slate-50/50" />
-                        ) : (
-                          <div className="flex flex-wrap gap-2.5">
-                            {q.options?.map(opt => {
-                              const selected = q.multiSelect ? ((selections[q.id] as string[]) || []).includes(opt) : selections[q.id] === opt;
-                              return <SelectionChip key={opt} label={opt} active={selected} onClick={() => handleSelect(q.id, opt, q.multiSelect)} />;
-                            })}
+
+                      <div className="space-y-8">
+                        {currentData.questions.map((q: any) => (
+                          <div key={q.id} className="space-y-3">
+                            <Label className="text-[14px] font-bold text-slate-700">{q.text}</Label>
+                            {q.type === "input" ? (
+                              <Input 
+                                placeholder={q.placeholder}
+                                value={(selections[q.id] as string) || ""}
+                                onChange={(e) => setSelections({ ...selections, [q.id]: e.target.value })}
+                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                              />
+                            ) : (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {q.options?.map((opt: string) => (
+                                  <SelectionChip
+                                    key={opt}
+                                    label={opt}
+                                    active={selections[q.id] === opt}
+                                    onClick={() => setSelections({ ...selections, [q.id]: opt })}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  );
+                })()}
 
-                  <div className="pt-4 shrink-0 bg-white border-t border-slate-50 mt-auto">
-                    <Button onClick={nextQuizStep} className="w-full h-[52px] rounded-xl text-[15px] font-medium bg-[#0f172a] text-white hover:bg-[#1e293b]">
-                      {quizIndex === QUIZ_STEPS.length - 1 ? "Finish Quiz" : "Next"} <ArrowRight className="w-[18px] h-[18px] ml-1.5" />
+                <div className="mt-12 flex items-center gap-4">
+                  <Button 
+                    onClick={nextQuizStep} 
+                    className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-bold text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                  >
+                    {quizIndex === studentQuizSteps.length - 1 ? "Complete Journey" : "Continue"} <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                  {quizIndex !== studentQuizSteps.length - 1 && (
+                    <Button variant="ghost" onClick={nextQuizStep} className="h-14 px-6 text-slate-400 font-bold text-[15px] hover:text-slate-600">
+                      Skip
                     </Button>
-                    {quizIndex !== QUIZ_STEPS.length - 1 && (
-                      <button onClick={nextQuizStep} className="w-full mt-4 pb-1 text-[13px] font-medium text-slate-400 hover:text-slate-600">Skip this section</button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })()}
+                  )}
+                </div>
+              </div>
+            )}
 
-            {state === "STUDENT_SCREENING" && (() => {
-              const currentData = SCREENING_STEPS[screeningIndex];
-              const Icon = currentData.icon;
-              return (
-                <motion.div key={`screening_${screeningIndex}`} variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0">
-                  <div className="mb-4 shrink-0 mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <button onClick={() => { if(screeningIndex > 0) setScreeningIndex(screeningIndex - 1); else setState("STUDENT_QUIZ") }} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 flex items-center gap-1.5 focus:outline-none">
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="text-sm font-medium text-slate-500">{currentData.step} of 12</span>
-                      </button>
-                      <div className="flex items-center gap-3">
-                         <button className="text-[13px] text-slate-400 flex items-center gap-1.5 hover:text-slate-600 focus:outline-none font-medium">
-                           <SkipForward className="w-3.5 h-3.5" /> Skip for now
-                         </button>
-                         <div className="flex items-center gap-1.5 text-[13px] text-slate-400 font-medium ml-2">
-                           <BrainCircuit className="w-3.5 h-3.5" /> Screening
-                         </div>
-                      </div>
-                    </div>
-                    
-                    <div className="w-full flex gap-1 mb-6">
-                      {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => <div key={i} className={`h-1 flex-[1] rounded-full ${i <= currentData.step ? 'bg-slate-800' : 'bg-slate-100'}`} />)}
-                    </div>
-                
-                    {currentData.step === 1 && (
-                      <div className="bg-[#eff6ff] border border-[#dbeafe] rounded-xl p-4 text-[13px] text-blue-600 mb-6 font-medium leading-relaxed">
-                        This short quiz helps us understand your curiosity, focus, and learning mindset. Answer honestly.
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-slate-100 text-slate-500">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <h2 className="text-[15px] font-medium text-slate-400">{currentData.title}</h2>
-                    </div>
-                  </div>
+            {state === "STUDENT_SCREENING" && studentScreeningSteps.length > 0 && (
+              <div className="w-full">
+                {(() => {
+                  const currentPhase = studentScreeningSteps[screeningIndex];
+                  const Icon = getIcon(currentPhase.icon as any);
+                  const q = currentPhase.questions?.[0]; // Screening usually has 1 question per step
                   
-                  <div className="flex-1 overflow-y-auto pr-3 -mr-3 pb-8 scrollbar-thin">
-                    <p className="text-[16px] text-slate-800 font-medium leading-relaxed mb-6 mt-2">
-                      {currentData.text}
-                    </p>
-                    
-                    <div className="space-y-3">
-                      {currentData.options.map(opt => {
-                        const selected = screeningSelections[currentData.title] === opt;
-                        return (
-                          <button
-                            key={opt}
-                            onClick={() => setScreeningSelections(prev => ({...prev, [currentData.title]: opt}))}
-                            className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${
-                              selected 
-                                ? "border-[#0ea5e9] bg-[#f0f9ff] text-slate-900 shadow-sm ring-1 ring-[#0ea5e9]" 
-                                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                            }`}
-                          >
-                            <div className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selected ? "border-[#0ea5e9]" : "border-slate-300"}`}>
-                              {selected && <div className="w-3 h-3 rounded-full bg-[#0ea5e9]" />}
-                            </div>
-                            <span className="text-[15px]">{opt}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
+                  if (!q) return null;
 
-                  <div className="pt-4 shrink-0 bg-white border-t border-slate-50 mt-auto">
-                    <Button onClick={nextScreeningStep} className={`w-full h-[52px] rounded-xl text-[15px] font-medium transition-all ${screeningSelections[currentData.title] ? "bg-[#e2e8f0] text-slate-600 hover:bg-[#cbd5e1]" : "bg-slate-100 text-slate-400"}`}>
-                      Next <ArrowRight className="w-[18px] h-[18px] ml-1.5" />
-                    </Button>
-                  </div>
-                </motion.div>
-              );
-            })()}
+                  return (
+                    <div className="space-y-10">
+                      <div className="flex items-center gap-4 mb-2">
+                        <div 
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-200"
+                          style={{ backgroundColor: currentPhase.color || '#0f172a' }}
+                        >
+                          <Icon className="w-7 h-7" />
+                        </div>
+                        <div>
+                          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-1">Behavioral Screening • {screeningIndex + 1} of {studentScreeningSteps.length}</p>
+                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentPhase.title}</h2>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-100 rounded-3xl p-8 space-y-6">
+                        <p className="text-lg font-bold text-slate-800 leading-snug">{q.text}</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {q.options?.map((opt: string) => (
+                            <button
+                              key={opt}
+                              onClick={() => setScreeningSelections({ ...screeningSelections, [q.id || currentPhase.title]: opt })}
+                              className={cn(
+                                "p-5 rounded-2xl border text-left transition-all duration-300 group",
+                                screeningSelections[q.id || currentPhase.title] === opt
+                                  ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200"
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-[15px]">{opt}</span>
+                                <div className={cn(
+                                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                                  screeningSelections[q.id || currentPhase.title] === opt ? "bg-white border-white" : "border-slate-100"
+                                )}>
+                                  {screeningSelections[q.id || currentPhase.title] === opt && <Check className="w-3.5 h-3.5 text-slate-900" />}
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Button 
+                        onClick={handleNextScreening} 
+                        disabled={!screeningSelections[q.id || currentPhase.title]}
+                        className="w-full h-14 rounded-2xl bg-blue-600 text-white font-bold text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
+                      >
+                        {screeningIndex === studentScreeningSteps.length - 1 ? "Go to Dashboard" : "Next Question"} <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-5 px-5 -mt-2 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-5 px-5 -mt-2 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
                 {/* Header */}
                 <div className="pt-8 pb-4 flex items-center justify-between z-10 w-full mb-4">
                   <div className="flex items-center gap-3">
@@ -1815,9 +1822,9 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-            { (state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES") && (
-              <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg">
-                <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-6">
+             {(state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES") && (
+                <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
+                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
             
             {state === "MESSAGES" && (
               <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-5">
@@ -1875,7 +1882,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Input Area */}
-                <div className="px-5 py-4 border-t border-slate-100 bg-white shrink-0 pb-8">
+                <div className="px-5 py-4 border-t border-slate-100 bg-white shrink-0 pb-[calc(5rem+env(safe-area-inset-bottom))]">
                    <div className="flex gap-3 items-end">
                     <Textarea 
                       value={messageInput}
@@ -1907,14 +1914,13 @@ export default function OnboardingFlow() {
               </div>
             )}
 
-            {state === "DASHBOARD_MAIN" &&
-              <div className="flex flex-col pt-0 relative w-full items-center pb-8 font-inter">
-                <div className="w-full max-w-2xl xl:max-w-none xl:grid xl:grid-cols-[2fr_1fr] gap-6 px-5">
-                  {/* Left Column */}
-                  <div className="flex flex-col">
+            {state === "DASHBOARD_MAIN" && (
+              <div className="flex flex-col pt-0 relative w-full items-center pb-32 font-inter">
+                <div className="w-full max-w-2xl flex flex-col gap-4 px-4 sm:px-6">
+
                 
                 {/* Premium Welcome Greeting Header */}
-                <div className="w-full relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 shrink-0">
+                <div className="w-full relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                   <div className="space-y-1 pr-16 sm:pr-0">
                     <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Student'}! 👋</h2>
                     <p className="text-[13px] font-medium text-slate-400">Step closer to your educational milestones today.</p>
@@ -1928,7 +1934,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Today's Inspiration & Mentor Chat Card */}
-                <Card className="w-full mt-4 relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
+                <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl"></div>
                   <CardContent className="p-4 pt-5 flex flex-col gap-4">
                     <div className="flex gap-3 w-full relative group/insp">
@@ -2042,17 +2048,12 @@ export default function OnboardingFlow() {
                   const nextLesson = allLessons.find((l: any) => !courseProgress.includes(l.id));
 
                   return (
-                    <div className="mt-6 flex flex-col">
-                      <div className="flex items-center justify-between px-1 mb-3">
-                        <div className="flex items-center gap-2">
-                           <BookOpenCheck className="w-[18px] h-[18px] text-indigo-500" />
-                           <p className="text-[13px] font-black text-slate-900 uppercase tracking-widest font-mulish">Continue Learning</p>
-                        </div>
-                      </div>
+                    <div className="flex flex-col">
+
                       
                       <div 
                         onClick={() => setState("COURSE_DETAILS")}
-                        className="w-full p-4 bg-white rounded-2xl shadow-xs border border-slate-100 hover:border-indigo-100 transition-all active:scale-[0.98] cursor-pointer group"
+                        className="w-full p-4 bg-white rounded-[1.25rem] shadow-xs border border-slate-100 hover:border-indigo-100 transition-all active:scale-[0.98] cursor-pointer group"
                       >
                         <div className="flex items-start gap-4">
                           <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -2109,12 +2110,13 @@ export default function OnboardingFlow() {
                     </Button>
                   </div>
                 )}
-              </div>
-                  {/* Right Column */}
-                  <div className="flex flex-col">
+
+
+                  {/* Tasks & Milestones */}
+
                 {/* Todo List / Course Milestones Widget */}
-                <div className="w-full mt-4">
-                  <div className="flex justify-between items-center mb-3 px-1">
+                <div className="w-full">
+                  <div className="flex justify-between items-center mb-2.5 px-1">
                     <div className="flex items-center gap-2 text-slate-700 font-bold font-mulish text-[15px]">
                       <ListChecks className="w-[18px] h-[18px] text-orange-500" /> Tasks & Milestones
                     </div>
@@ -2215,13 +2217,14 @@ export default function OnboardingFlow() {
                             );
                           })
                         )}
-                      </div>
                     </div>
                   </div>
-                </div>
+                  </div>
+                  </div>
+
                 
                 {/* Dynamic Content Rows */}
-                <div className="w-full mt-4 space-y-3">
+                <div className="w-full space-y-2.5">
                   
                   {/* Gaming Quiz Row (Redirects directly to GAMES state) */}
                   <div 
@@ -2289,8 +2292,8 @@ export default function OnboardingFlow() {
                   </div>
 
                   {/* Mental Wellness card */}
-                  <div className="bg-gradient-to-r from-[#effdf5] to-[#e0f2fe] rounded-[1.5rem] border border-[#a7f3d0]/30 p-5 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("WELLNESS")}>
-                     <div className="flex items-center justify-between relative z-10 mb-3.5">
+                  <div className="bg-gradient-to-r from-[#effdf5] to-[#e0f2fe] rounded-[1.25rem] border border-[#a7f3d0]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("WELLNESS")}>
+                     <div className="flex items-center justify-between relative z-10 mb-3">
                        <div className="flex items-center gap-3">
                          <div className="bg-white/75 text-[#14b8a6] p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Heart className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
                          <div>
@@ -2311,8 +2314,8 @@ export default function OnboardingFlow() {
                   </div>
 
                   {/* Interesting Facts card */}
-                  <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.5rem] border border-[#fde047]/30 p-5 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
-                     <div className="flex items-center justify-between relative z-10 mb-3.5">
+                  <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.25rem] border border-[#fde047]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
+                     <div className="flex items-center justify-between relative z-10 mb-3">
                        <div className="flex items-center gap-3">
                          <div className="bg-amber-100/50 text-amber-600 p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Lightbulb className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
                          <div>
@@ -2333,18 +2336,18 @@ export default function OnboardingFlow() {
                   </div>
 
                   {/* Mentor's Thought of the Day */}
-                  <div className="bg-slate-100/50 rounded-[1.5rem] p-5.5 shadow-sm mt-6 border border-slate-100/50 flex flex-col">
-                    <div className="flex items-center gap-2 text-slate-700 font-bold font-mulish text-[14px] mb-3.5">
+                  <div className="bg-slate-100/50 rounded-[1.25rem] p-5 shadow-sm mt-4 border border-slate-100/50 flex flex-col">
+                    <div className="flex items-center gap-2 text-slate-700 font-bold font-mulish text-[14px] mb-3">
                       <Sun className="w-4 h-4 text-orange-500 animate-spin-slow" strokeWidth={2.5} /> Mentor's Thought of the Day
                     </div>
-                    <div className="bg-white rounded-2xl p-4.5 italic text-slate-700 text-[14px] leading-relaxed relative border border-slate-100/30 font-medium font-volkhov shadow-xs">
+                    <div className="bg-white rounded-2xl p-4 italic text-slate-700 text-[14px] leading-relaxed relative border border-slate-100/30 font-medium font-volkhov shadow-xs">
                       "Consistency beats intensity. Practice a little every day."
-                      <span className="block text-slate-400 not-italic text-[12px] font-bold font-mulish uppercase tracking-wider mt-2.5">— Pradeep K.</span>
+                      <span className="block text-slate-400 not-italic text-[12px] font-bold font-mulish uppercase tracking-wider mt-2">— Pradeep K.</span>
                     </div>
-                    <button className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white py-3.5 rounded-2xl mt-4 font-bold font-mulish text-[13px] flex gap-2 items-center justify-center transition-all active:scale-98 shadow-sm">
+                    <button className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white py-3 rounded-2xl mt-3.5 font-bold font-mulish text-[13px] flex gap-2 items-center justify-center transition-all active:scale-98 shadow-sm h-12">
                       <Heart className="w-[18px] h-[18px] fill-current text-rose-500 animate-pulse" /> Read & Reflect
                     </button>
-                    <div className="flex justify-between items-center mt-4.5 px-1 font-mulish">
+                    <div className="flex justify-between items-center mt-4 px-1 font-mulish">
                       <p className="text-[12px] font-bold text-orange-500 flex items-center gap-1"><Flame className="w-3.5 h-3.5" /> 3-day streak</p>
                       <p className="text-[12px] font-bold text-amber-600 flex items-center gap-1"><Coins className="w-3.5 h-3.5 fill-amber-100" /> +5 XP per reflection</p>
                     </div>
@@ -2352,7 +2355,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Footer Stats Row */}
-                <div className="mt-6 mb-4 flex divide-x divide-slate-100 bg-white rounded-[1.5rem] p-4.5 shadow-sm mx-1 border border-slate-50 font-lato">
+                <div className="mt-4 mb-4 flex divide-x divide-slate-100 bg-white rounded-[1.25rem] p-4 shadow-sm border border-slate-50 font-lato">
                    <div className="flex flex-col items-center flex-1 justify-center">
                      <p className="text-slate-800 font-extrabold text-[22px]">3</p>
                      <p className="text-slate-400 text-[10px] font-extrabold font-mulish uppercase tracking-wider mt-0.5">Day Streak</p>
@@ -2366,20 +2369,18 @@ export default function OnboardingFlow() {
                      <p className="text-slate-400 text-[10px] font-extrabold font-mulish uppercase tracking-wider mt-0.5">Quiz Avg</p>
                    </div>
                 </div>
-              </div>
-
-                </div>
 
                 {/* Final Quote */}
-                <div className="text-center pb-24 px-5 flex flex-col gap-1 items-center mb-6">
+                <div className="text-center pb-[calc(8rem+env(safe-area-inset-bottom))] flex flex-col gap-1 items-center mb-4">
                    <p className="text-slate-400/80 italic text-[13px] relative flex gap-2"><Quote className="w-4 h-4 shrink-0 text-slate-300" /> "You're doing great, keep pushing!"</p>
                    <p className="text-slate-300 text-[12px] font-medium ml-6">— Pradeep K.</p>
                 </div>
+                </div>
               </div>
-            }
+            )}
 
             {state === "COURSE_DETAILS" && (
-              <div className="w-full h-full bg-white fixed inset-0 z-[60] overflow-hidden flex flex-col">
+              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-5">
                 {(() => {
                   const extendedCourse = mapToExtendedCourse(enrolledCourse);
                   if (!extendedCourse) return null;
@@ -2391,6 +2392,8 @@ export default function OnboardingFlow() {
                       onActionClick={() => setState("DASHBOARD_MAIN")}
                       secondaryActionButtonText="Change Course"
                       onSecondaryActionClick={() => setIsCourseCatalogOpen(true)}
+                      completedLessons={courseProgress}
+                      onToggleLesson={handleToggleActivity}
                     />
                   );
                 })()}
@@ -2398,13 +2401,14 @@ export default function OnboardingFlow() {
             )}
 
             {state === "GAMES" && (
-              <div className="flex flex-col pt-0 bg-slate-50 pb-12 -mx-5 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-5 px-0 overflow-hidden">
                 <StudentGames
                   userName={name || "Student"}
                   userCoins={coinsCount}
                   onCoinsEarned={(delta) => updateCoinsInDb(Math.max(0, coinsCount + delta))}
                   onBack={() => setState("DASHBOARD_MAIN")}
                   onPlayComplete={handlePlayComplete}
+                  enrolledCourse={enrolledCourse}
                 />
               </div>
             )}
@@ -2439,7 +2443,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "NOTES" && (
-              <div className="flex flex-col pt-0 bg-slate-50 pb-24 relative min-h-[85vh] -mx-5 px-5">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-5 px-5">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-0 mx-0 flex justify-between items-center border-b border-slate-100 mb-4">
@@ -2649,7 +2653,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "PROFILE" && (
-              <div className="flex flex-col pt-0 bg-slate-50 pb-12 -mx-5 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-5 px-0 overflow-hidden">
                 
                 {/* Purple Top Block */}
                 <div className="bg-[#0f172a] pt-8 pb-16 px-5 relative">
@@ -2821,15 +2825,13 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                {state !== "MESSAGES" && (
-                  <div className="shrink-0 bg-white border-t border-slate-100 flex justify-between px-5 pt-3 pb-8 sm:rounded-b-2xl">
-                    <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 w-12 ${state === "DASHBOARD_MAIN" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
-                    <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 w-12 ${state === "COURSE_DETAILS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
-                    <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 w-12 ${state === "GAMES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"} relative`}><Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>{state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}<span className="text-[10px] font-medium">Games</span></button>
-                    <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
-                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
-                  </div>
-                )}
+                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-between px-10 sm:px-16 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                  <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 w-12 ${state === "DASHBOARD_MAIN" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
+                  <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 w-12 ${state === "COURSE_DETAILS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
+                  <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 w-12 ${state === "GAMES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"} relative`}><Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>{state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}<span className="text-[10px] font-medium">Games</span></button>
+                  <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
+                  <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
+                </div>
 
                 {/* Scheduling Bottom Sheet */}
                 {isSchedulingModalOpen && (
@@ -3152,64 +3154,69 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-            {state === "MENTOR_QUIZ" && (() => {
-              const currentData = MENTOR_QUIZ_STEPS[mentorQuizIndex];
-              const Icon = currentData.icon;
-              return (
-                <motion.div key={`mentor_quiz_${mentorQuizIndex}`} variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white">
-                  <div className="flex gap-1.5 justify-center mb-4 mt-6 shrink-0">
-                     {[1,2,3,4,5,6,7,8].map(i => <div key={i} className={`h-1 flex-1 rounded-full ${i <= (mentorQuizIndex + 3) ? 'bg-[#0f172a]' : 'bg-slate-100'}`} />)}
-                  </div>
-                  <div className="mb-6 shrink-0">
-                    <div className="flex items-center justify-between mb-6">
-                      <button onClick={() => mentorQuizIndex > 0 ? setMentorQuizIndex(mentorQuizIndex - 1) : setState("MENTOR_PROFILE")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 flex items-center gap-1.5 focus:outline-none">
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="text-sm font-medium text-slate-500">{currentData.step} of {MENTOR_QUIZ_STEPS.length}</span>
-                      </button>
-                      <button className="text-[13px] text-slate-400 flex items-center gap-1.5 hover:text-slate-600 focus:outline-none font-medium">
-                        <SkipForward className="w-3.5 h-3.5" /> Skip All
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2.5 rounded-full text-white`} style={{ backgroundColor: currentData.color }}>
-                        <Icon className="w-5 h-5" />
+            {state === "MENTOR_QUIZ" && mentorQuizSteps.length > 0 && (
+              <div className="w-full">
+                {(() => {
+                  const currentData = mentorQuizSteps[mentorQuizIndex];
+                  const Icon = getIcon(currentData.icon as any);
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <p className="text-blue-600 text-[11px] font-bold uppercase tracking-widest mb-1">Mentor Application</p>
+                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentData.title}</h2>
+                        </div>
+                        <span className="text-sm font-medium text-slate-500">{currentData.step} of {mentorQuizSteps.length}</span>
                       </div>
-                      <h2 className="text-[17px] font-medium text-[#0f172a]">{currentData.title}</h2>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 overflow-y-auto pr-3 -mr-3 pb-8 space-y-8 scrollbar-thin">
-                    {currentData.questions.map((q) => (
-                      <div key={q.id} className="space-y-3.5">
-                        <p className="text-[14px] text-slate-700 font-medium leading-relaxed">
-                          <span className="text-slate-400 font-normal mr-1">{q.number}</span>{q.text}
-                        </p>
-                        {q.type === "input" ? (
-                          <Input placeholder={q.placeholder} value={(selections[q.id] as string) || ""} onChange={(e) => handleInputChange(q.id, e.target.value)} className="h-[50px] rounded-xl border-slate-200 text-[15px] bg-white shadow-sm shadow-slate-100/50 hover:border-slate-300 transition-colors focus-visible:ring-[#0cb4ce]/20" />
-                        ) : (
-                          <div className="flex flex-wrap gap-2.5">
-                            {q.options?.map(opt => {
-                              const selected = q.multiSelect ? ((selections[q.id] as string[]) || []).includes(opt) : selections[q.id] === opt;
-                              return <SelectionChip key={opt} label={opt} active={selected} onClick={() => handleSelect(q.id, opt, q.multiSelect)} />;
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
-                  <div className="pt-4 shrink-0 bg-white border-t border-slate-50 mt-auto mb-4">
-                    <Button onClick={() => mentorQuizIndex < MENTOR_QUIZ_STEPS.length - 1 ? setMentorQuizIndex(mentorQuizIndex + 1) : saveProfileData("MENTOR")} className={`w-full h-[52px] rounded-xl text-[15px] font-medium transition-all ${(selections['q101'] || selections['q102'] || selections['q103'] || selections['q104']) ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
-                      Next <ArrowRight className="w-[18px] h-[18px] ml-1.5" />
-                    </Button>
-                    <button onClick={() => saveProfileData("MENTOR")} className="w-full mt-4 pb-1 text-[13px] font-medium text-slate-400 hover:text-slate-600">Skip this section</button>
-                  </div>
-                </motion.div>
-              );
-            })()}
+                      <div className="space-y-8">
+                        {currentData.questions.map((q: any) => (
+                          <div key={q.id} className="space-y-3">
+                            <Label className="text-[14px] font-bold text-slate-700">{q.text}</Label>
+                            {q.type === "input" ? (
+                              <Input 
+                                placeholder={q.placeholder}
+                                value={(selections[q.id] as string) || ""}
+                                onChange={(e) => setSelections({ ...selections, [q.id]: e.target.value })}
+                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
+                              />
+                            ) : (
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {q.options?.map((opt: string) => (
+                                  <SelectionChip
+                                    key={opt}
+                                    label={opt}
+                                    active={selections[q.id] === opt}
+                                    onClick={() => setSelections({ ...selections, [q.id]: opt })}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-12 flex gap-4">
+                        <Button 
+                          onClick={() => mentorQuizIndex < mentorQuizSteps.length - 1 ? setMentorQuizIndex(mentorQuizIndex + 1) : saveProfileData("MENTOR")} 
+                          className={cn(
+                            "flex-1 h-14 rounded-2xl font-bold text-[15px] transition-all",
+                            (selections['q101'] || selections['q102'] || selections['q103'] || selections['q104']) 
+                              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200" 
+                              : "bg-slate-200 text-slate-400 pointer-events-none"
+                          )}
+                        >
+                          {mentorQuizIndex === mentorQuizSteps.length - 1 ? "Complete Application" : "Continue"} <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-5 overflow-y-auto hidden-scrollbar pb-32">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-5 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-8 pb-6 z-30 border-b border-slate-100">
@@ -3342,9 +3349,9 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-            {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
-              <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50">
-                <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-6">
+             {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
+               <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50 relative">
+                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
                   {state === "MENTOR_DASHBOARD" && <MentorHome />}
                   {state === "MENTOR_STUDENTS" && <MentorStudents />}
                   {state === "MENTOR_COURSES" && <MentorCourses />}
@@ -3353,15 +3360,15 @@ export default function OnboardingFlow() {
                   {state === "MENTOR_ACCOUNT" && <MentorProfile onSignOut={handleSignOut} />}
                 </div>
 
-                {/* Bottom Navigation */}
-                <div className="shrink-0 bg-white border-t border-slate-100 flex justify-between px-5 pt-3 pb-8 sm:rounded-b-2xl">
-                  <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_DASHBOARD" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
-                  <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_STUDENTS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Students</span></button>
-                  <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_COURSES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><GraduationCap className="w-5 h-5" strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
-                  <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
-                  <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_CIRCLE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Circle</span></button>
-                  <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_ACCOUNT" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
-                </div>
+                 {/* Bottom Navigation */}
+                 <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-between px-6 pt-3 pb-8 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                   <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_DASHBOARD" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
+                   <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_STUDENTS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Students</span></button>
+                   <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_COURSES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><GraduationCap className="w-5 h-5" strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
+                   <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
+                   <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_CIRCLE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Circle</span></button>
+                   <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 w-12 ${state === "MENTOR_ACCOUNT" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
+                 </div>
               </motion.div>
             )}
 

@@ -11,7 +11,7 @@ const supabase = createClient();
 export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
   const [profile, setProfile] = useState<any>({
     name: "Vikram Patel",
-    email: "vikram.p@mentorhub.io",
+    email: "vikram.p@kindmentor.com",
     role: "Senior React Developer",
     location: "Mumbai, India",
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop"

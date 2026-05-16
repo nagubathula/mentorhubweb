@@ -261,7 +261,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-5"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -314,7 +314,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-20">
+      <div className="flex-1 overflow-y-auto px-5 py-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait">
           {activeTab === "support" && (
             <motion.div
@@ -334,7 +334,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                   </div>
                   <h3 className="text-sm font-semibold leading-relaxed">Sponsor Learning & Mentorship</h3>
                   <p className="text-white/85 text-[11px] leading-relaxed">
-                    MentorHub is a student-first open platform. Voluntary support is fully re-invested into server maintenance, community workspace allowances, and resources for underprivileged coders.
+                    Kind Mentor is a student-first open platform. Voluntary support is fully re-invested into server maintenance, community workspace allowances, and resources for underprivileged coders.
                   </p>
                 </div>
               </div>

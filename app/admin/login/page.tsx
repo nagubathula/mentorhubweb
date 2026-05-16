@@ -60,10 +60,10 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-[400px]">
         <div className="flex flex-col items-center justify-center mb-8 gap-3">
-          <div className="bg-[#0f172a] p-3 rounded-xl flex items-center justify-center shadow-sm">
-            <GraduationCap className="text-white w-8 h-8" />
+          <div className="mb-2 hover:scale-105 transition-all duration-300">
+            <img src="/logo.svg" alt="Kind Mentor Logo" className="w-20 h-20 object-contain" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">MentorHub</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Kind Mentor</h1>
           <p className="text-sm text-slate-500 font-medium">Admin Portal Access</p>
         </div>
 
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@mentorhub.com"
+                placeholder="admin@kindmentor.com"
                 className="bg-slate-50/50 border-slate-200 focus-visible:ring-slate-400 shadow-none h-10"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError(""); }}

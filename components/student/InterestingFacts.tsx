@@ -129,7 +129,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-5"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -188,7 +188,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
       </div>
 
       {/* Main Content scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-20">
+      <div className="flex-1 overflow-y-auto px-5 py-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait">
           {activeTab === "feed" && (
             <motion.div
