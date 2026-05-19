@@ -55,20 +55,41 @@ export interface ExtendedCourse {
 
 // Helper to map and inject enabled: true property to modules/lessons to match decompiler 'l5' exactly
 function l5(c: any): ExtendedCourse {
+  // Try to parse description if it contains serialized JSON metadata
+  let parsedCourse = { ...c };
+  try {
+    if (c.description && c.description.trim().startsWith('{')) {
+      const parsed = JSON.parse(c.description);
+      if (parsed && typeof parsed === 'object') {
+        parsedCourse = {
+          ...c,
+          description: parsed.description || "",
+          difficulty: parsed.difficulty || "Beginner",
+          duration: parsed.duration || "10 hours",
+          category: parsed.category || "General",
+          modules: parsed.modules || parsed.content || [],
+          content: parsed.modules || parsed.content || []
+        };
+      }
+    }
+  } catch (e) {}
+
+  const finalSource = parsedCourse;
+
   return {
-    id: c.id,
-    title: c.title,
-    shortTitle: c.shortTitle || c.title.slice(0, 15),
-    description: c.description || "",
-    category: c.category || "General",
-    difficulty: c.difficulty || "Beginner",
-    duration: c.duration || "10 hours",
-    enrolled: c.enrolled ?? false,
-    progress: c.progress || 0,
-    color: c.color || "text-emerald-600",
-    bgColor: c.bgColor || "bg-emerald-500",
-    icon: c.icon || <BookOpen className="w-5 h-5" />,
-    modules: (c.modules || c.content || []).map((m: any) => {
+    id: finalSource.id,
+    title: finalSource.title,
+    shortTitle: finalSource.shortTitle || finalSource.title.slice(0, 15),
+    description: finalSource.description || "",
+    category: finalSource.category || "General",
+    difficulty: finalSource.difficulty || "Beginner",
+    duration: finalSource.duration || "10 hours",
+    enrolled: finalSource.enrolled ?? false,
+    progress: finalSource.progress || 0,
+    color: finalSource.color || "text-emerald-600",
+    bgColor: finalSource.bgColor || "bg-emerald-500",
+    icon: finalSource.icon || <BookOpen className="w-5 h-5" />,
+    modules: (finalSource.modules || finalSource.content || []).map((m: any) => {
       const dbLessons = m.lessons || (m.topics || []).map((topicName: string, tIdx: number) => ({
         id: `${m.id || 'm'}-l-${tIdx}`,
         title: topicName,
@@ -111,7 +132,7 @@ function RenderLessonIcon({ type }: { type: string }) {
   }
 }
 
-export function MentorCourses() {
+export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
   const [courses, setCourses] = useState<ExtendedCourse[]>([]);
   const [assignedStudents, setAssignedStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,13 +211,35 @@ export function MentorCourses() {
       .order('created_at', { ascending: false });
 
     // Combine database courses with mock ones if they aren't duplicate
+    const parsedDbCourses = (dbCourses || []).map((c: any) => {
+      try {
+        if (c.description && c.description.trim().startsWith('{')) {
+          const parsed = JSON.parse(c.description);
+          if (parsed && typeof parsed === 'object') {
+            return {
+              ...c,
+              description: parsed.description || "",
+              difficulty: parsed.difficulty || "Beginner",
+              duration: parsed.duration || "10 hours",
+              category: parsed.category || "General",
+              modules: parsed.modules || parsed.content || [],
+              content: parsed.modules || parsed.content || []
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to parse course description JSON", e);
+      }
+      return c;
+    });
+
     const localCatalog = mentorCoursesCatalog;
     const combined = [
-      ...(dbCourses || []).map(c => ({
+      ...parsedDbCourses.map(c => ({
         ...c,
-        modules: (c as any).content || []
+        modules: c.modules || c.content || []
       })),
-      ...localCatalog.filter(c => !(dbCourses || []).some(sc => sc.title === c.title))
+      ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
     ];
 
     setCourses(combined.map(l5));
@@ -270,13 +313,29 @@ export function MentorCourses() {
     setIsSaving(true);
     const { data: { session } } = await supabase.auth.getSession();
 
+    const serializedDescription = JSON.stringify({
+      description: activeCourse.description || "",
+      difficulty: activeCourse.difficulty || "Beginner",
+      duration: activeCourse.duration || "10 hours",
+      category: activeCourse.category || "General",
+      modules: (activeCourse.modules || []).map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        description: m.description || "",
+        enabled: m.enabled !== false,
+        lessons: (m.lessons || []).map((l: any) => ({
+          id: l.id,
+          title: l.title,
+          duration: l.duration || "15 mins",
+          type: l.type || "video",
+          enabled: l.enabled !== false
+        }))
+      }))
+    });
+
     const payload = {
       title: activeCourse.title,
-      description: activeCourse.description,
-      difficulty: activeCourse.difficulty,
-      duration: activeCourse.duration,
-      category: activeCourse.category,
-      content: activeCourse.modules as unknown as import("@/lib/database.types").Json,
+      description: serializedDescription,
       mentor_id: session?.user?.id,
       status: 'Active'
     };
@@ -289,10 +348,7 @@ export function MentorCourses() {
       const { error } = await supabase.from('courses').update(payload).eq('id', activeCourse.id);
       err = error;
     } else {
-      const { error } = await supabase.from('courses').insert({
-        ...payload,
-        index_code: activeCourse.shortTitle
-      });
+      const { error } = await supabase.from('courses').insert(payload);
       err = error;
     }
 
@@ -463,11 +519,29 @@ export function MentorCourses() {
 
     if (!isUUID) {
       // Must create a course record in DB first if mock course is being assigned
+      const serializedDescription = JSON.stringify({
+        description: assigningCourse.description || "",
+        difficulty: assigningCourse.difficulty || "Beginner",
+        duration: assigningCourse.duration || "10 hours",
+        category: assigningCourse.category || "General",
+        modules: (assigningCourse.modules || []).map((m: any) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description || "",
+          enabled: m.enabled !== false,
+          lessons: (m.lessons || []).map((l: any) => ({
+            id: l.id,
+            title: l.title,
+            duration: l.duration || "15 mins",
+            type: l.type || "video",
+            enabled: l.enabled !== false
+          }))
+        }))
+      });
+
       const payload = {
         title: assigningCourse.title,
-        index_code: assigningCourse.shortTitle,
-        description: assigningCourse.description,
-        content: assigningCourse.modules as unknown as import("@/lib/database.types").Json,
+        description: serializedDescription,
         mentor_id: session?.user?.id,
         status: 'Active'
       };
@@ -516,12 +590,22 @@ export function MentorCourses() {
               
               <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-3">
+                  {onClose && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={onClose}
+                      className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white shadow-lg backdrop-blur-sm mr-1 shrink-0"
+                    >
+                      <ArrowLeft className="w-5 h-5 text-white" />
+                    </Button>
+                  )}
                   <div className="w-12 h-12 bg-white/10 p-2.5 rounded-2xl backdrop-blur-md border border-white/10 flex items-center justify-center">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold font-volkhov tracking-tight leading-tight">Course Architect</h2>
-                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">Design & Guide Curriculum</p>
+                    <h2 className="text-xl font-medium tracking-tight tracking-tight leading-tight">Course Architect</h2>
+                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mt-1">Design & Guide Curriculum</p>
                   </div>
                 </div>
                 <Button 
@@ -606,7 +690,7 @@ export function MentorCourses() {
                             <Layers className="w-5.5 h-5.5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-[15px] font-bold text-slate-900 truncate leading-tight font-volkhov">
+                            <h3 className="text-[15px] font-medium text-slate-900 truncate leading-tight">
                               {course.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1.5">
@@ -651,7 +735,7 @@ export function MentorCourses() {
                 {reviewQueue.length === 0 ? (
                   <div className="py-20 text-center text-slate-400">
                     <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-2" />
-                    <p className="text-sm font-bold">Review queue is empty!</p>
+                    <p className="text-sm font-medium">Review queue is empty!</p>
                     <p className="text-xs text-slate-400 mt-1">Students haven't submitted capstones yet.</p>
                   </div>
                 ) : (
@@ -673,12 +757,12 @@ export function MentorCourses() {
                             )}>
                               {item.status}
                             </span>
-                            <h4 className="text-[16px] font-bold text-slate-900 mt-3 font-volkhov truncate">{item.project_title}</h4>
+                            <h4 className="text-[16px] font-medium text-slate-900 mt-3 truncate">{item.project_title}</h4>
                             <div className="flex items-center gap-2 mt-1.5">
                                <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-400 uppercase">
                                  {studentName.substring(0, 2)}
                                </div>
-                               <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{studentName}</p>
+                               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{studentName}</p>
                             </div>
                           </div>
                           
@@ -773,12 +857,12 @@ export function MentorCourses() {
                 >
                   <ArrowLeft className="w-4 h-4 text-white" />
                 </button>
-                <p className="text-white text-xs font-bold">Edit Course Path</p>
+                <p className="text-white text-xs font-medium">Edit Course Path</p>
                 
                 <button
                   onClick={handleSaveToDatabase}
                   disabled={isSaving}
-                  className="px-4 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white text-[11px] font-bold active:scale-95 transition-transform flex items-center gap-1.5"
+                  className="px-4 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white text-[11px] font-medium active:scale-95 transition-transform flex items-center gap-1.5"
                 >
                   {isSaved ? (
                     <>
@@ -802,7 +886,7 @@ export function MentorCourses() {
               {activeCourse && (
                 <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-4">
                   <div>
-                    <label className="text-slate-400 text-[10px] uppercase font-bold mb-1.5 block">Course Title</label>
+                    <label className="text-slate-400 text-[10px] uppercase font-medium mb-1.5 block">Course Title</label>
                     <input
                       type="text"
                       value={activeCourse.title}
@@ -812,7 +896,7 @@ export function MentorCourses() {
                   </div>
 
                   <div>
-                    <label className="text-slate-400 text-[10px] uppercase font-bold mb-1.5 block">Description</label>
+                    <label className="text-slate-400 text-[10px] uppercase font-medium mb-1.5 block">Description</label>
                     <textarea
                       value={activeCourse.description}
                       onChange={(e) => I(activeCourse.id, { description: e.target.value })}
@@ -823,11 +907,11 @@ export function MentorCourses() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-slate-400 text-[10px] uppercase font-bold mb-1.5 block">Difficulty</label>
+                      <label className="text-slate-400 text-[10px] uppercase font-medium mb-1.5 block">Difficulty</label>
                       <select
                         value={activeCourse.difficulty}
                         onChange={(e: any) => I(activeCourse.id, { difficulty: e.target.value })}
-                        className="w-full px-2.5 py-2.5 bg-slate-50 rounded-xl text-xs text-slate-900 font-bold outline-none border border-slate-100 focus:border-emerald-300 focus:bg-white"
+                        className="w-full px-2.5 py-2.5 bg-slate-50 rounded-xl text-xs text-slate-900 font-medium outline-none border border-slate-100 focus:border-emerald-300 focus:bg-white"
                       >
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
@@ -836,7 +920,7 @@ export function MentorCourses() {
                     </div>
 
                     <div>
-                      <label className="text-slate-400 text-[10px] uppercase font-bold mb-1.5 block">Duration</label>
+                      <label className="text-slate-400 text-[10px] uppercase font-medium mb-1.5 block">Duration</label>
                       <input
                         type="text"
                         value={activeCourse.duration}
@@ -846,7 +930,7 @@ export function MentorCourses() {
                     </div>
 
                     <div>
-                      <label className="text-slate-400 text-[10px] uppercase font-bold mb-1.5 block">Category</label>
+                      <label className="text-slate-400 text-[10px] uppercase font-medium mb-1.5 block">Category</label>
                       <input
                         type="text"
                         value={activeCourse.category}
@@ -864,7 +948,7 @@ export function MentorCourses() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div>
-                      <p className="text-emerald-900 text-xs font-bold">
+                      <p className="text-emerald-900 text-xs font-medium">
                         {activeCourse.modules.filter(m => m.enabled).length}/{activeCourse.modules.length} active modules
                       </p>
                       <p className="text-emerald-600 text-[10px] font-medium mt-0.5">
@@ -884,7 +968,7 @@ export function MentorCourses() {
                     setErrors([]);
                   }}
                   className={cn(
-                    "w-full flex items-center gap-2 px-4 py-3.5 text-xs font-bold transition-all",
+                    "w-full flex items-center gap-2 px-4 py-3.5 text-xs font-medium transition-all",
                     uploadPanelOpen ? "bg-emerald-600 text-white" : "text-slate-700 bg-white hover:bg-slate-50"
                   )}
                 >
@@ -906,7 +990,7 @@ export function MentorCourses() {
                           <p className="text-slate-400 text-[10px] font-medium">Upload CSV or JSON with custom modules schema</p>
                           <button
                             onClick={handleDownloadTemplate}
-                            className="text-emerald-600 text-[10px] font-bold flex items-center gap-1 hover:underline"
+                            className="text-emerald-600 text-[10px] font-medium flex items-center gap-1 hover:underline"
                           >
                             <Download className="w-3 h-3" /> Template
                           </button>
@@ -928,9 +1012,9 @@ export function MentorCourses() {
                           )}
                         >
                           <FileSpreadsheet className={cn("w-8 h-8 mx-auto mb-2", dragOver ? "text-emerald-500" : "text-slate-300")} />
-                          <p className="text-slate-500 text-[11px] font-bold">Drag & drop course index, or browse</p>
+                          <p className="text-slate-500 text-[11px] font-medium">Drag & drop course index, or browse</p>
                           
-                          <label className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold rounded-xl cursor-pointer mt-3 active:scale-95 transition-transform">
+                          <label className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-medium rounded-xl cursor-pointer mt-3 active:scale-95 transition-transform">
                             <Upload className="w-3 h-3" /> Browse Files
                             <input
                               type="file"
@@ -953,7 +1037,7 @@ export function MentorCourses() {
                               </p>
                             ))}
                             {errors.length > 3 && (
-                              <p className="text-red-400 text-[10px] font-bold pl-4">+{errors.length - 3} more errors</p>
+                              <p className="text-red-400 text-[10px] font-medium pl-4">+{errors.length - 3} more errors</p>
                             )}
                           </div>
                         )}
@@ -962,7 +1046,7 @@ export function MentorCourses() {
                         {parsedModules.length > 0 && (
                           <div className="space-y-3">
                             <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between">
-                              <p className="text-emerald-800 text-[10px] font-bold flex items-center gap-1.5">
+                              <p className="text-emerald-800 text-[10px] font-medium flex items-center gap-1.5">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                 {parsedModules.length} modules · {parsedModules.reduce((acc, m) => acc + m.lessons.length, 0)} lessons ready
                               </p>
@@ -970,7 +1054,7 @@ export function MentorCourses() {
 
                             <div className="max-h-28 overflow-y-auto border border-slate-100 rounded-xl p-2.5 bg-slate-50 space-y-1.5">
                               {parsedModules.map((pm, uIdx) => (
-                                <div key={uIdx} className="bg-white rounded-lg px-2.5 py-1.5 flex justify-between items-center text-[10px] font-bold text-slate-700">
+                                <div key={uIdx} className="bg-white rounded-lg px-2.5 py-1.5 flex justify-between items-center text-[10px] font-medium text-slate-700">
                                   <span className="truncate flex-1 pr-2">{pm.title}</span>
                                   <span className="text-slate-400 shrink-0">({pm.lessons.length} lessons)</span>
                                 </div>
@@ -980,7 +1064,7 @@ export function MentorCourses() {
                             <div className="flex gap-2 shrink-0 pt-1">
                               <Button
                                 onClick={handleAddUploadedModules}
-                                className="flex-1 h-9 rounded-xl text-[10px] font-bold bg-slate-900 text-white hover:bg-slate-800"
+                                className="flex-1 h-9 rounded-xl text-[10px] font-medium bg-slate-900 text-white hover:bg-slate-800"
                               >
                                 Add {parsedModules.length} Modules
                               </Button>
@@ -990,7 +1074,7 @@ export function MentorCourses() {
                                   setErrors([]);
                                 }}
                                 variant="outline"
-                                className="h-9 px-4 rounded-xl text-[10px] font-bold text-slate-500"
+                                className="h-9 px-4 rounded-xl text-[10px] font-medium text-slate-500"
                               >
                                 Clear
                               </Button>
@@ -1026,7 +1110,7 @@ export function MentorCourses() {
                         setExpandedModuleId(newModId);
                       }}
                       variant="ghost"
-                      className="h-7 text-emerald-600 text-[10.5px] font-bold px-2 rounded-lg hover:bg-emerald-50"
+                      className="h-7 text-emerald-600 text-[10.5px] font-medium px-2 rounded-lg hover:bg-emerald-50"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" /> Add Module
                     </Button>
@@ -1046,7 +1130,7 @@ export function MentorCourses() {
                         >
                           {/* Module summary line */}
                           <div className="flex items-center gap-2.5 px-4 py-3.5">
-                            <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10.5px] font-bold shrink-0">
+                            <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 text-[10.5px] font-medium shrink-0">
                               {modIdx + 1}
                             </div>
 
@@ -1054,7 +1138,7 @@ export function MentorCourses() {
                               onClick={() => setExpandedModuleId(isExpanded ? null : mod.id)}
                               className="flex-1 text-left min-w-0"
                             >
-                              <p className="text-slate-900 text-xs font-bold truncate">{mod.title}</p>
+                              <p className="text-slate-900 text-xs font-medium truncate">{mod.title}</p>
                               <p className="text-slate-400 text-[10px] font-medium mt-0.5">{mod.lessons.length} lessons</p>
                             </button>
 
@@ -1109,7 +1193,7 @@ export function MentorCourses() {
                                           onKeyDown={(e) => e.key === "Enter" && setEditingLessonId(null)}
                                         />
                                       ) : (
-                                        <p className="flex-1 text-slate-800 text-xs font-bold truncate">{les.title}</p>
+                                        <p className="flex-1 text-slate-800 text-xs font-medium truncate">{les.title}</p>
                                       )}
 
                                       <span className="text-slate-400 text-[10px] font-medium shrink-0 pr-1">{les.duration}</span>
@@ -1145,7 +1229,7 @@ export function MentorCourses() {
 
                                 <button
                                   onClick={() => _(activeCourse.id, mod.id)}
-                                  className="w-full flex items-center justify-center gap-1.5 py-2 text-emerald-600 bg-white hover:bg-emerald-50 rounded-xl border border-slate-100 text-[10.5px] font-bold transition-all mt-2"
+                                  className="w-full flex items-center justify-center gap-1.5 py-2 text-emerald-600 bg-white hover:bg-emerald-50 rounded-xl border border-slate-100 text-[10.5px] font-medium transition-all mt-2"
                                 >
                                   <Plus className="w-3.5 h-3.5" /> Add Lesson
                                 </button>
@@ -1191,7 +1275,7 @@ export function MentorCourses() {
                     </DialogTitle>
                   </div>
                   <DialogDescription className="text-xs text-slate-400 font-medium pl-8">
-                    Select an assigned student to enroll in <span className="font-bold text-slate-800">{assigningCourse.title}</span>.
+                    Select an assigned student to enroll in <span className="font-medium text-slate-800">{assigningCourse.title}</span>.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -1204,11 +1288,11 @@ export function MentorCourses() {
                       className="w-full flex items-center justify-between p-4 bg-slate-50/70 hover:bg-white rounded-2xl border border-slate-100/80 hover:border-slate-900/10 hover:shadow-lg transition-all group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-100/50 flex items-center justify-center font-bold text-emerald-700 text-xs uppercase shrink-0">
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-100/50 flex items-center justify-center font-medium text-emerald-700 text-xs uppercase shrink-0">
                           {student.name ? student.name.slice(0, 2) : "ST"}
                         </div>
                         <div className="text-left min-w-0">
-                          <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">{student.name || student.email.split('@')[0]}</p>
+                          <p className="text-[13px] font-medium text-slate-900 truncate leading-tight">{student.name || student.email.split('@')[0]}</p>
                           <p className="text-[10.5px] text-slate-400 font-semibold truncate mt-0.5">{student.email}</p>
                         </div>
                       </div>
@@ -1239,7 +1323,7 @@ export function MentorCourses() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-slate-950 font-bold text-base">Review Project Submission</h3>
+                  <h3 className="text-slate-950 font-medium text-base">Review Project Submission</h3>
                   <p className="text-slate-400 text-xs mt-0.5">Project: {selectedSubmission.project_title}</p>
                 </div>
                 <button 
@@ -1247,7 +1331,7 @@ export function MentorCourses() {
                     setIsSubmitReviewOpen(false);
                     setSelectedSubmission(null);
                   }}
-                  className="text-slate-300 hover:text-slate-600 text-sm font-bold w-6 h-6 rounded-full hover:bg-slate-50 flex items-center justify-center"
+                  className="text-slate-300 hover:text-slate-600 text-sm font-medium w-6 h-6 rounded-full hover:bg-slate-50 flex items-center justify-center"
                 >
                   ✕
                 </button>
@@ -1255,7 +1339,7 @@ export function MentorCourses() {
 
               <div className="space-y-3.5 pt-2">
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Rating Score</p>
+                  <p className="text-slate-400 text-[10px] uppercase font-medium tracking-wider">Rating Score</p>
                   <div className="flex gap-1.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -1271,7 +1355,7 @@ export function MentorCourses() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Review Comments & Feedback</p>
+                  <p className="text-slate-400 text-[10px] uppercase font-medium tracking-wider">Review Comments & Feedback</p>
                   <textarea
                     rows={3}
                     placeholder="Provide detailed feedback, next steps, or request improvements..."
@@ -1285,13 +1369,13 @@ export function MentorCourses() {
                   <Button
                     variant="outline"
                     onClick={() => handleCompleteSubmissionReview("Rejected")}
-                    className="flex-1 rounded-xl text-xs bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 hover:text-rose-700 font-bold"
+                    className="flex-1 rounded-xl text-xs bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 hover:text-rose-700 font-medium"
                   >
                     Request Changes
                   </Button>
                   <Button
                     onClick={() => handleCompleteSubmissionReview("Approved")}
-                    className="flex-1 rounded-xl text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                    className="flex-1 rounded-xl text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
                   >
                     Approve Submission
                   </Button>

@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 const volkhov = Volkhov({
-  variable: "--font-volkhov",
+  variable: "--",
   weight: ["400", "700"],
   subsets: ["latin"],
 });
 
 const mulish = Mulish({
-  variable: "--font-mulish",
+  variable: "--",
   subsets: ["latin"],
 });
 
@@ -41,7 +41,7 @@ const inter = Inter({
 });
 
 const poppins = Poppins({
-  variable: "--font-poppins",
+  variable: "--",
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
 });
@@ -70,7 +70,7 @@ export default function RootLayout({
       lang="en"
       className={`${poppins.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-poppins">
+      <body className="min-h-full flex flex-col font-inter">
         <TooltipProvider>
           {children}
         </TooltipProvider>

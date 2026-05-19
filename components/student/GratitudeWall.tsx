@@ -330,7 +330,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                 <div className="relative space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-200" />
-                    <p className="text-white/80 text-[10px] font-bold uppercase tracking-wider">Keep Learning Free & Open</p>
+                    <p className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Keep Learning Free & Open</p>
                   </div>
                   <h3 className="text-sm font-semibold leading-relaxed">Sponsor Learning & Mentorship</h3>
                   <p className="text-white/85 text-[11px] leading-relaxed">
@@ -351,7 +351,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                     {supportSuccess ? (
                       <div className="text-center py-6 space-y-3">
                         <span className="text-4xl animate-bounce">💖</span>
-                        <p className="text-gray-900 text-xs font-bold">Contribution Pledged!</p>
+                        <p className="text-gray-900 text-xs font-medium">Contribution Pledged!</p>
                         <p className="text-gray-400 text-[10px] max-w-[200px] mx-auto leading-relaxed">
                           Thank you so much! Your pledge helps keep this platform accessible for thousands of novice developers.
                         </p>
@@ -359,10 +359,10 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                     ) : (
                       <div className="space-y-3.5">
                         <div className="flex items-center justify-between border-b border-gray-50 pb-2">
-                          <p className="text-gray-800 text-xs font-bold">Support Pledge Form</p>
+                          <p className="text-gray-800 text-xs font-medium">Support Pledge Form</p>
                           <button
                             onClick={() => setIsFormOpen(false)}
-                            className="text-gray-300 hover:text-gray-500 text-xs font-bold"
+                            className="text-gray-300 hover:text-gray-500 text-xs font-medium"
                           >
                             Close
                           </button>
@@ -370,7 +370,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
 
                         {/* Name input */}
                         <div className="space-y-1">
-                          <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider">Your Name (or leave blank)</p>
+                          <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider">Your Name (or leave blank)</p>
                           <input
                             type="text"
                             placeholder="e.g. Priya S."
@@ -383,7 +383,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
 
                         {/* Message input */}
                         <div className="space-y-1">
-                          <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider">Support Message</p>
+                          <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider">Support Message</p>
                           <textarea
                             placeholder="Write a message to our community, mentors, or student body..."
                             value={supportMsg}
@@ -395,13 +395,13 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
 
                         {/* Custom contribution chip buttons */}
                         <div className="space-y-1.5">
-                          <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider">Contribution Amount</p>
+                          <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider">Contribution Amount</p>
                           <div className="grid grid-cols-4 gap-2">
                             {[50, 100, 200, 500].map(amt => (
                               <button
                                 key={amt}
                                 onClick={() => setSupportAmount(amt)}
-                                className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                                className={`py-2 rounded-xl text-xs font-medium border transition-all ${
                                   supportAmount === amt
                                     ? "bg-rose-500 text-white border-transparent"
                                     : "bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-200"
@@ -431,7 +431,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                         <button
                           onClick={handleSupportSubmit}
                           disabled={!supportMsg.trim()}
-                          className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md ${
+                          className={`w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-md ${
                             supportMsg.trim()
                               ? "bg-rose-500 text-white shadow-rose-500/10 hover:bg-rose-600"
                               : "bg-gray-100 text-gray-300 pointer-events-none"
@@ -446,7 +446,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                 ) : (
                   <button
                     onClick={() => setIsFormOpen(true)}
-                    className="w-full py-3 bg-white border border-rose-100 rounded-2xl flex items-center justify-center gap-2 text-rose-600 text-xs font-bold shadow-sm hover:bg-rose-50/50 active:scale-95 transition-all"
+                    className="w-full py-3 bg-white border border-rose-100 rounded-2xl flex items-center justify-center gap-2 text-rose-600 text-xs font-medium shadow-sm hover:bg-rose-50/50 active:scale-95 transition-all"
                   >
                     <Heart className="w-4 h-4 fill-current text-rose-500" />
                     Support the Platform
@@ -457,7 +457,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
 
               {/* Scrollable feed list of pledges */}
               <div className="space-y-2.5">
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Supporters Board</p>
+                <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Supporters Board</p>
                 {donations.map((item, idx) => (
                   <motion.div
                     key={item.id}
@@ -468,17 +468,17 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                   >
                     {/* Tiny side ribbon highlighting contribution size */}
                     {item.amount >= 500 && (
-                      <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500 text-white flex items-center justify-center font-bold text-[8px] rotate-45 translate-x-3.5 -translate-y-3.5" title="Sponsor Level">
+                      <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500 text-white flex items-center justify-center font-medium text-[8px] rotate-45 translate-x-3.5 -translate-y-3.5" title="Sponsor Level">
                         ⭐
                       </div>
                     )}
-                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 font-bold text-xs">
+                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 font-medium text-xs">
                       {item.anonymous ? "👤" : item.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-gray-900 text-xs font-bold">{item.anonymous ? "Anonymous Supporter" : item.name}</p>
-                        <span className="text-emerald-600 text-xs font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                        <p className="text-gray-900 text-xs font-medium">{item.anonymous ? "Anonymous Supporter" : item.name}</p>
+                        <span className="text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
                           ₹{item.amount}
                         </span>
                       </div>
@@ -506,13 +506,13 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                       🌟
                     </div>
                     <div>
-                      <p className="text-gray-900 text-xs font-bold">Gratitude Progress</p>
+                      <p className="text-gray-900 text-xs font-medium">Gratitude Progress</p>
                       <p className="text-indigo-600 text-[10px] font-semibold">Thanking your mentor matters</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-gray-900 text-lg font-bold leading-none">{progressPercent}%</p>
-                    <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider">Complete</p>
+                    <p className="text-gray-900 text-lg font-medium leading-none">{progressPercent}%</p>
+                    <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider">Complete</p>
                   </div>
                 </div>
 
@@ -544,7 +544,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                   <button
                     key={cat.key}
                     onClick={() => setSelectedFilter(cat.key)}
-                    className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all border ${
+                    className={`px-3.5 py-1.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all border ${
                       selectedFilter === cat.key
                         ? "bg-violet-600 text-white border-transparent shadow-sm"
                         : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
@@ -568,13 +568,13 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                       transition={{ delay: idx * 0.03 }}
                     >
                       {/* Left Side Icon */}
-                      <div className={`w-8 h-8 rounded-xl ${item.bgColor} ${item.color} flex items-center justify-center shrink-0 text-lg font-bold`}>
+                      <div className={`w-8 h-8 rounded-xl ${item.bgColor} ${item.color} flex items-center justify-center shrink-0 text-lg font-medium`}>
                         {item.icon}
                       </div>
 
                       {/* Content middle */}
                       <div className="flex-1 min-w-0 space-y-1 pr-4">
-                        <p className={`text-xs font-bold leading-none ${item.completed ? "text-gray-400 line-through" : "text-gray-900"}`}>
+                        <p className={`text-xs font-medium leading-none ${item.completed ? "text-gray-400 line-through" : "text-gray-900"}`}>
                           {item.title}
                         </p>
                         <p className={`text-[10px] leading-relaxed ${item.completed ? "text-gray-300 line-through" : "text-gray-500"}`}>

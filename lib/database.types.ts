@@ -168,6 +168,36 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          id: string
+          key: string
+          title: string
+          category: string
+          is_enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          title: string
+          category: string
+          is_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          title?: string
+          category?: string
+          is_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       csr_sponsors: {
         Row: {
           avatar_initials: string | null
@@ -569,6 +599,7 @@ export type Database = {
           coins: number | null
           streak: number | null
           xp: number | null
+          last_state: string | null
         }
         Insert: {
           created_at?: string
@@ -583,6 +614,7 @@ export type Database = {
           coins?: number | null
           streak?: number | null
           xp?: number | null
+          last_state?: string | null
         }
         Update: {
           created_at?: string
@@ -597,6 +629,7 @@ export type Database = {
           coins?: number | null
           streak?: number | null
           xp?: number | null
+          last_state?: string | null
         }
         Relationships: []
       }

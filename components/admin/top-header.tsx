@@ -18,14 +18,14 @@ export function TopHeader() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-4">
-        <Link href="#" className="hidden lg:block text-[13px] text-slate-400 font-bold hover:text-slate-900 transition-colors">
+        <Link href="#" className="hidden lg:block text-[13px] text-slate-400 font-medium hover:text-slate-900 transition-colors">
           Mobile App
         </Link>
         <button className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-xl border border-slate-100">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
         </button>
-        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-sm font-bold text-white cursor-pointer shadow-lg border-2 border-white ring-1 ring-slate-100 overflow-hidden">
+        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-sm font-medium text-white cursor-pointer shadow-lg border-2 border-white ring-1 ring-slate-100 overflow-hidden">
            M
         </div>
       </div>

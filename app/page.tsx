@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 const supabase = createClient();
 const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
@@ -26,10 +26,11 @@ import { MentalWellness } from "@/components/student/MentalWellness";
 import { InterestingFacts } from "@/components/student/InterestingFacts";
 import { StudentPortfolio } from "@/components/student/StudentPortfolio";
 import { GratitudeWall } from "@/components/student/GratitudeWall";
+import { StudentResources } from "@/components/student/StudentResources";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 
-type FlowState = "LOGIN" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES";
+type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -81,9 +82,28 @@ const getIcon = (iconName: string) => IconMap[iconName] || HelpCircle;
 
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
 
+const AESTHETIC_GRADIENTS = [
+  "from-indigo-500 to-purple-600",
+  "from-emerald-500 to-teal-600",
+  "from-pink-500 to-rose-600",
+  "from-amber-500 to-orange-600",
+  "from-cyan-500 to-blue-600",
+  "from-violet-500 to-indigo-600",
+];
+
+const getGradientClass = (id: string) => {
+  if (!id) return AESTHETIC_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AESTHETIC_GRADIENTS.length;
+  return AESTHETIC_GRADIENTS[index];
+};
+
 export default function OnboardingFlow() {
-  const [state, setState] = useState<FlowState>("LOGIN");
-  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES"].includes(state);
+  const [state, setState] = useState<FlowState>("WELCOME");
+  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -93,6 +113,33 @@ export default function OnboardingFlow() {
   // Custom user data
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
+  // Default Feature Flags fallback
+  const DEFAULT_FEATURE_FLAGS: Record<string, boolean> = {
+    student_dashboard: true,
+    student_courses: true,
+    student_games: true,
+    student_game_snakes: true,
+    student_game_ludo: true,
+    student_game_kbc: true,
+    student_portfolio: true,
+    student_wellness: true,
+    student_messages: true,
+    student_gratitude: true,
+    student_notes: true,
+    student_facts: true,
+    mentor_dashboard: true,
+    mentor_students: true,
+    mentor_courses: true,
+    mentor_sessions: true,
+    mentor_circle: true,
+    mentor_account: true,
+    mentor_messages: true,
+    mentor_gratitude: true,
+    mentor_inspiration: true,
+  };
+  const [featureFlags, setFeatureFlags] = useState<Record<string, boolean>>(DEFAULT_FEATURE_FLAGS);
   
   // Tracking
   const [quizIndex, setQuizIndex] = useState(0);
@@ -113,6 +160,7 @@ export default function OnboardingFlow() {
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(false);
   const [wasAnswerCorrect, setWasAnswerCorrect] = useState(false);
   const [coinsCount, setCoinsCount] = useState(240);
+  const [streakCount, setStreakCount] = useState(0);
   const [activeInspiration, setActiveInspiration] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -120,28 +168,57 @@ export default function OnboardingFlow() {
   const [mappedMentor, setMappedMentor] = useState<any>(null);
   const [enrolledCourse, setEnrolledCourse] = useState<any>(null);
   
+  // Feedback state
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackImageUrl, setFeedbackImageUrl] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  
   // Helper to map and inject enabled: true property to modules/lessons to match decompiler 'l5' exactly
   const mapToExtendedCourse = (c: any) => {
     if (!c) return null;
     
-    // Check if we can find full data from catalog
-    const catalogCourse = mentorCoursesCatalog.find(cat => cat.title === c.title || cat.id === c.id);
-    const source = catalogCourse || c;
+    // Parse description if it contains serialized JSON metadata
+    let parsedCourse = { ...c };
+    try {
+      if (c.description && c.description.trim().startsWith('{')) {
+        const parsed = JSON.parse(c.description);
+        if (parsed && typeof parsed === 'object') {
+          parsedCourse = {
+            ...c,
+            description: parsed.description || "",
+            difficulty: parsed.difficulty || "Beginner",
+            duration: parsed.duration || "10 hours",
+            category: parsed.category || "General",
+            modules: parsed.modules || parsed.content || [],
+            content: parsed.modules || parsed.content || []
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Error parsing serialized course description", e);
+    }
+    
+    const source = parsedCourse;
+    // Prefer database course content if it exists, fallback to catalog otherwise
+    const hasDbContent = (source.content && source.content.length > 0) || (source.modules && source.modules.length > 0);
+    const catalogCourse = !hasDbContent ? mentorCoursesCatalog.find(cat => cat.title === source.title || cat.id === source.id) : null;
+    const finalSource = hasDbContent ? source : (catalogCourse || source);
 
     return {
-      id: source.id,
-      title: source.title,
-      shortTitle: source.shortTitle || source.title.slice(0, 15),
-      description: source.description || "",
-      category: source.category || "General",
-      difficulty: source.difficulty || "Beginner",
-      duration: source.duration || "10 hours",
+      id: finalSource.id,
+      title: finalSource.title,
+      shortTitle: finalSource.shortTitle || finalSource.title.slice(0, 15),
+      description: finalSource.description || "",
+      category: finalSource.category || "General",
+      difficulty: finalSource.difficulty || "Beginner",
+      duration: finalSource.duration || "10 hours",
       enrolled: true,
-      progress: courseProgress.length > 0 ? Math.round((courseProgress.length / (source.modules?.reduce((acc: number, m: any) => acc + m.lessons.length, 0) || source.content?.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0) || 1)) * 100) : 0,
-      color: source.color || "text-emerald-600",
-      bgColor: source.bgColor || "bg-emerald-500",
-      icon: source.icon || <BookOpen className="w-5 h-5" />,
-      modules: (source.modules || source.content || []).map((m: any) => {
+      progress: courseProgress.length > 0 ? Math.round((courseProgress.length / (finalSource.modules?.reduce((acc: number, m: any) => acc + m.lessons.length, 0) || finalSource.content?.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0) || 1)) * 100) : 0,
+      color: finalSource.color || "text-emerald-600",
+      bgColor: finalSource.bgColor || "bg-emerald-500",
+      icon: finalSource.icon || <BookOpen className="w-5 h-5" />,
+      modules: (finalSource.modules || finalSource.content || []).map((m: any) => {
         const dbLessons = m.lessons || (m.topics || []).map((topicName: string, tIdx: number) => ({
           id: `${m.id || 'm'}-l-${tIdx}`,
           title: topicName,
@@ -200,9 +277,9 @@ export default function OnboardingFlow() {
           const studentScreening = data.find(q => q.title.includes("Student Behavioral"));
           const mentorQuiz = data.find(q => q.title.includes("Mentor Onboarding"));
 
-          if (studentQuiz) setStudentQuizSteps(studentQuiz.questions);
-          if (studentScreening) setStudentScreeningSteps(studentScreening.questions);
-          if (mentorQuiz) setMentorQuizSteps(mentorQuiz.questions);
+          if (studentQuiz) setStudentQuizSteps(studentQuiz.questions as any);
+          if (studentScreening) setStudentScreeningSteps(studentScreening.questions as any);
+          if (mentorQuiz) setMentorQuizSteps(mentorQuiz.questions as any);
         }
       } catch (err) {
         console.error("Failed to fetch questionnaires:", err);
@@ -238,7 +315,7 @@ export default function OnboardingFlow() {
       if (event === 'SIGNED_IN' && session) {
         await handleSessionSync(session);
       } else if (event === 'SIGNED_OUT') {
-        setState("LOGIN");
+        setState("WELCOME");
         setRole(null);
         setName("");
         setEmail("");
@@ -246,6 +323,71 @@ export default function OnboardingFlow() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // 3. Real-Time Feature Flags Subscription & Syncing
+  useEffect(() => {
+    const fetchFlags = async () => {
+      let mergedFlags = { ...DEFAULT_FEATURE_FLAGS };
+      
+      // Load local overrides
+      try {
+        const local = localStorage.getItem('mentorhub_feature_flags');
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((f: any) => {
+              mergedFlags[f.key] = f.is_enabled;
+            });
+          } else if (typeof parsed === 'object') {
+            mergedFlags = { ...mergedFlags, ...parsed };
+          }
+        }
+      } catch (e) {
+        console.warn("Local storage parse error for feature flags", e);
+      }
+
+      // Try database fetch
+      try {
+        const { data: flags, error } = await supabase.from('feature_flags').select('key, is_enabled');
+        if (!error && flags && flags.length > 0) {
+          flags.forEach((f: any) => {
+            mergedFlags[f.key] = f.is_enabled;
+          });
+        }
+      } catch (e) {
+        console.warn("Supabase fetch error for feature flags", e);
+      }
+
+      setFeatureFlags(mergedFlags);
+    };
+
+    fetchFlags();
+
+    // Listen for local tab change events
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'mentorhub_feature_flags') {
+        fetchFlags();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Subscribe to Postgres realtime updates on feature_flags table
+    const channel = supabase
+      .channel('realtime-feature-flags')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feature_flags' },
+        () => {
+          fetchFlags();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      channel.unsubscribe();
+    };
   }, []);
 
   const handleSessionSync = async (session: any) => {
@@ -256,6 +398,14 @@ export default function OnboardingFlow() {
 
     // Fetch profile to see where to send the user
     try {
+      // Fetch feature flags
+      const { data: flags } = await supabase.from('feature_flags').select('key, is_enabled');
+      if (flags && flags.length > 0) {
+        const flagsMap = { ...DEFAULT_FEATURE_FLAGS };
+        flags.forEach((f: any) => flagsMap[f.key] = f.is_enabled);
+        setFeatureFlags(flagsMap);
+      }
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -266,10 +416,16 @@ export default function OnboardingFlow() {
         setName(profile.name || "");
         setRole(profile.role as any);
         setCoinsCount(profile.coins || 0);
+        setStreakCount(profile.streak || 0);
         
         // Restore last known state if available
         if (profile.last_state) {
-          setState(profile.last_state as any);
+          const prefs = (profile.preferences as any) || {};
+          if (profile.last_state === "MENTOR_MATCHING" && prefs.has_seen_matching) {
+            setState("MENTOR_DASHBOARD");
+          } else {
+            setState(profile.last_state as any);
+          }
         }
         
         // Fetch enrollments for student
@@ -315,8 +471,9 @@ export default function OnboardingFlow() {
             .select('student_id')
             .eq('mentor_id', session.user.id);
           
-          if (mappings && mappings.length > 0) {
-             // If already has students, dashboard is the better default
+          const prefs = (profile.preferences as any) || {};
+          if ((mappings && mappings.length > 0) || prefs.has_seen_matching) {
+             // If already has students or has seen matching, dashboard is the better default
              if (!profile.last_state || profile.last_state === "MENTOR_MATCHING") {
                setState("MENTOR_DASHBOARD");
              }
@@ -324,12 +481,17 @@ export default function OnboardingFlow() {
         }
 
         // Auto-redirect based on role if still in auth screens and no saved state
-        if (["LOGIN", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
-          setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+        if (["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
+          const prefs = (profile.preferences as any) || {};
+          if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+            setState('MENTOR_DASHBOARD');
+          } else {
+            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+          }
         }
       } else {
         // No profile? Send to role selection
-        if (["LOGIN", "SIGNIN", "SIGNUP"].includes(state)) {
+        if (["SIGNIN", "SIGNUP"].includes(state)) {
           setState("ROLE");
         }
       }
@@ -452,6 +614,41 @@ export default function OnboardingFlow() {
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
     return `${Math.floor(diff / 86400000)}d ago`;
+  };
+
+  const markMatchingAsSeen = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferences')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        const currentPrefs = (profile?.preferences as any) || {};
+        const newPrefs = { ...currentPrefs, has_seen_matching: true };
+        
+        await supabase.from('profiles').update({
+          preferences: newPrefs,
+          last_state: "MENTOR_DASHBOARD"
+        }).eq('id', session.user.id);
+
+        if (selectedStudents.length > 0) {
+          await supabase.from('mapping').delete().eq('mentor_id', session.user.id);
+          
+          const newMappings = selectedStudents.map(studentId => ({
+            mentor_id: session.user.id,
+            student_id: studentId
+          }));
+          
+          await supabase.from('mapping').insert(newMappings);
+        }
+      } catch (err) {
+        console.error("Error saving student selections / matching status:", err);
+      }
+    }
+    setState("MENTOR_DASHBOARD");
   };
 
   // KBC state
@@ -688,6 +885,7 @@ export default function OnboardingFlow() {
                 location: "Online",
                 tags: tags.slice(0, 3),
                 image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+                avatar_url: profile.avatar_url,
                 preferences: {
                    inspiration: prefs.q5 || "A teacher/mentor",
                    movie: "Sci-fi / Technology",
@@ -727,9 +925,37 @@ export default function OnboardingFlow() {
           .eq('status', 'Active')
           .order('enrolled_at', { ascending: false });
 
-        if (enrollments && enrollments.length > 0) {
-          setStudentEnrollments(enrollments);
-          const enrollment = enrollments[0];
+        const parsedEnrollments = (enrollments || []).map(enr => {
+          let c = enr.course;
+          if (c) {
+            try {
+              if (c.description && c.description.trim().startsWith('{')) {
+                const parsed = JSON.parse(c.description);
+                if (parsed && typeof parsed === 'object') {
+                  c = {
+                    ...c,
+                    description: parsed.description || "",
+                    difficulty: parsed.difficulty || "Beginner",
+                    duration: parsed.duration || "10 hours",
+                    category: parsed.category || "General",
+                    modules: parsed.modules || parsed.content || [],
+                    content: parsed.modules || parsed.content || []
+                  } as any;
+                }
+              }
+            } catch (e) {
+              console.warn("Failed to parse serialized enrollment course description JSON", e);
+            }
+          }
+          return {
+            ...enr,
+            course: c
+          };
+        });
+
+        if (parsedEnrollments && parsedEnrollments.length > 0) {
+          setStudentEnrollments(parsedEnrollments);
+          const enrollment = parsedEnrollments[0];
           setEnrollmentId(enrollment.id);
           setEnrolledCourse(enrollment.course);
           setCourseProgress((enrollment.progress as string[]) || []);
@@ -770,13 +996,36 @@ export default function OnboardingFlow() {
 
         // Fetch all DB courses to combine with mentorCoursesCatalog
         const { data: dbCourses } = await supabase.from('courses').select('*');
+        
+        const parsedDbCourses = (dbCourses || []).map((c: any) => {
+          try {
+            if (c.description && c.description.trim().startsWith('{')) {
+              const parsed = JSON.parse(c.description);
+              if (parsed && typeof parsed === 'object') {
+                return {
+                  ...c,
+                  description: parsed.description || "",
+                  difficulty: parsed.difficulty || "Beginner",
+                  duration: parsed.duration || "10 hours",
+                  category: parsed.category || "General",
+                  modules: parsed.modules || parsed.content || [],
+                  content: parsed.modules || parsed.content || []
+                };
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to parse serialized course description JSON", e);
+          }
+          return c;
+        });
+
         const localCatalog = mentorCoursesCatalog;
         const combined = [
-          ...(dbCourses || []).map(c => ({
+          ...parsedDbCourses.map(c => ({
             ...c,
-            modules: c.content || []
+            modules: c.modules || c.content || []
           })),
-          ...localCatalog.filter(c => !(dbCourses || []).some(sc => sc.title === c.title))
+          ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
         ];
         setAvailableCourses(combined);
 
@@ -909,11 +1158,16 @@ export default function OnboardingFlow() {
           const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
           if (profile) {
             if (profile.name) setName(profile.name);
+            if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
             const prefs = (profile.preferences as any) || {};
             if (typeof prefs.coins === 'number') {
               setCoinsCount(prefs.coins);
             }
-            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+              setState('MENTOR_DASHBOARD');
+            } else {
+              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+            }
           } else {
             setState("ROLE");
           }
@@ -1091,7 +1345,7 @@ export default function OnboardingFlow() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    setState("LOGIN");
+    setState("WELCOME");
   };
 
   const handleSelect = (qId: string, val: string, multi: boolean = false) => {
@@ -1154,6 +1408,53 @@ export default function OnboardingFlow() {
     }
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!feedbackMessage.trim()) return;
+
+    setIsSubmittingFeedback(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const feedbackPayload = {
+      user_id: session?.user?.id || null,
+      user_name: name || "Anonymous",
+      user_email: email || session?.user?.email || "anonymous@mentorhub.com",
+      user_role: role ? role.toLowerCase() : "student",
+      message: feedbackMessage,
+      image_url: feedbackImageUrl || null,
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Submit to Supabase DB
+    const { error } = await supabase.from('platform_feedback').insert([feedbackPayload]);
+
+    // 2. Submit to localStorage fallback
+    try {
+      const stored = localStorage.getItem("local_platform_feedback");
+      const localList = stored ? JSON.parse(stored) : [];
+      localList.push({
+        id: Math.random().toString(36).substring(2) + Date.now().toString(36),
+        ...feedbackPayload
+      });
+      localStorage.setItem("local_platform_feedback", JSON.stringify(localList));
+    } catch (e) {
+      console.error("Local storage sync error:", e);
+    }
+
+    setIsSubmittingFeedback(false);
+
+    if (error) {
+      console.error("Supabase feedback insert error, but stored in fallback local storage:", error);
+      alert("Feedback saved locally! Thank you for sharing your thoughts.");
+    } else {
+      alert("Feedback submitted successfully! Thank you for helping us improve.");
+    }
+
+    // Reset fields & close modal
+    setFeedbackMessage("");
+    setFeedbackImageUrl("");
+    setIsFeedbackModalOpen(false);
+  };
+
   const handleStudentEnrollCourse = async (courseObj: any, isOverride: boolean = false) => {
     if (isOverride) {
       const confirm = window.confirm(`Are you sure you want to override "${courseObj.title}"? This will reset all your progress for this course.`);
@@ -1172,11 +1473,29 @@ export default function OnboardingFlow() {
 
     if (!isUUID) {
       // Create course record in DB first if catalog mock course is being enrolled
+      const serializedDescription = JSON.stringify({
+        description: courseObj.description || "",
+        difficulty: courseObj.difficulty || "Beginner",
+        duration: courseObj.duration || "10 hours",
+        category: courseObj.category || "General",
+        modules: (courseObj.modules || []).map((m: any) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description || "",
+          enabled: m.enabled !== false,
+          lessons: (m.lessons || []).map((l: any) => ({
+            id: l.id,
+            title: l.title,
+            duration: l.duration || "15 mins",
+            type: l.type || "video",
+            enabled: l.enabled !== false
+          }))
+        }))
+      });
+
       const payload = {
         title: courseObj.title,
-        index_code: courseObj.shortTitle || courseObj.title.slice(0, 15),
-        description: courseObj.description,
-        content: courseObj.modules,
+        description: serializedDescription,
         status: 'Active'
       };
 
@@ -1298,11 +1617,28 @@ export default function OnboardingFlow() {
         if (data.user.user_metadata?.full_name) setName(data.user.user_metadata.full_name);
         else if (data.user.user_metadata?.name) setName(data.user.user_metadata.name);
         if (data.user.email) setEmail(data.user.email);
+        
+        const userRole = data.user.user_metadata?.role || role;
+        if (userRole) setRole(userRole as "STUDENT" | "MENTOR");
+
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
         if (profile) {
           if (profile.name) setName(profile.name);
-          setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
-        } else setState("ROLE");
+          if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
+          if (profile.role) {
+            setRole(profile.role as "STUDENT" | "MENTOR");
+            const prefs = (profile.preferences as any) || {};
+            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+              setState('MENTOR_DASHBOARD');
+            } else {
+              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+            }
+          } else {
+            setState(userRole ? (userRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") : "ROLE");
+          }
+        } else {
+          setState(userRole ? (userRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") : "ROLE");
+        }
       }
     } catch (e) {
       setAuthError("Something went wrong. Please try again.");
@@ -1316,11 +1652,19 @@ export default function OnboardingFlow() {
     setAuthLoading(true);
     setAuthError("");
     try {
-      const { data, error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+      const { data, error } = await supabase.auth.signUp({ 
+        email: authEmail, 
+        password: authPassword,
+        options: {
+          data: {
+            role: role // Carry forward the role selected
+          }
+        }
+      });
       if (error) { setAuthError(error.message); return; }
       if (data.session) {
         if (data.user?.email) setEmail(data.user.email);
-        setState("ROLE");
+        setState(role ? (role === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") : "ROLE");
       } else {
         setAuthError("confirm-email");
       }
@@ -1401,8 +1745,8 @@ export default function OnboardingFlow() {
       <div className="mb-4 hover:scale-105 transition-all duration-300">
         <img src="/logo.svg" alt="Kind Mentor Logo" className="w-28 h-28 object-contain" />
       </div>
-      <h1 className="text-3xl font-bold font-volkhov text-slate-900 mb-1 tracking-tight">Kind Mentor</h1>
-      <p className="text-slate-400 text-xs font-semibold font-mulish uppercase tracking-widest">Connect & Grow</p>
+      <h1 className="text-2xl font-medium tracking-tight text-slate-900 mb-1 tracking-tight">Kind Mentor</h1>
+      <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Connect & Grow</p>
     </div>
   );
 
@@ -1411,61 +1755,275 @@ export default function OnboardingFlow() {
     <div className="min-h-screen mesh-bg flex items-center justify-center p-0 md:p-6 selection:bg-orange-200 font-inter">
       <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-screen md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-screen md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
-        <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : 'px-8 py-8 flex flex-col justify-center'}`}>
+        <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#fdfdfc]' : 'px-8 py-8 flex flex-col justify-center'}`}>
           <AnimatePresence mode="wait">
-            {state === "LOGIN" && (
-              <motion.div key="login" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center gap-6">
-                <div className="mb-2"><LogoHeader /></div>
-                <div className="flex flex-col gap-3.5">
-                  <Button className="h-[54px] rounded-2xl text-[15px] font-bold font-mulish bg-[#0f172a] hover:bg-[#1e293b] active:scale-98 transition-all text-white border-0 shadow-lg shadow-slate-950/10 flex items-center justify-center gap-2" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>
-                    <Mail className="w-5 h-5" /> Sign In with Email
-                  </Button>
-                  <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-bold font-mulish border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>
-                    Create New Account
-                  </Button>
+            {state === "WELCOME" && (
+              <motion.div key="welcome" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col">
+                {/* Top Section with Gradient */}
+                <div className="pt-16 pb-12 px-8 bg-gradient-to-b from-[#fdfbf7] via-[#f7f5ff] to-[#f0f4ff] flex flex-col items-center">
+                  {/* Logo */}
+                  <div className="mb-5 hover:scale-105 transition-all duration-300">
+                    <img src="/logo.svg" alt="Kind Mentor Logo" className="w-24 h-24 object-contain" />
+                  </div>
+                  <h1 className="text-xl font-medium text-slate-900 mb-5 font-inter tracking-tight">KindMentor</h1>
+                  
+                  <div className="bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors cursor-pointer text-white px-4 py-2 rounded-full flex items-center gap-2 text-[13px] font-medium mb-10 shadow-sm">
+                    <Sparkles className="w-4 h-4" /> 60-Day Mentorship Journey
+                  </div>
+
+                  <div className="space-y-4 text-[15px] text-slate-700 font-medium w-full max-w-xs mx-auto pl-2">
+                    <div className="flex items-center gap-4">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-800 shrink-0" />
+                      <p>Connect with mentors who get you</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-800 shrink-0" />
+                      <p>Learn through guided conversations</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-800 shrink-0" />
+                      <p>Grow with bite-sized daily steps</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="relative flex items-center gap-3 py-1">
-                  <div className="flex-1 h-px bg-slate-100" />
-                  <span className="text-[11px] text-slate-400 font-bold font-mulish uppercase tracking-wider">or</span>
-                  <div className="flex-1 h-px bg-slate-100" />
+
+                {/* Bottom Section */}
+                <div className="flex-1 px-6 py-8 bg-white flex flex-col justify-center border-t border-slate-100/50">
+                  <p className="text-center text-slate-500 font-medium mb-6 text-[15px]">How would you like to begin?</p>
+                  
+                  <div className="flex flex-col gap-4 max-w-sm mx-auto w-full">
+                    <button 
+                      onClick={() => { setRole("STUDENT"); setState("STUDENT_WELCOME"); }}
+                      className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left group bg-white"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-[#ffedd5] flex items-center justify-center text-[#9a3412] shrink-0 group-hover:scale-105 transition-transform">
+                        <GraduationCap className="w-7 h-7" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-[17px] font-medium text-slate-900 mb-0.5">I am a Student</h3>
+                        <p className="text-[13px] text-slate-500 leading-snug">Find a mentor and grow your skills.</p>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
+                    </button>
+
+                    <button 
+                      onClick={() => { setRole("MENTOR"); setState("MENTOR_WELCOME"); }}
+                      className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left group bg-white"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-[#e0e7ff] flex items-center justify-center text-[#3730a3] shrink-0 group-hover:scale-105 transition-transform">
+                        <Users className="w-7 h-7" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-[17px] font-medium text-slate-900 mb-0.5">I am a Mentor</h3>
+                        <p className="text-[13px] text-slate-500 leading-snug">Share your expertise and guide others.</p>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
+                    </button>
+                    
+                    <p className="text-center text-[13px] text-slate-500 mt-2">
+                      Already have an account?{" "}
+                      <button 
+                        onClick={() => { setRole(null); setState("SIGNIN"); }}
+                        className="text-slate-900 font-semibold hover:underline"
+                      >
+                        Log in
+                      </button>
+                    </p>
+                  </div>
                 </div>
-                <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-bold font-mulish border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5" onClick={handleGoogleSignIn}>
-                  <GoogleIcon /> Continue with Google
-                </Button>
-                <button 
-                  onClick={() => setState("ROLE")} 
-                  className="text-[13px] text-slate-400 font-bold hover:text-slate-600 hover:underline transition-all mt-2"
-                >
-                  Skip to Test Questionnaire
-                </button>
               </motion.div>
             )}
 
+            {state === "STUDENT_WELCOME" && (
+              <motion.div key="student_welcome" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col overflow-y-auto hidden-scrollbar pb-8 relative bg-[#fdfdfc]">
+                <div className="sticky top-0 left-0 right-0 p-6 z-10 flex items-center bg-gradient-to-b from-[#fdfdfc] to-transparent">
+                  <button onClick={() => setState("WELCOME")} className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div className="px-8 flex flex-col items-center mt-2 flex-1">
+                  <div className="mb-6 hover:scale-105 transition-all duration-300">
+                    <img src="/logo.svg" alt="Kind Mentor Logo" className="w-20 h-20 object-contain" />
+                  </div>
+                  
+                  <h1 className="text-[22px] font-semibold text-slate-900 mb-4 font-inter tracking-tight">
+                    Welcome, Student
+                  </h1>
+                  
+                  <p className="text-center text-[15px] italic text-slate-600 font-medium mb-12 max-w-[300px] leading-relaxed">
+                    "9 in 10 learners grow faster with a mentor by their side."
+                  </p>
+                  
+                  <div className="w-full space-y-6 mb-12 max-w-sm mx-auto">
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#fee2e2] flex items-center justify-center text-[#ef4444] shrink-0">
+                        <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">60 days to become your best self</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">A guided journey from where you are to where you belong.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#fce7f3] flex items-center justify-center text-[#ec4899] shrink-0">
+                        <Users className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Meet your mentor</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Get matched with mentors who fit your goals.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#e0e7ff] flex items-center justify-center text-[#6366f1] shrink-0">
+                        <GraduationCap className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Learn at your pace</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Personalized journeys, bite-sized lessons.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#d1fae5] flex items-center justify-center text-[#10b981] shrink-0">
+                        <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Grow with rewards</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Earn coins, build streaks, celebrate wins.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-sm mx-auto mt-auto shrink-0 pb-6">
+                    <Button 
+                      onClick={() => setState("SIGNUP")} 
+                      className="w-full h-14 rounded-[16px] text-[16px] font-medium font-inter bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-lg shadow-slate-950/10 transition-all active:scale-98 flex items-center justify-center gap-2"
+                    >
+                      Continue <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {state === "MENTOR_WELCOME" && (
+              <motion.div key="mentor_welcome" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col overflow-y-auto hidden-scrollbar pb-8 relative bg-[#fdfdfc]">
+                <div className="sticky top-0 left-0 right-0 p-6 z-10 flex items-center bg-gradient-to-b from-[#fdfdfc] to-transparent">
+                  <button onClick={() => setState("WELCOME")} className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div className="px-8 flex flex-col items-center mt-2 flex-1">
+                  <div className="mb-6 hover:scale-105 transition-all duration-300">
+                    <img src="/logo.svg" alt="Kind Mentor Logo" className="w-20 h-20 object-contain" />
+                  </div>
+                  
+                  <h1 className="text-[22px] font-semibold text-slate-900 mb-4 font-inter tracking-tight">
+                    Welcome, Mentor
+                  </h1>
+                  
+                  <p className="text-center text-[15px] italic text-slate-600 font-medium mb-12 max-w-[300px] leading-relaxed">
+                    "Only 1 in 100 professionals choose to mentor — your guidance is rare and needed."
+                  </p>
+                  
+                  <div className="w-full space-y-6 mb-12 max-w-sm mx-auto">
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#ede9fe] flex items-center justify-center text-[#8b5cf6] shrink-0">
+                        <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">60 days to shape a future</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">A structured journey to grow someone — and yourself.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#ffe4e6] flex items-center justify-center text-[#e11d48] shrink-0">
+                        <Heart className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Guide motivated learners</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Connect with students who truly value your time.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#f3e8ff] flex items-center justify-center text-[#a855f7] shrink-0">
+                        <Users className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Join a mentor circle</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Belong to a community of thoughtful guides.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-5">
+                      <div className="w-14 h-14 rounded-[18px] bg-[#ffedd5] flex items-center justify-center text-[#f97316] shrink-0">
+                        <BookOpen className="w-6 h-6" strokeWidth={1.5} />
+                      </div>
+                      <div className="flex-1 mt-0.5">
+                        <h4 className="text-[16px] font-medium text-slate-900 mb-1">Brush up your craft</h4>
+                        <p className="text-[14px] text-slate-500 leading-snug">Teaching deepens what you already know.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-sm mx-auto mt-auto shrink-0 pb-6">
+                    <Button 
+                      onClick={() => setState("SIGNUP")} 
+                      className="w-full h-14 rounded-[16px] text-[16px] font-medium font-inter bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-lg shadow-slate-950/10 transition-all active:scale-98 flex items-center justify-center gap-2"
+                    >
+                      Continue <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+
+
             {state === "SIGNIN" && (
               <motion.div key="signin" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
-                <div className="mb-2 shrink-0"><button onClick={() => setState("LOGIN")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
+                <div className="mb-2 shrink-0"><button onClick={() => setState("WELCOME")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
                 <div className="mb-6 space-y-1 ml-1 shrink-0">
-                  <h2 className="text-3xl font-bold font-volkhov text-slate-900">Welcome Back</h2>
-                  <p className="text-sm font-medium text-slate-400 font-mulish uppercase tracking-wider">Sign in to your learning vault</p>
+                  <h2 className="text-2xl font-medium tracking-tight text-slate-900">
+                    {role ? `${role === "STUDENT" ? "Student" : "Mentor"} Sign In` : "Welcome Back"}
+                  </h2>
+                  <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Sign in to your learning vault</p>
                 </div>
                 <div className="flex flex-col gap-4">
                   <div className="space-y-2">
-                    <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Email Address</Label>
+                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Email Address</Label>
                     <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Password</Label>
+                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Password</Label>
                     <Input type="password" placeholder="••••••••" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignIn()} />
                   </div>
                   {authError && authError !== "confirm-email" && (
                     <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
                   )}
-                  <Button disabled={authLoading || !authEmail.includes("@") || !authPassword} className="h-[54px] rounded-2xl text-[15px] font-bold font-mulish bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignIn}>
+                  <Button disabled={authLoading || !authEmail.includes("@") || !authPassword} className="h-[54px] rounded-2xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignIn}>
                     {authLoading ? "Verifying Credentials…" : <>Sign In <ArrowRight className="w-4 h-4" /></>}
                   </Button>
-                  <p className="text-[13px] text-slate-400 text-center mt-2.5">
+                  
+                  <div className="relative flex items-center gap-3 py-2 mt-1">
+                    <div className="flex-1 h-px bg-slate-200" />
+                    <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">or continue with</span>
+                    <div className="flex-1 h-px bg-slate-200" />
+                  </div>
+                  
+                  <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
+                    <GoogleIcon /> Google
+                  </Button>
+                  
+                  <p className="text-[13px] text-slate-400 text-center mt-1">
                     Don't have an account?{" "}
-                    <button className="text-[#0f172a] font-bold hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>Create one</button>
+                    <button className="text-[#0f172a] font-medium hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNUP"); }}>Create one</button>
                   </p>
                 </div>
               </motion.div>
@@ -1473,39 +2031,54 @@ export default function OnboardingFlow() {
 
             {state === "SIGNUP" && (
               <motion.div key="signup" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col justify-center">
-                <div className="mb-2 shrink-0"><button onClick={() => setState("LOGIN")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
+                <div className="mb-2 shrink-0"><button onClick={() => setState("WELCOME")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
                 <div className="mb-6 space-y-1 ml-1 shrink-0">
-                  <h2 className="text-3xl font-bold font-volkhov text-slate-900">Create Account</h2>
-                  <p className="text-sm font-medium text-slate-400 font-mulish uppercase tracking-wider">Start your personalized education path</p>
+                  <h2 className="text-2xl font-medium tracking-tight text-slate-900">
+                    {role ? `Create ${role === "STUDENT" ? "Student" : "Mentor"} Account` : "Create Account"}
+                  </h2>
+                  <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Start your personalized education path</p>
                 </div>
                 {authError === "confirm-email" ? (
                   <div className="bg-[#ecfdf5] border border-[#d1fae5] rounded-3xl p-6 flex flex-col items-center text-center gap-3">
                     <ShieldCheck className="w-12 h-12 text-[#059669] animate-bounce" />
                     <div>
-                      <p className="font-bold text-slate-900 mb-1">Check your email</p>
-                      <p className="text-[13px] text-slate-500 leading-relaxed">We sent a confirmation link to <span className="font-semibold text-slate-700">{authEmail}</span>. Click it to activate your account.</p>
+                      <p className="font-medium text-slate-900 mb-1">Check your email</p>
+                      <p className="text-[13px] text-slate-500 leading-relaxed">We sent a confirmation link to <span className="font-semibold text-slate-700">{authEmail}</span>. Click it to activate your {role ? (role === "STUDENT" ? "Student" : "Mentor") + " account." : "account."}</p>
                     </div>
                     <button className="text-[13px] text-slate-500 hover:text-slate-700 mt-2 font-semibold hover:underline" onClick={() => { setAuthError(""); setState("SIGNIN"); }}>Back to sign in</button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Email Address</Label>
+                      <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Email Address</Label>
                       <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Password <span className="text-slate-400 font-normal">(min. 6 characters)</span></Label>
+                      <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Password <span className="text-slate-400 font-normal">(min. 6 characters)</span></Label>
                       <Input type="password" placeholder="••••••••" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignUp()} />
                     </div>
                     {authError && (
                       <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
                     )}
-                    <Button disabled={authLoading || !authEmail.includes("@") || authPassword.length < 6} className="h-[54px] rounded-2xl text-[15px] font-bold font-mulish bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignUp}>
+                    <Button disabled={authLoading || !authEmail.includes("@") || authPassword.length < 6} className="h-[54px] rounded-2xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignUp}>
                       {authLoading ? "Creating Account…" : <>Create Account <ArrowRight className="w-4 h-4" /></>}
                     </Button>
-                    <p className="text-[13px] text-slate-400 text-center mt-2.5">
+                    
+                    <div className="relative flex items-center gap-3 py-2 mt-1">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">or continue with</span>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
+                    
+                    <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
+                      <GoogleIcon /> Google
+                    </Button>
+                    
+                    <button onClick={() => setState("ROLE")} className="text-[12px] text-slate-400 font-medium hover:text-slate-600 hover:underline transition-all text-center mb-1">Skip to Test Questionnaire</button>
+
+                    <p className="text-[13px] text-slate-400 text-center mt-1">
                       Already have an account?{" "}
-                      <button className="text-[#0f172a] font-bold hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>Sign in</button>
+                      <button className="text-[#0f172a] font-medium hover:underline" onClick={() => { setAuthError(""); setAuthPassword(""); setState("SIGNIN"); }}>Sign in</button>
                     </p>
                   </div>
                 )}
@@ -1514,10 +2087,10 @@ export default function OnboardingFlow() {
 
             {state === "ROLE" && (
               <motion.div key="role" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-2 justify-center">
-                <div className="mb-2 shrink-0"><button onClick={() => setState("LOGIN")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
+                <div className="mb-2 shrink-0"><button onClick={() => setState("WELCOME")} className="w-10 h-10 rounded-full bg-slate-100/80 flex items-center justify-center text-slate-500 hover:bg-slate-200/80 hover:text-slate-700 transition-all shrink-0"><ArrowLeft className="w-5 h-5" /></button></div>
                 <div className="mb-6 space-y-1.5 ml-1 shrink-0">
-                  <h2 className="text-3xl font-bold font-volkhov text-slate-900">I am a...</h2>
-                  <p className="text-sm font-medium text-slate-400 font-mulish uppercase tracking-wider">Choose your path to get started</p>
+                  <h2 className="text-2xl font-medium tracking-tight text-slate-900">I am a...</h2>
+                  <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Choose your path to get started</p>
                 </div>
                 <div className="flex flex-col gap-4.5 mb-6">
                   {["STUDENT", "MENTOR"].map((r) => (
@@ -1526,14 +2099,14 @@ export default function OnboardingFlow() {
                         {r === "STUDENT" ? <GraduationCap className="w-7 h-7" /> : <Users className="w-7 h-7" />}
                       </div>
                       <div>
-                        <h3 className={`text-[17px] font-bold font-mulish mb-0.5 transition-colors ${role === r ? "text-slate-950" : "text-slate-700"}`}>{r === "STUDENT" ? "Student" : "Mentor"}</h3>
+                        <h3 className={`text-[17px] font-medium mb-0.5 transition-colors ${role === r ? "text-slate-950" : "text-slate-700"}`}>{r === "STUDENT" ? "Student" : "Mentor"}</h3>
                         <p className="text-[13px] text-slate-400 leading-relaxed font-medium">{r === "STUDENT" ? "Find an expert mentor and level up your skills." : "Share your engineering expertise and guide others."}</p>
                       </div>
                     </button>
                   ))}
                 </div>
                 <div className="mt-auto shrink-0">
-                  <Button disabled={!role} onClick={() => { setState(role === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") }} className={`w-full h-[54px] rounded-2xl text-[15px] font-bold font-mulish transition-all shadow-md active:scale-98 ${role ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400"}`}>
+                  <Button disabled={!role} onClick={() => { setState(role === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") }} className={`w-full h-[54px] rounded-2xl text-[15px] font-medium transition-all shadow-md active:scale-98 ${role ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400"}`}>
                     Continue <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
                 </div>
@@ -1545,7 +2118,16 @@ export default function OnboardingFlow() {
                 <div className="mb-2 shrink-0"><button onClick={() => setState("ROLE")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500"><ArrowLeft className="w-5 h-5" /></button></div>
                 <div className="flex flex-col items-center mb-6 mt-2 shrink-0">
                   <div className="relative">
-                    <div className="w-[104px] h-[104px] rounded-full border border-slate-200 overflow-hidden flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop')] bg-cover bg-center grayscale shadow-sm object-cover"></div>
+                    {avatarUrl ? (
+                      <div 
+                        className="w-[104px] h-[104px] rounded-full border border-slate-200 bg-cover bg-center shadow-sm"
+                        style={{ backgroundImage: `url(${avatarUrl})` }}
+                      ></div>
+                    ) : (
+                      <div className="w-[104px] h-[104px] rounded-full border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-300 shadow-sm">
+                        <User className="w-12 h-12 stroke-[1.5]" />
+                      </div>
+                    )}
                     <button className="absolute bottom-0 right-0 w-[34px] h-[34px] bg-[#0f172a] rounded-full flex items-center justify-center text-white ring-[3px] ring-white shadow-sm hover:scale-105 transition-transform"><Camera className="w-[15px] h-[15px]" /></button>
                   </div>
                 </div>
@@ -1578,15 +2160,15 @@ export default function OnboardingFlow() {
                           <Icon className="w-7 h-7" />
                         </div>
                         <div>
-                          <p className="text-blue-600 text-[11px] font-bold uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
-                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentData.title}</h2>
+                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
+                          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
                         </div>
                       </div>
 
                       <div className="space-y-8">
                         {currentData.questions.map((q: any) => (
                           <div key={q.id} className="space-y-3">
-                            <Label className="text-[14px] font-bold text-slate-700">{q.text}</Label>
+                            <Label className="text-[14px] font-medium text-slate-700">{q.text}</Label>
                             {q.type === "input" ? (
                               <Input 
                                 placeholder={q.placeholder}
@@ -1616,12 +2198,12 @@ export default function OnboardingFlow() {
                 <div className="mt-12 flex items-center gap-4">
                   <Button 
                     onClick={nextQuizStep} 
-                    className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-bold text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                    className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-medium text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
                   >
                     {quizIndex === studentQuizSteps.length - 1 ? "Complete Journey" : "Continue"} <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                   {quizIndex !== studentQuizSteps.length - 1 && (
-                    <Button variant="ghost" onClick={nextQuizStep} className="h-14 px-6 text-slate-400 font-bold text-[15px] hover:text-slate-600">
+                    <Button variant="ghost" onClick={nextQuizStep} className="h-14 px-6 text-slate-400 font-medium text-[15px] hover:text-slate-600">
                       Skip
                     </Button>
                   )}
@@ -1648,13 +2230,13 @@ export default function OnboardingFlow() {
                           <Icon className="w-7 h-7" />
                         </div>
                         <div>
-                          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-1">Behavioral Screening • {screeningIndex + 1} of {studentScreeningSteps.length}</p>
-                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentPhase.title}</h2>
+                          <p className="text-slate-400 text-[11px] font-medium uppercase tracking-widest mb-1">Behavioral Screening • {screeningIndex + 1} of {studentScreeningSteps.length}</p>
+                          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentPhase.title}</h2>
                         </div>
                       </div>
 
                       <div className="bg-slate-50 border border-slate-100 rounded-3xl p-8 space-y-6">
-                        <p className="text-lg font-bold text-slate-800 leading-snug">{q.text}</p>
+                        <p className="text-lg font-medium text-slate-800 leading-snug">{q.text}</p>
                         <div className="grid grid-cols-1 gap-3">
                           {q.options?.map((opt: string) => (
                             <button
@@ -1668,7 +2250,7 @@ export default function OnboardingFlow() {
                               )}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-[15px]">{opt}</span>
+                                <span className="font-medium text-[15px]">{opt}</span>
                                 <div className={cn(
                                   "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
                                   screeningSelections[q.id || currentPhase.title] === opt ? "bg-white border-white" : "border-slate-100"
@@ -1684,7 +2266,7 @@ export default function OnboardingFlow() {
                       <Button 
                         onClick={handleNextScreening} 
                         disabled={!screeningSelections[q.id || currentPhase.title]}
-                        className="w-full h-14 rounded-2xl bg-blue-600 text-white font-bold text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
+                        className="w-full h-14 rounded-2xl bg-blue-600 text-white font-medium text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
                       >
                         {screeningIndex === studentScreeningSteps.length - 1 ? "Go to Dashboard" : "Next Question"} <ArrowRight className="w-5 h-5 ml-2" />
                       </Button>
@@ -1695,7 +2277,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 -mx-5 px-5 -mt-2 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
+              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 px-6 md:px-8 -mt-2 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
                 {/* Header */}
                 <div className="pt-8 pb-4 flex items-center justify-between z-10 w-full mb-4">
                   <div className="flex items-center gap-3">
@@ -1837,14 +2419,14 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-             {(state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES") && (
+             {(state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
                 <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
-                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
             
-            {state === "MESSAGES" && (
-              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-5">
+            {state === "MESSAGES" && featureFlags.student_messages !== false && (
+              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
                 {/* Header */}
-                <div className="px-5 pt-6 pb-4 border-b border-slate-100 flex items-center gap-4 shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                <div className="px-6 pt-6 pb-4 md:px-8 border-b border-slate-100 flex items-center gap-4 shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -1854,8 +2436,8 @@ export default function OnboardingFlow() {
                     <ArrowLeft className="w-5 h-5 text-slate-600" />
                   </Button>
                   <div className="flex-1">
-                    <h2 className="text-[17px] font-bold text-slate-900 leading-tight">Conversation</h2>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    <h2 className="text-[17px] font-medium text-slate-900 leading-tight">Conversation</h2>
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
                       {mappedMentor ? `With ${mappedMentor.name}` : "Mentor Chat"}
                     </p>
                   </div>
@@ -1867,28 +2449,83 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Messages List */}
-                <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6 hidden-scrollbar bg-slate-50/40">
+                <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 space-y-6 hidden-scrollbar bg-slate-50/40">
                   {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3">
                       <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300 mb-2">
                         <MessageSquare className="w-8 h-8" />
                       </div>
-                      <p className="text-slate-800 font-bold text-[15px]">No messages yet</p>
+                      <p className="text-slate-800 font-medium text-[15px]">No messages yet</p>
                       <p className="text-slate-400 text-xs leading-relaxed max-w-[200px]">Start the conversation with your mentor to get guidance on your learning path.</p>
                     </div>
                   ) : (
                     messages.map((msg, i) => {
                       const isMe = msg.from_user_id === mappedMentor?.id ? false : true;
+                      const urlRegex = /(https?:\/\/[^\s\)\>]+)/g;
+                      const hasLink = msg.body.match(urlRegex);
+                      
+                      let resourceTitle = "";
+                      if (hasLink) {
+                        const boldMatch = msg.body.match(/\*\*([^*]+)\*\*/);
+                        if (boldMatch) {
+                          resourceTitle = boldMatch[1];
+                        } else {
+                          const bookLine = msg.body.split('\n').find((l: string) => l.includes("📚"));
+                          if (bookLine) {
+                            resourceTitle = bookLine.replace("📚", "").replace(/\*/g, "").trim();
+                          } else {
+                            resourceTitle = "Recommended Resource";
+                          }
+                        }
+                      }
+
                       return (
                         <div key={msg.id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative animate-in fade-in slide-in-from-bottom-2 duration-300`} style={{ animationDelay: `${i * 50}ms` }}>
                           <div className="flex items-center gap-2 max-w-[85%]">
                             {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
                             <div className={`px-5 py-3.5 rounded-[1.5rem] text-[14.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-lg shadow-slate-900/5' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-sm'}`}>
-                              {msg.body}
+                              <div>{msg.body}</div>
+                              {hasLink && (
+                                <div 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setState("RESOURCES");
+                                  }}
+                                  className={`mt-3 p-3.5 rounded-xl border flex flex-col gap-2.5 transition-all duration-200 cursor-pointer text-left shadow-3xs ${
+                                    isMe 
+                                      ? "bg-white/10 hover:bg-white/15 border-white/20 text-white" 
+                                      : "bg-indigo-50/50 hover:bg-indigo-50 border-indigo-100/60 text-slate-800"
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-2.5">
+                                    <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center shadow-3xs bg-white text-indigo-600`}>
+                                      <BookOpen className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[12.5px] font-bold leading-tight truncate">
+                                        {resourceTitle}
+                                      </p>
+                                      <p className={`text-[10px] font-semibold mt-0.5 leading-normal truncate ${
+                                        isMe ? "text-white/60" : "text-slate-400"
+                                      }`}>
+                                        {hasLink[0]}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2 border-t border-dashed pt-2.5 border-slate-100/20">
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                                      isMe ? "text-white/70" : "text-indigo-600"
+                                    }`}>
+                                      Open in Resource Hub 🚀
+                                    </span>
+                                    <ExternalLink className={`w-3 h-3 ${isMe ? "text-white/75" : "text-indigo-600"}`} />
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
                           </div>
-                          <span className="text-[10px] font-bold text-slate-300 font-mulish uppercase tracking-wider mt-2 ml-3 mr-3">{isMe ? 'You' : mappedMentor?.name || 'Mentor'}</span>
+                          <span className="text-[10px] font-medium text-slate-300 uppercase tracking-wider mt-2 ml-3 mr-3">{isMe ? 'You' : mappedMentor?.name || 'Mentor'}</span>
                         </div>
                       );
                     })
@@ -1897,7 +2534,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Input Area */}
-                <div className="px-5 py-4 border-t border-slate-100 bg-white shrink-0 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+                <div className="px-6 py-4 md:px-8 border-t border-slate-100 bg-white shrink-0 pb-[calc(5rem+env(safe-area-inset-bottom))]">
                    <div className="flex gap-3 items-end">
                     <Textarea 
                       value={messageInput}
@@ -1931,21 +2568,28 @@ export default function OnboardingFlow() {
 
             {state === "DASHBOARD_MAIN" && (
               <div className="flex flex-col pt-0 relative w-full items-center pb-32 font-inter">
-                <div className="w-full max-w-2xl flex flex-col gap-4 px-4 sm:px-6">
+                <div className="w-full max-w-2xl flex flex-col gap-4">
 
                 
                 {/* Premium Welcome Greeting Header */}
                 <div className="w-full relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                   <div className="space-y-1 pr-16 sm:pr-0">
-                    <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Student'}! 👋</h2>
+                    <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Student'}! 👋</h2>
                     <p className="text-[13px] font-medium text-slate-400">Step closer to your educational milestones today.</p>
                   </div>
-                    <div className="absolute top-1 right-1 flex items-center gap-3 shrink-0 sm:relative sm:top-auto sm:right-auto sm:self-center mr-1">
-                     <div className="flex items-center gap-1.5">
-                       <Coins className="w-4 h-4 text-amber-500" />
-                       <span className="text-sm font-semibold text-slate-600">{coinsCount}</span>
-                     </div>
-                   </div>
+                    <div className="absolute top-1 right-1 flex items-center gap-2 shrink-0 sm:relative sm:top-auto sm:right-auto sm:self-center mr-1">
+                      <button
+                        onClick={() => setIsFeedbackModalOpen(true)}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 active:scale-95 transition-all"
+                        title="Share Feedback"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <Coins className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm font-semibold text-slate-600">{coinsCount}</span>
+                      </div>
+                    </div>
                 </div>
 
                 {/* Today's Inspiration & Mentor Chat Card */}
@@ -1953,21 +2597,21 @@ export default function OnboardingFlow() {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl"></div>
                   <CardContent className="p-4 pt-5 flex flex-col gap-4">
                     <div className="flex gap-3 w-full relative group/insp">
-                      <div className="bg-orange-50 p-3 rounded-2xl text-orange-500 shrink-0 self-start shadow-sm border border-orange-100/50">
-                        <Sparkles className="w-5 h-5 animate-pulse" />
+                      <div className="bg-violet-100 p-3 rounded-full text-violet-600 shrink-0 self-start shadow-sm border border-violet-200/50">
+                        <Sparkles className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
-                        <p className="text-[11px] font-bold font-mulish text-orange-500 uppercase tracking-widest mb-1">
+                        <p className="text-[11px] font-bold text-violet-600 mb-1">
                           {activeInspiration 
                             ? `${activeInspiration.type === "thought" ? "Morning Thought" : "Evening Reflection"} from ${activeInspiration.author}` 
-                            : "Today's Inspiration"}
+                            : `Day ${Math.max(1, streakCount)} of 60 • Building Your Best Self`}
                         </p>
-                        <p className="text-[14px] font-medium font-volkhov text-slate-700 italic leading-relaxed">
+                        <p className="text-[13px] font-medium text-slate-700 italic leading-relaxed">
                           {activeInspiration 
                             ? `"${activeInspiration.message}"` 
-                            : '"Education is the most powerful weapon you can use to change the world."'}
+                            : '"Your future self will thank you for today\'s effort."'}
                           <span className="text-slate-400 font-sans not-italic block mt-1 font-medium">
-                            — {activeInspiration ? activeInspiration.author : "Nelson Mandela"}
+                            — {activeInspiration ? activeInspiration.author : "MentorHub"}
                           </span>
                         </p>
                       </div>
@@ -1981,69 +2625,119 @@ export default function OnboardingFlow() {
                         </button>
                       )}
                     </div>
-                    <div className="pt-4 border-t border-slate-100/60">
-                      {messages.length > 0 && (
-                        <div className="mb-2 space-y-3 pr-1">
-                          {messages.slice(-1).map((msg, i) => {
-                            const isMe = msg.from_user_id === mappedMentor?.id ? false : true;
-                            return (
-                              <div key={msg.id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative`}>
-                                <div className="flex items-center gap-2 max-w-[85%]">
-                                  {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
-                                  <div className={`px-4 py-2.5 rounded-[1.25rem] text-[13.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-sm shadow-slate-900/5' : 'bg-slate-50 text-slate-700 border border-slate-100/60 rounded-tl-none shadow-xs'}`}>
-                                    {msg.body}
+                    {featureFlags.student_messages !== false && (
+                      <div className="pt-4 border-t border-slate-100/60">
+                        {messages.length > 0 && (
+                          <div className="mb-2 space-y-3 pr-1">
+                            {messages.slice(-1).map((msg, i) => {
+                              const isMe = msg.from_user_id === mappedMentor?.id ? false : true;
+                              const urlRegex = /(https?:\/\/[^\s\)\>]+)/g;
+                              const hasLink = msg.body.match(urlRegex);
+                              
+                              let resourceTitle = "";
+                              if (hasLink) {
+                                const boldMatch = msg.body.match(/\*\*([^*]+)\*\*/);
+                                if (boldMatch) {
+                                  resourceTitle = boldMatch[1];
+                                } else {
+                                  const bookLine = msg.body.split('\n').find((l: string) => l.includes("📚"));
+                                  if (bookLine) {
+                                    resourceTitle = bookLine.replace("📚", "").replace(/\*/g, "").trim();
+                                  } else {
+                                    resourceTitle = "Recommended Resource";
+                                  }
+                                }
+                              }
+
+                              return (
+                                <div key={msg.id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative`}>
+                                  <div className="flex items-center gap-2 max-w-[85%]">
+                                    {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
+                                    <div className={`px-4 py-2.5 rounded-[1.25rem] text-[13.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-sm shadow-slate-900/5' : 'bg-slate-50 text-slate-700 border border-slate-100/60 rounded-tl-none shadow-xs'}`}>
+                                      <div>{msg.body}</div>
+                                      {hasLink && (
+                                        <div 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setState("RESOURCES");
+                                          }}
+                                          className={`mt-2.5 p-3 rounded-xl border flex flex-col gap-2 transition-all duration-200 cursor-pointer text-left shadow-3xs ${
+                                            isMe 
+                                              ? "bg-white/10 hover:bg-white/15 border-white/20 text-white" 
+                                              : "bg-indigo-50/50 hover:bg-indigo-50 border-indigo-100/60 text-slate-800"
+                                          }`}
+                                        >
+                                          <div className="flex items-start gap-2">
+                                            <div className="p-1.5 rounded-md shrink-0 flex items-center justify-center bg-white text-indigo-600 shadow-3xs">
+                                              <BookOpen className="w-3.5 h-3.5" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                              <p className="text-[11.5px] font-bold leading-tight truncate">
+                                                {resourceTitle}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center justify-between gap-2 border-t border-dashed pt-2 border-slate-100/10">
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">
+                                              Open in Resource Hub 🚀
+                                            </span>
+                                            <ExternalLink className="w-2.5 h-2.5" />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                    {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
                                   </div>
-                                  {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
+                                  <span className="text-[10px] font-medium text-slate-300 uppercase tracking-wider mt-1 ml-2 mr-2">{isMe ? 'You' : mappedMentor?.name || 'Mentor'}</span>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-300 font-mulish uppercase tracking-wider mt-1 ml-2 mr-2">{isMe ? 'You' : mappedMentor?.name || 'Mentor'}</span>
+                              );
+                            })}
+                            {messages.length > 1 && (
+                              <div className="flex justify-center -mt-1">
+                                <button 
+                                  onClick={() => setState("MESSAGES")}
+                                  className="text-[10px] font-medium text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest px-4 py-1.5"
+                                >
+                                  View all messages
+                                </button>
                               </div>
-                            );
-                          })}
-                          {messages.length > 1 && (
-                            <div className="flex justify-center -mt-1">
-                              <button 
-                                onClick={() => setState("MESSAGES")}
-                                className="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest px-4 py-1.5"
-                              >
-                                View all messages
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <p className="text-[11px] text-slate-400 mb-1 font-medium">
-                        {sendSuccess ? (
-                          <span className="text-emerald-500 font-bold flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Message sent successfully!
-                          </span>
-                        ) : mappedMentor ? (
-                          `Connected with ${mappedMentor.name}`
-                        ) : (
-                          "Don't hesitate, every question matters."
+                            )}
+                          </div>
                         )}
-                      </p>
-                      <div className="flex gap-2">
-                        <Input 
-                          value={messageInput}
-                          disabled={sendLoading}
-                          onChange={(e) => setMessageInput(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                          placeholder={mappedMentor ? `Ask ${mappedMentor.name}...` : "Ask a quick question..."}
-                          className="flex-1 border border-slate-200 rounded-2xl px-4.5 py-3 bg-slate-50/50 text-[14px] text-slate-800 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-950 transition-all disabled:opacity-50 h-11"
-                        />
-                        <Button 
-                          onClick={handleSendMessage}
-                          disabled={sendLoading || !messageInput.trim()}
-                          className={`${messageInput.trim() && !sendLoading ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-100 text-slate-400'} w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-95 shrink-0 disabled:opacity-50`}
-                        >
-                          {sendLoading ? (
-                            <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+                        <p className="text-[11px] text-slate-400 mb-1 font-medium">
+                          {sendSuccess ? (
+                            <span className="text-emerald-500 font-medium flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Message sent successfully!
+                            </span>
+                          ) : mappedMentor ? (
+                            `Connected with ${mappedMentor.name}`
                           ) : (
-                            <Send className="w-[18px] h-[18px]" />
+                            "Don't hesitate, every question matters."
                           )}
-                        </Button>
+                        </p>
+                        <div className="flex gap-2">
+                          <Input 
+                            value={messageInput}
+                            disabled={sendLoading}
+                            onChange={(e) => setMessageInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                            placeholder={mappedMentor ? `Ask ${mappedMentor.name}...` : "Ask a quick question..."}
+                            className="flex-1 border border-slate-200 rounded-2xl px-4.5 py-3 bg-slate-50/50 text-[14px] text-slate-800 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-950 transition-all disabled:opacity-50 h-11"
+                          />
+                          <Button 
+                            onClick={handleSendMessage}
+                            disabled={sendLoading || !messageInput.trim()}
+                            className={`${messageInput.trim() && !sendLoading ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-100 text-slate-400'} w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-95 shrink-0 disabled:opacity-50`}
+                          >
+                            {sendLoading ? (
+                              <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+                            ) : (
+                              <Send className="w-[18px] h-[18px]" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -2076,8 +2770,8 @@ export default function OnboardingFlow() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1.5">
-                              <p className="text-slate-900 font-bold text-[15px] truncate">{enrolledCourse.title}</p>
-                              <p className="text-slate-400 font-bold text-[13px]">{progressPct}%</p>
+                              <p className="text-slate-900 font-medium text-[15px] truncate">{enrolledCourse.title}</p>
+                              <p className="text-slate-400 font-medium text-[13px]">{progressPct}%</p>
                             </div>
                             
                             <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden mb-2.5">
@@ -2087,7 +2781,7 @@ export default function OnboardingFlow() {
                               />
                             </div>
 
-                            <div className="flex items-center gap-3 text-[12px] font-bold text-slate-400 tracking-tight">
+                            <div className="flex items-center gap-3 text-[12px] font-medium text-slate-400 tracking-tight">
                               <span>{completedModules}/{totalModules} modules</span>
                               <span className="text-slate-200 font-normal">|</span>
                               <span>{completedLessons}/{totalLessons} lessons</span>
@@ -2101,7 +2795,7 @@ export default function OnboardingFlow() {
                               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-xs">
                                 <PlayCircle className="w-3.5 h-3.5 text-indigo-500" />
                               </div>
-                              <p className="text-slate-600 font-bold text-[12px]">
+                              <p className="text-slate-600 font-medium text-[12px]">
                                 Next: <span className="text-indigo-600">{nextLesson.title}</span>
                               </p>
                             </div>
@@ -2116,11 +2810,11 @@ export default function OnboardingFlow() {
                     <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 mb-5">
                       <GraduationCap className="w-7 h-7" />
                     </div>
-                    <h2 className="text-[18px] font-bold text-slate-900 tracking-tight mb-2">No Courses Enrolled</h2>
+                    <h2 className="text-[17px] font-medium text-slate-900 tracking-tight mb-2">No Courses Enrolled</h2>
                     <p className="text-[13px] text-slate-500 font-medium max-w-xs leading-relaxed mb-6">
                       Select a learning path to start your educational journey.
                     </p>
-                    <Button onClick={() => setIsCourseCatalogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-6 font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2">
+                    <Button onClick={() => setIsCourseCatalogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-6 font-medium shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2">
                       <Plus className="w-4 h-4" /> Browse Catalog
                     </Button>
                   </div>
@@ -2132,8 +2826,8 @@ export default function OnboardingFlow() {
                 {/* Todo List / Course Milestones Widget */}
                 <div className="w-full">
                   <div className="flex justify-between items-center mb-2.5 px-1">
-                    <div className="flex items-center gap-2 text-slate-700 font-bold font-mulish text-[15px]">
-                      <ListChecks className="w-[18px] h-[18px] text-orange-500" /> Tasks & Milestones
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-[15px]">
+                      <ListChecks className="w-[18px] h-[18px] text-orange-500" /> To-Dos
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Button 
@@ -2144,7 +2838,7 @@ export default function OnboardingFlow() {
                           setIsSchedulingModalOpen(true);
                         }}
                         variant="ghost"
-                        className="text-xs text-orange-500 hover:text-orange-600 font-bold font-mulish flex items-center gap-1 p-0 h-auto hover:bg-transparent shadow-none"
+                        className="text-xs text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 p-0 h-auto hover:bg-transparent shadow-none"
                       >
                         <Plus className="w-3.5 h-3.5" /> Schedule Session
                       </Button>
@@ -2156,9 +2850,9 @@ export default function OnboardingFlow() {
                           setIsTodoSheetOpen(true);
                         }}
                         variant="ghost"
-                        className="text-xs text-orange-500 hover:text-orange-600 font-bold font-mulish flex items-center gap-1 p-0 h-auto hover:bg-transparent shadow-none"
+                        className="text-xs text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 p-0 h-auto hover:bg-transparent shadow-none"
                       >
-                        <Plus className="w-3.5 h-3.5" /> Add Task
+                        <Plus className="w-3.5 h-3.5" /> Add To-Do
                       </Button>
                     </div>
                   </div>
@@ -2167,17 +2861,13 @@ export default function OnboardingFlow() {
                     {/* Course Milestones (from Enrolled Course) */}
                     {enrolledCourse && (
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center px-1">
-                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mulish">Course Milestones</p>
-                          <span className="text-[10px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded-md font-bold font-mulish">Auto-imported</span>
-                        </div>
-                        <div className="space-y-2 max-h-[180px] overflow-y-auto hidden-scrollbar pr-1">
+                        <div className="flex flex-col max-h-[180px] overflow-y-auto hidden-scrollbar pr-1">
                           {(enrolledCourse.content || []).flatMap((mod: any) => 
                             (mod.topics || []).map((topic: string, idx: number) => {
                               const topicId = `${mod.id}-${idx}`;
                               const isCompleted = courseProgress.includes(topicId);
                               return (
-                                <div key={topicId} className="flex items-center justify-between p-3 bg-slate-50/50 hover:bg-slate-50 rounded-xl border border-slate-100/50 transition-all">
+                                <div key={topicId} className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0 transition-all">
                                   <div className="flex items-center gap-3 min-w-0">
                                     <div 
                                       onClick={() => handleToggleActivity(topicId)}
@@ -2187,7 +2877,7 @@ export default function OnboardingFlow() {
                                     </div>
                                     <span className={`text-[12.5px] font-semibold truncate ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{topic}</span>
                                   </div>
-                                  <span className="text-[9px] text-slate-400 font-bold font-mulish uppercase shrink-0 px-2 py-0.5 bg-slate-100/50 rounded-md truncate max-w-[80px]">{mod.title}</span>
+                                  <span className="text-[9px] text-slate-400 font-medium uppercase shrink-0 px-2 py-0.5 bg-slate-100/50 rounded-md truncate max-w-[80px]">{mod.title}</span>
                                 </div>
                               );
                             })
@@ -2197,18 +2887,18 @@ export default function OnboardingFlow() {
                     )}
 
                     {/* Custom Student Todos */}
-                    <div className={cn("space-y-3", enrolledCourse ? "pt-3 border-t border-slate-50" : "")}>
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mulish px-1">My Tasks</p>
-                      <div className="space-y-2 max-h-[180px] overflow-y-auto hidden-scrollbar pr-1">
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest px-1">My To-Dos</p>
+                      <div className="flex flex-col max-h-[180px] overflow-y-auto hidden-scrollbar pr-1">
                         {customTodos.length === 0 ? (
                           <div className="text-center py-4 border border-dashed border-slate-100 rounded-xl bg-slate-50/30">
-                            <p className="text-xs text-slate-400 font-medium">No custom tasks yet. Click "Add Task" to start!</p>
+                            <p className="text-xs text-slate-400 font-medium">No custom to-dos yet. Click "Add To-Do" to start!</p>
                           </div>
                         ) : (
-                          customTodos.map((todo) => {
+                          customTodos.slice(0, 3).map((todo) => {
                             const isCompleted = todo.status === 'Completed';
                             return (
-                              <div key={todo.id} className="flex items-center justify-between p-3 bg-slate-50/50 hover:bg-slate-50 rounded-xl border border-slate-100/50 transition-all group">
+                              <div key={todo.id} className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0 transition-all group">
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div 
                                     onClick={() => handleToggleTodoStatus(todo.id)}
@@ -2224,7 +2914,7 @@ export default function OnboardingFlow() {
                                 <button 
                                   onClick={() => handleDeleteTodo(todo.id)}
                                   className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 shrink-0"
-                                  title="Delete task"
+                                  title="Delete to-do"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -2232,8 +2922,17 @@ export default function OnboardingFlow() {
                             );
                           })
                         )}
+                      </div>
+                      {customTodos.length > 3 && (
+                        <button 
+                          onClick={() => setState("ALL_TASKS")}
+                          className="w-full text-center py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all border border-dashed border-slate-200 mt-3 flex items-center justify-center gap-1.5 bg-white"
+                        >
+                          <span>See All To-Dos ({customTodos.length})</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
-                  </div>
                   </div>
                   </div>
 
@@ -2242,91 +2941,123 @@ export default function OnboardingFlow() {
                 <div className="w-full space-y-2.5">
                   
                   {/* Gaming Quiz Row (Redirects directly to GAMES state) */}
-                  <div 
-                    onClick={() => setState("GAMES")}
-                    className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
-                  >
-                    <div className="bg-gradient-to-tr from-amber-500 to-orange-600 text-white p-3.5 rounded-2xl mr-4.5 shadow-sm group-hover:scale-105 group-hover:rotate-3 transition-all"><Swords className="w-5 h-5" /></div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[14.5px] font-bold font-mulish text-slate-800">Learning Arena</p>
-                        <span className="bg-[#dcfce7] text-[#166534] text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">Live</span>
+                  {featureFlags.student_games !== false && (
+                    <div 
+                      onClick={() => setState("GAMES")}
+                      className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
+                    >
+                      <div className="bg-gradient-to-tr from-amber-500 to-orange-600 text-white p-3.5 rounded-2xl mr-4.5 shadow-sm group-hover:scale-105 group-hover:rotate-3 transition-all"><Swords className="w-5 h-5" /></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[14.5px] font-medium text-slate-800">Learning Arena</p>
+                          <span className="bg-[#dcfce7] text-[#166534] text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">Live</span>
+                        </div>
+                        <p className="text-[12px] text-slate-400 font-medium">S&L or KBC points quiz · 300+ coins</p>
                       </div>
-                      <p className="text-[12px] text-slate-400 font-medium">S&L or KBC points quiz · 300+ coins</p>
-                    </div>
-                    <div className="flex items-center shrink-0">
-                      <div className="flex -space-x-1.5 mr-3">
-                         <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=11')] bg-cover shadow-xs"></div>
-                         <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=12')] bg-cover shadow-xs"></div>
-                         <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=5')] bg-cover shadow-xs"></div>
+                      <div className="flex items-center shrink-0">
+                        <div className="flex -space-x-1.5 mr-3">
+                           <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=11')] bg-cover shadow-xs"></div>
+                           <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=12')] bg-cover shadow-xs"></div>
+                           <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=5')] bg-cover shadow-xs"></div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform" />
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform" />
                     </div>
-                  </div>
+                  )}
 
                   {/* Running Notes Row (Redirects to NOTES state) */}
+                  {featureFlags.student_notes !== false && (
+                    <div 
+                      onClick={() => setState("NOTES")}
+                      className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
+                    >
+                      <div className="bg-slate-100 text-slate-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><NotebookPen className="w-5 h-5" /></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[14.5px] font-medium text-slate-800">Study Notebook</p>
+                          <span className="bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full font-lato">2</span>
+                        </div>
+                        <p className="text-[12px] text-slate-400 font-medium">Text notes & lecture boards</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </div>
+                  )}
+
+                  {/* Learning Resource Hub */}
                   <div 
-                    onClick={() => setState("NOTES")}
+                    onClick={() => setState("RESOURCES")}
                     className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
                   >
-                    <div className="bg-slate-100 text-slate-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><NotebookPen className="w-5 h-5" /></div>
+                    <div className="bg-indigo-50 text-indigo-600 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[14.5px] font-bold font-mulish text-slate-800">Study Notebook</p>
-                        <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full font-lato">2</span>
+                        <p className="text-[14.5px] font-medium text-slate-800">Resource Library</p>
+                        <span className="bg-indigo-100 text-indigo-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">
+                          {messages.filter(msg => msg.body.includes("http://") || msg.body.includes("https://")).length > 0 
+                            ? `${messages.filter(msg => msg.body.includes("http://") || msg.body.includes("https://")).length} items` 
+                            : "Docs"}
+                        </span>
                       </div>
-                      <p className="text-[12px] text-slate-400 font-medium">Text notes & lecture boards</p>
+                      <p className="text-[12px] text-slate-400 font-medium">Mentor shared guides & developer reference docs</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
                   </div>
 
                    {/* Gratitude Wall */}
-                  <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("GRATITUDE_WALL")}>
-                    <div className="bg-rose-50 text-rose-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Heart className="w-5 h-5" /></div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[14.5px] font-bold font-mulish text-slate-800">Gratitude Wall</p>
-                        <span className="text-rose-500 text-[11px] font-bold font-lato">3 / 12</span>
+                  {featureFlags.student_gratitude !== false && (
+                    <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("GRATITUDE_WALL")}>
+                      <div className="bg-rose-50 text-rose-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Heart className="w-5 h-5" /></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[14.5px] font-medium text-slate-800">Gratitude Wall</p>
+                          <span className="text-rose-500 text-[11px] font-medium font-lato">3 / 12</span>
+                        </div>
+                        <p className="text-[12px] text-slate-400 font-medium">Send tokens of appreciation</p>
                       </div>
-                      <p className="text-[12px] text-slate-400 font-medium">Send tokens of appreciation</p>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                  </div>
+                  )}
 
                   {/* My Portfolio */}
-                  <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("PORTFOLIO")}>
-                    <div className="bg-indigo-50 text-indigo-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Briefcase className="w-5 h-5" /></div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-[14.5px] font-bold font-mulish text-slate-800">Showcase Portfolio</p>
-                        <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full font-lato">4 projects</span>
+                  {featureFlags.student_portfolio !== false && (
+                    <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("PORTFOLIO")}>
+                      <div className="bg-indigo-50 text-indigo-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Briefcase className="w-5 h-5" /></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[14.5px] font-medium text-slate-800">Showcase Portfolio</p>
+                          <span className="bg-indigo-50 text-indigo-600 text-[10px] font-medium px-2 py-0.5 rounded-full font-lato">4 projects</span>
+                        </div>
+                        <p className="text-[12px] text-slate-400 font-medium">Build as you learn modules</p>
                       </div>
-                      <p className="text-[12px] text-slate-400 font-medium">Build as you learn modules</p>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                  </div>
+                  )}
 
                   {/* Mental Wellness card */}
-                  <div className="bg-gradient-to-r from-[#effdf5] to-[#e0f2fe] rounded-[1.25rem] border border-[#a7f3d0]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("WELLNESS")}>
-                     <div className="flex items-center justify-between relative z-10 mb-3">
-                       <div className="flex items-center gap-3">
-                         <div className="bg-white/75 text-[#14b8a6] p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Heart className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
-                         <div>
-                           <div className="flex items-center gap-2">
-                             <p className="text-[14.5px] font-bold font-mulish text-teal-900">Mental Wellness</p>
-                             <span className="bg-teal-100 text-teal-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
+                  {featureFlags.student_wellness !== false && (
+                    <div className="bg-gradient-to-r from-[#effdf5] to-[#e0f2fe] rounded-[1.25rem] border border-[#a7f3d0]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("WELLNESS")}>
+                       <div className="flex items-center justify-between relative z-10 mb-3">
+                         <div className="flex items-center gap-3">
+                           <div className="bg-white/75 text-[#14b8a6] p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Heart className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
+                           <div>
+                             <div className="flex items-center gap-2">
+                               <p className="text-[14.5px] font-medium text-teal-900">Mental Wellness</p>
+                               <span className="bg-teal-100 text-teal-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
+                             </div>
+                             <p className="text-[12px] text-teal-700/70 font-semibold leading-relaxed mt-0.5">Calm Reset · Gratitude Game · Memes</p>
                            </div>
-                           <p className="text-[12px] text-teal-700/70 font-semibold leading-relaxed mt-0.5">Calm Reset · Gratitude Game · Memes</p>
                          </div>
+                         <ChevronRight className="w-4 h-4 text-teal-500/50 group-hover:translate-x-0.5 transition-transform" />
                        </div>
-                       <ChevronRight className="w-4 h-4 text-teal-500/50 group-hover:translate-x-0.5 transition-transform" />
-                     </div>
-                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-bold text-teal-800/60 relative z-10 px-1 font-mulish">
-                       <span className="flex items-center gap-1">🧘 Brain Recharge</span>
-                       <span className="flex items-center gap-1">🙏 Gratitude Points</span>
-                       <span className="flex items-center gap-1">😂 Daily Memes</span>
-                     </div>
-                  </div>
+                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-teal-800/60 relative z-10 px-1">
+                         <span className="flex items-center gap-1">🧘 Brain Recharge</span>
+                         <span className="flex items-center gap-1">🙏 Gratitude Points</span>
+                         <span className="flex items-center gap-1">😂 Daily Memes</span>
+                       </div>
+                    </div>
+                  )}
 
                   {/* Interesting Facts card */}
                   <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.25rem] border border-[#fde047]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
@@ -2335,7 +3066,7 @@ export default function OnboardingFlow() {
                          <div className="bg-amber-100/50 text-amber-600 p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Lightbulb className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
                          <div>
                            <div className="flex items-center gap-2">
-                             <p className="text-[14.5px] font-bold font-mulish text-amber-900">Interesting Facts</p>
+                             <p className="text-[14.5px] font-medium text-amber-900">Interesting Facts</p>
                              <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
                            </div>
                            <p className="text-[12px] text-amber-700/70 font-semibold leading-relaxed mt-0.5">Small facts. Big inspiration.</p>
@@ -2343,7 +3074,7 @@ export default function OnboardingFlow() {
                        </div>
                        <ChevronRight className="w-4 h-4 text-amber-500/50 group-hover:translate-x-0.5 transition-transform" />
                      </div>
-                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-bold text-amber-800/60 relative z-10 px-1 font-mulish">
+                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-amber-800/60 relative z-10 px-1">
                        <span className="flex items-center gap-1">🧠 Brain & Learning</span>
                        <span className="flex items-center gap-1">💻 Tech & Code</span>
                        <span className="flex items-center gap-1">🏆 Challenges</span>
@@ -2352,36 +3083,38 @@ export default function OnboardingFlow() {
 
                   {/* Mentor's Thought of the Day */}
                   <div className="bg-slate-100/50 rounded-[1.25rem] p-5 shadow-sm mt-4 border border-slate-100/50 flex flex-col">
-                    <div className="flex items-center gap-2 text-slate-700 font-bold font-mulish text-[14px] mb-3">
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-[14px] mb-3">
                       <Sun className="w-4 h-4 text-orange-500 animate-spin-slow" strokeWidth={2.5} /> Mentor's Thought of the Day
                     </div>
-                    <div className="bg-white rounded-2xl p-4 italic text-slate-700 text-[14px] leading-relaxed relative border border-slate-100/30 font-medium font-volkhov shadow-xs">
+                    <div className="bg-white rounded-2xl p-4 italic text-slate-700 text-[14px] leading-relaxed relative border border-slate-100/30 font-medium shadow-xs">
                       "Consistency beats intensity. Practice a little every day."
-                      <span className="block text-slate-400 not-italic text-[12px] font-bold font-mulish uppercase tracking-wider mt-2">— Pradeep K.</span>
+                      <span className="block text-slate-400 not-italic text-[12px] font-medium uppercase tracking-wider mt-2">— Pradeep K.</span>
                     </div>
-                    <button className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white py-3 rounded-2xl mt-3.5 font-bold font-mulish text-[13px] flex gap-2 items-center justify-center transition-all active:scale-98 shadow-sm h-12">
+                    <button className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white py-3 rounded-2xl mt-3.5 font-medium text-[13px] flex gap-2 items-center justify-center transition-all active:scale-98 shadow-sm h-12">
                       <Heart className="w-[18px] h-[18px] fill-current text-rose-500 animate-pulse" /> Read & Reflect
                     </button>
-                    <div className="flex justify-between items-center mt-4 px-1 font-mulish">
-                      <p className="text-[12px] font-bold text-orange-500 flex items-center gap-1"><Flame className="w-3.5 h-3.5" /> 3-day streak</p>
-                      <p className="text-[12px] font-bold text-amber-600 flex items-center gap-1"><Coins className="w-3.5 h-3.5 fill-amber-100" /> +5 XP per reflection</p>
+                    <div className="flex justify-between items-center mt-4 px-1">
+                      <p className="text-[12px] font-medium text-orange-500 flex items-center gap-1"><Flame className="w-3.5 h-3.5" /> {streakCount}-day streak</p>
+                      <p className="text-[12px] font-medium text-amber-600 flex items-center gap-1"><Coins className="w-3.5 h-3.5 fill-amber-100" /> +5 XP per reflection</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Footer Stats Row */}
-                <div className="mt-4 mb-4 flex divide-x divide-slate-100 bg-white rounded-[1.25rem] p-4 shadow-sm border border-slate-50 font-lato">
-                   <div className="flex flex-col items-center flex-1 justify-center">
-                     <p className="text-slate-800 font-extrabold text-[22px]">3</p>
-                     <p className="text-slate-400 text-[10px] font-extrabold font-mulish uppercase tracking-wider mt-0.5">Day Streak</p>
+                <div className="mt-4 mb-4 flex justify-between bg-white rounded-[1.25rem] p-5 shadow-sm border border-slate-100/50">
+                   <div className="flex flex-col gap-1.5">
+                     <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Day Streak</span>
+                     <span className="text-[17px] font-medium tracking-tight flex items-center gap-2 text-slate-900"><Flame className="w-5 h-5 text-orange-500 fill-orange-500" /> {streakCount}</span>
                    </div>
-                   <div className="flex flex-col items-center flex-1 justify-center text-amber-500">
-                     <div className="flex items-center gap-1 text-[22px] font-extrabold"><Coins className="w-5 h-5 fill-amber-100 animate-pulse" /> {coinsCount}</div>
-                     <p className="text-slate-400 text-[10px] font-extrabold font-mulish uppercase tracking-wider mt-0.5">Coins</p>
+                   <div className="w-px bg-slate-100 my-1"></div>
+                   <div className="flex flex-col gap-1.5">
+                     <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Coins</span>
+                     <span className="text-[17px] font-medium tracking-tight flex items-center gap-2 text-slate-900"><Coins className="w-5 h-5 text-amber-500 fill-amber-500" /> {coinsCount}</span>
                    </div>
-                   <div className="flex flex-col items-center flex-1 justify-center">
-                     <p className="text-slate-800 font-extrabold text-[22px]">85%</p>
-                     <p className="text-slate-400 text-[10px] font-extrabold font-mulish uppercase tracking-wider mt-0.5">Quiz Avg</p>
+                   <div className="w-px bg-slate-100 my-1"></div>
+                   <div className="flex flex-col gap-1.5">
+                     <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Progress</span>
+                     <span className="text-[17px] font-medium tracking-tight flex items-center gap-2 text-slate-900"><TrendingUp className="w-5 h-5 text-emerald-500" /> 85%</span>
                    </div>
                 </div>
 
@@ -2394,8 +3127,8 @@ export default function OnboardingFlow() {
               </div>
             )}
 
-            {state === "COURSE_DETAILS" && (
-              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-5">
+            {state === "COURSE_DETAILS" && featureFlags.student_courses !== false && (
+              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
                 {(() => {
                   const extendedCourse = mapToExtendedCourse(enrolledCourse);
                   if (!extendedCourse) return null;
@@ -2409,14 +3142,15 @@ export default function OnboardingFlow() {
                       onSecondaryActionClick={() => setIsCourseCatalogOpen(true)}
                       completedLessons={courseProgress}
                       onToggleLesson={handleToggleActivity}
+                      onCoinsEarned={(delta) => updateCoinsInDb(Math.max(0, coinsCount + delta))}
                     />
                   );
                 })()}
               </div>
             )}
 
-            {state === "GAMES" && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-5 px-0 overflow-hidden">
+            {state === "GAMES" && featureFlags.student_games !== false && (
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
                 <StudentGames
                   userName={name || "Student"}
                   userCoins={coinsCount}
@@ -2424,11 +3158,12 @@ export default function OnboardingFlow() {
                   onBack={() => setState("DASHBOARD_MAIN")}
                   onPlayComplete={handlePlayComplete}
                   enrolledCourse={enrolledCourse}
+                  featureFlags={featureFlags}
                 />
               </div>
             )}
 
-            {state === "WELLNESS" && (
+            {state === "WELLNESS" && featureFlags.student_wellness !== false && (
               <MentalWellness
                 coins={coinsCount}
                 onCoinsEarned={(delta) => updateCoinsInDb(Math.max(0, coinsCount + delta))}
@@ -2436,7 +3171,7 @@ export default function OnboardingFlow() {
               />
             )}
 
-            {state === "FACTS" && (
+            {state === "FACTS" && featureFlags.student_facts !== false && (
               <InterestingFacts
                 coins={coinsCount}
                 onCoinsEarned={(delta) => updateCoinsInDb(Math.max(0, coinsCount + delta))}
@@ -2444,21 +3179,98 @@ export default function OnboardingFlow() {
               />
             )}
 
-            {state === "PORTFOLIO" && (
+            {state === "PORTFOLIO" && featureFlags.student_portfolio !== false && (
               <StudentPortfolio
                 onBack={() => setState("DASHBOARD_MAIN")}
               />
             )}
 
-            {state === "GRATITUDE_WALL" && (
+            {state === "GRATITUDE_WALL" && featureFlags.student_gratitude !== false && (
               <GratitudeWall
                 coins={coinsCount}
                 onBack={() => setState("DASHBOARD_MAIN")}
               />
             )}
 
-            {state === "NOTES" && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-5 px-5">
+            {state === "RESOURCES" && (
+              <StudentResources
+                mappedMentor={mappedMentor}
+                messages={messages}
+                onBack={() => setState("MESSAGES")}
+              />
+            )}
+
+            {state === "ALL_TASKS" && (
+              <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8 font-inter">
+                {/* Header */}
+                <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-0 mx-0 flex justify-between items-center border-b border-slate-100 mb-6">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-slate-500 hover:bg-slate-100 shadow-sm border border-slate-100 transition-colors shrink-0">
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div>
+                      <p className="text-[16px] font-semibold text-slate-800 leading-tight">My To-Dos</p>
+                      <p className="text-[12px] text-slate-400 font-semibold">{customTodos.length} to-do{customTodos.length !== 1 ? 's' : ''}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setTodoTitleInput("");
+                      setTodoNotesInput("");
+                      setIsTodoSheetOpen(true);
+                    }}
+                    className="bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+                  >
+                    <Plus className="w-4 h-4" /> Add To-Do
+                  </Button>
+                </div>
+
+                {/* To-Dos List */}
+                <div className="flex-1 space-y-4">
+                  {customTodos.length === 0 ? (
+                    <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-white p-8">
+                      <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 mx-auto mb-4 border border-slate-100">
+                        <ListChecks className="w-8 h-8" />
+                      </div>
+                      <p className="text-slate-800 font-semibold text-[15px] mb-1">All caught up!</p>
+                      <p className="text-slate-400 text-xs max-w-[240px] mx-auto leading-relaxed">No custom to-dos registered. Create a new to-do to organize your educational roadmap.</p>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-[1.5rem] border border-slate-100 p-5 divide-y divide-slate-100 shadow-xs">
+                      {customTodos.map((todo) => {
+                        const isCompleted = todo.status === 'Completed';
+                        return (
+                          <div key={todo.id} className="flex items-center justify-between py-4 first:pt-0 last:pb-0 transition-all group">
+                            <div className="flex items-center gap-3.5 min-w-0">
+                              <div 
+                                onClick={() => handleToggleTodoStatus(todo.id)}
+                                className={`w-5.5 h-5.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all shrink-0 ${isCompleted ? 'bg-slate-900 border-slate-900 text-white' : 'border-slate-200 bg-white hover:border-slate-400'}`}
+                              >
+                                {isCompleted && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+                              </div>
+                              <div className="min-w-0">
+                                <span className={`text-[14px] font-semibold block truncate ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{todo.title}</span>
+                                {todo.notes && <span className="text-[11.5px] text-slate-400 block mt-0.5 leading-relaxed">{todo.notes}</span>}
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => handleDeleteTodo(todo.id)}
+                              className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 shrink-0 rounded-lg hover:bg-red-50"
+                              title="Delete to-do"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {state === "NOTES" && featureFlags.student_notes !== false && (
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-0 mx-0 flex justify-between items-center border-b border-slate-100 mb-4">
@@ -2467,7 +3279,7 @@ export default function OnboardingFlow() {
                       <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                      <p className="text-[16px] font-bold text-slate-800 leading-tight">Running Notes</p>
+                      <p className="text-[16px] font-medium text-slate-800 leading-tight">Running Notes</p>
                       <p className="text-[12px] text-slate-400 font-semibold">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
@@ -2520,7 +3332,7 @@ export default function OnboardingFlow() {
                           <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
                             <NotebookPen className="w-4 h-4" />
                           </div>
-                          <p className="text-[14px] font-bold text-slate-800">New Running Note</p>
+                          <p className="text-[14px] font-medium text-slate-800">New Running Note</p>
                         </div>
                         
                         <div className="space-y-3">
@@ -2546,14 +3358,14 @@ export default function OnboardingFlow() {
                                 setNoteTitleInput("");
                                 setNoteContentInput("");
                               }}
-                              className="flex-1 py-3 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 text-xs font-bold transition-all active:scale-[0.98]"
+                              className="flex-1 py-3 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 text-xs font-medium transition-all active:scale-[0.98]"
                             >
                               Cancel
                             </button>
                             <button 
                               onClick={handleSaveNote}
                               disabled={!noteContentInput.trim()}
-                              className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 ${
+                              className={`flex-1 py-3 rounded-xl text-xs font-medium transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 ${
                                 noteContentInput.trim() 
                                   ? 'bg-[#0f172a] text-white hover:bg-slate-900 shadow-sm shadow-slate-900/10' 
                                   : 'bg-slate-100 text-slate-300 cursor-not-allowed'
@@ -2573,7 +3385,7 @@ export default function OnboardingFlow() {
                       <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
                         <NotebookPen className="w-7 h-7 text-slate-300" strokeWidth={1.8} />
                       </div>
-                      <p className="text-[15px] font-bold text-slate-700">No running notes yet</p>
+                      <p className="text-[15px] font-medium text-slate-700">No running notes yet</p>
                       <p className="text-[12px] text-slate-400 mt-1 max-w-[240px] leading-relaxed">Write down thoughts or tap the header icons to save paper notes as photos.</p>
                     </div>
                   )}
@@ -2604,7 +3416,7 @@ export default function OnboardingFlow() {
                                   }`} 
                                 />
                                 {expandedPhotoNoteId !== note.id && (
-                                  <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent flex items-end justify-center pb-1 text-[11px] font-bold text-slate-400">
+                                  <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent flex items-end justify-center pb-1 text-[11px] font-medium text-slate-400">
                                     Tap to Expand
                                   </div>
                                 )}
@@ -2612,7 +3424,7 @@ export default function OnboardingFlow() {
                               <div className="px-5 py-4 flex items-center justify-between bg-white border-t border-slate-50">
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                   <Camera className="w-4 h-4 text-orange-400 shrink-0" strokeWidth={2.2} />
-                                  <p className="text-[13.5px] font-bold text-slate-800 truncate leading-none">{note.title}</p>
+                                  <p className="text-[13.5px] font-medium text-slate-800 truncate leading-none">{note.title}</p>
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0 ml-4">
                                   <span className="text-slate-350 text-[10.5px] font-medium">{formatNoteTime(note.timestamp)}</span>
@@ -2668,10 +3480,10 @@ export default function OnboardingFlow() {
             )}
 
             {state === "PROFILE" && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-5 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
                 
                 {/* Purple Top Block */}
-                <div className="bg-[#0f172a] pt-8 pb-16 px-5 relative">
+                <div className="bg-[#0f172a] pt-8 pb-16 px-6 md:px-8 relative">
                   <div className="flex justify-between items-center text-white mb-6">
                     <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
                       <ArrowLeft className="w-5 h-5" />
@@ -2684,7 +3496,16 @@ export default function OnboardingFlow() {
                   
                   <div className="flex flex-col items-center gap-3">
                      <div className="relative">
-                       <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-[url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop')] bg-cover bg-center grayscale shadow-lg object-cover"></div>
+                       {avatarUrl ? (
+                         <div 
+                           className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg"
+                           style={{ backgroundImage: `url(${avatarUrl})` }}
+                         ></div>
+                       ) : (
+                         <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
+                           <User className="w-10 h-10 stroke-[1.5]" />
+                         </div>
+                       )}
                        <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-700 shadow-md border-2 border-transparent">
                          <Camera className="w-[13px] h-[13px]" strokeWidth={3} />
                        </button>
@@ -2701,7 +3522,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Overlapping Content Box */}
-                <div className="flex-1 bg-slate-50 relative -mt-8 rounded-t-[2rem] px-5 pt-6 pb-8 border border-white">
+                <div className="flex-1 bg-slate-50 relative -mt-8 rounded-t-[2rem] px-6 md:px-8 pt-6 pb-8 border border-white">
                   
                   {/* Completeness Bar */}
                   <Card className="bg-white rounded-3xl border border-slate-100 -mt-12 mb-6">
@@ -2801,7 +3622,7 @@ export default function OnboardingFlow() {
                        <div className="bg-white rounded-2xl border border-amber-100 p-2 flex justify-between items-center shadow-sm mb-5">
                          <div className="pl-3">
                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Your referral code</p>
-                           <p className="text-[15px] font-bold text-slate-800 tracking-wider">MHUB-0H2CY</p>
+                           <p className="text-[15px] font-medium text-slate-800 tracking-wider">MHUB-0H2CY</p>
                          </div>
                          <Button variant="outline" className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 font-medium text-[13px] px-5 h-12 rounded-xl transition-colors border border-amber-100">
                            <Link className="w-4 h-4 mr-2" /> Copy
@@ -2841,10 +3662,10 @@ export default function OnboardingFlow() {
                 
                 {/* Bottom Navigation */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-between px-10 sm:px-16 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
-                  <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 w-12 ${state === "DASHBOARD_MAIN" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>
-                  <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 w-12 ${state === "COURSE_DETAILS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>
-                  <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 w-12 ${state === "GAMES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"} relative`}><Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>{state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}<span className="text-[10px] font-medium">Games</span></button>
-                  <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>
+                  {featureFlags.student_dashboard !== false && <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 w-12 ${state === "DASHBOARD_MAIN" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>}
+                  {featureFlags.student_courses !== false && <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 w-12 ${state === "COURSE_DETAILS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>}
+                  {featureFlags.student_games !== false && <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 w-12 ${state === "GAMES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"} relative`}><Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>{state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}<span className="text-[10px] font-medium">Games</span></button>}
+                  {featureFlags.student_notes !== false && <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>}
                   <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
                 </div>
 
@@ -2871,18 +3692,18 @@ export default function OnboardingFlow() {
                             <Calendar className="w-5 h-5 text-amber-400" />
                           </div>
                           <div>
-                            <h3 className="text-[18px] font-bold font-volkhov tracking-tight">Schedule 1:1 Session</h3>
-                            <p className="text-[11px] text-slate-400 font-bold font-mulish uppercase tracking-wider">With {mappedMentor?.name || "your Mentor"}</p>
+                            <h3 className="text-[17px] font-medium tracking-tight">Schedule 1:1 Session</h3>
+                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">With {mappedMentor?.name || "your Mentor"}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Form */}
-                      <form onSubmit={handleScheduleSession} className="p-6 space-y-4 overflow-y-auto hidden-scrollbar pb-8 font-mulish">
+                      <form onSubmit={handleScheduleSession} className="p-6 space-y-4 overflow-y-auto hidden-scrollbar pb-8">
                         
                         {/* Session Title */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Session Title</Label>
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Session Title</Label>
                           <Input 
                             value={scheduleTitle}
                             onChange={(e) => setScheduleTitle(e.target.value)}
@@ -2894,7 +3715,7 @@ export default function OnboardingFlow() {
 
                         {/* Description / Notes */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Topics / Notes</Label>
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Topics / Notes</Label>
                           <Textarea 
                             value={scheduleNotes}
                             onChange={(e) => setScheduleNotes(e.target.value)}
@@ -2909,7 +3730,7 @@ export default function OnboardingFlow() {
                           
                           {/* Date */}
                           <div className="space-y-1.5">
-                            <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Date</Label>
+                            <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Date</Label>
                             <Input 
                               type="date"
                               value={scheduleDate}
@@ -2921,7 +3742,7 @@ export default function OnboardingFlow() {
 
                           {/* Time */}
                           <div className="space-y-1.5">
-                            <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Time</Label>
+                            <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Time</Label>
                             <Input 
                               type="time"
                               value={scheduleTime}
@@ -2935,7 +3756,7 @@ export default function OnboardingFlow() {
 
                         {/* Duration */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Duration</Label>
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Duration</Label>
                           <select 
                             value={scheduleDuration}
                             onChange={(e) => setScheduleDuration(e.target.value)}
@@ -2954,13 +3775,13 @@ export default function OnboardingFlow() {
                             type="button" 
                             variant="ghost" 
                             onClick={() => setIsSchedulingModalOpen(false)}
-                            className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-bold font-mulish"
+                            className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-medium"
                           >
                             Cancel
                           </Button>
                           <Button 
                             type="submit" 
-                            className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-bold text-xs font-mulish shadow-md"
+                            className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-medium text-xs shadow-md"
                           >
                             Book Session
                           </Button>
@@ -2995,18 +3816,18 @@ export default function OnboardingFlow() {
                             <ListChecks className="w-5 h-5" />
                           </div>
                           <div>
-                            <h3 className="text-[18px] font-bold font-volkhov tracking-tight">Add Custom Task</h3>
-                            <p className="text-[11px] text-slate-400 font-bold font-mulish uppercase tracking-wider">Keep track of your study objectives</p>
+                            <h3 className="text-[17px] font-medium tracking-tight">Add Custom To-Do</h3>
+                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Keep track of your study objectives</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Todo Form */}
-                      <form onSubmit={handleAddTodo} className="p-5 space-y-4 overflow-y-auto hidden-scrollbar pb-8 font-mulish">
+                      <form onSubmit={handleAddTodo} className="p-5 space-y-4 overflow-y-auto hidden-scrollbar pb-8">
                         
-                        {/* Task Title */}
+                        {/* To-Do Title */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Task Title</Label>
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">To-Do Title</Label>
                           <Input 
                             value={todoTitleInput}
                             onChange={(e) => setTodoTitleInput(e.target.value)}
@@ -3018,7 +3839,7 @@ export default function OnboardingFlow() {
 
                         {/* Description / Notes */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Notes / Description</Label>
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Notes / Description</Label>
                           <Textarea 
                             value={todoNotesInput}
                             onChange={(e) => setTodoNotesInput(e.target.value)}
@@ -3034,15 +3855,15 @@ export default function OnboardingFlow() {
                             type="button" 
                             variant="ghost" 
                             onClick={() => setIsTodoSheetOpen(false)}
-                            className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-bold font-mulish"
+                            className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-medium"
                           >
                             Cancel
                           </Button>
                           <Button 
                             type="submit" 
-                            className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-bold text-xs font-mulish shadow-md"
+                            className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-medium text-xs shadow-md"
                           >
-                            Create Task
+                            Create To-Do
                           </Button>
                         </div>
 
@@ -3075,14 +3896,14 @@ export default function OnboardingFlow() {
                             <GraduationCap className="w-5 h-5" />
                           </div>
                           <div>
-                            <h3 className="text-[18px] font-bold font-volkhov tracking-tight">Explore Learning Paths</h3>
-                            <p className="text-[11px] text-slate-400 font-bold font-mulish uppercase tracking-wider">Choose from expert-designed courses</p>
+                            <h3 className="text-[17px] font-medium tracking-tight">Explore Learning Paths</h3>
+                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Choose from expert-designed courses</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Course Catalog List */}
-                      <div className="p-5 space-y-3.5 overflow-y-auto hidden-scrollbar flex-1 font-mulish">
+                      <div className="p-5 space-y-3.5 overflow-y-auto hidden-scrollbar flex-1">
                         {availableCourses.map((course) => {
                           const isEnrolled = studentEnrollments.some(e => e.course?.id === course.id);
                           const activeModCount = course.modules?.length || course.content?.length || 0;
@@ -3099,8 +3920,8 @@ export default function OnboardingFlow() {
                                     <BookOpen className="w-5 h-5" />
                                   </div>
                                   <div className="min-w-0">
-                                    <h4 className="text-[14.5px] font-bold text-slate-800 truncate">{course.title}</h4>
-                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                    <h4 className="text-[14.5px] font-medium text-slate-800 truncate">{course.title}</h4>
+                                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">
                                       {activeModCount} modules · {totalLessons || "Comprehensive"} lessons
                                     </p>
                                   </div>
@@ -3108,12 +3929,12 @@ export default function OnboardingFlow() {
                                 <div className="shrink-0">
                                   {isEnrolled ? (
                                     <div className="flex flex-col items-end gap-1.5">
-                                      <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-lg font-black uppercase tracking-wider flex items-center gap-1">
+                                      <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider flex items-center gap-1">
                                         <Check className="w-3 h-3" /> Enrolled
                                       </span>
                                       <button 
                                         onClick={() => handleStudentEnrollCourse(course, true)}
-                                        className="text-[10px] text-slate-400 font-bold hover:text-red-500 transition-colors uppercase tracking-tight flex items-center gap-1"
+                                        className="text-[10px] text-slate-400 font-medium hover:text-red-500 transition-colors uppercase tracking-tight flex items-center gap-1"
                                       >
                                         <RotateCcw className="w-2.5 h-2.5" /> Override
                                       </button>
@@ -3122,7 +3943,7 @@ export default function OnboardingFlow() {
                                     <Button
                                       onClick={() => handleStudentEnrollCourse(course)}
                                       disabled={enrollingCourseId === course.id}
-                                      className="bg-[#0f172a] hover:bg-slate-800 text-white font-bold text-xs h-8 px-3.5 rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-50"
+                                      className="bg-[#0f172a] hover:bg-slate-800 text-white font-medium text-xs h-8 px-3.5 rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-50"
                                     >
                                       {enrollingCourseId === course.id ? "Adding..." : "+ Enroll"}
                                     </Button>
@@ -3178,8 +3999,8 @@ export default function OnboardingFlow() {
                     <>
                       <div className="flex items-center justify-between mb-8">
                         <div>
-                          <p className="text-blue-600 text-[11px] font-bold uppercase tracking-widest mb-1">Mentor Application</p>
-                          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{currentData.title}</h2>
+                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Mentor Application</p>
+                          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
                         </div>
                         <span className="text-sm font-medium text-slate-500">{currentData.step} of {mentorQuizSteps.length}</span>
                       </div>
@@ -3187,7 +4008,7 @@ export default function OnboardingFlow() {
                       <div className="space-y-8">
                         {currentData.questions.map((q: any) => (
                           <div key={q.id} className="space-y-3">
-                            <Label className="text-[14px] font-bold text-slate-700">{q.text}</Label>
+                            <Label className="text-[14px] font-medium text-slate-700">{q.text}</Label>
                             {q.type === "input" ? (
                               <Input 
                                 placeholder={q.placeholder}
@@ -3215,7 +4036,7 @@ export default function OnboardingFlow() {
                         <Button 
                           onClick={() => mentorQuizIndex < mentorQuizSteps.length - 1 ? setMentorQuizIndex(mentorQuizIndex + 1) : saveProfileData("MENTOR")} 
                           className={cn(
-                            "flex-1 h-14 rounded-2xl font-bold text-[15px] transition-all",
+                            "flex-1 h-14 rounded-2xl font-medium text-[15px] transition-all",
                             (selections['q101'] || selections['q102'] || selections['q103'] || selections['q104']) 
                               ? "bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200" 
                               : "bg-slate-200 text-slate-400 pointer-events-none"
@@ -3231,61 +4052,81 @@ export default function OnboardingFlow() {
             )}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-5 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative font-inter overflow-y-auto hidden-scrollbar pb-[calc(10rem+env(safe-area-inset-bottom))] px-6 md:px-8">
                 
                 {/* Header */}
-                <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-8 pb-6 z-30 border-b border-slate-100">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#7c3aed] flex items-center justify-center text-white shadow-sm text-lg font-semibold shrink-0">
-                      <Users className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-[18px] font-medium text-slate-900 leading-tight">Welcome, {name || "satya"}!</p>
-                      <p className="text-[13px] text-slate-400 font-medium">Review & select your students</p>
+                <div className="w-full flex flex-col pt-6 pb-2 gap-4">
+                  <div className="w-full flex justify-between items-center">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-medium tracking-tight text-slate-900 leading-tight">Welcome, {name ? name.split(' ')[0] : 'Satya'}! 👋</h2>
+                      <p className="text-[13px] font-medium text-slate-400">Review & select your first students to mentor.</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Banner */}
-                <div className="bg-slate-50 rounded-[1.5rem] p-6 mt-8 border border-slate-100 flex gap-4">
-                  <Sparkles className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-                  <div>
-                     <p className="text-[13px] font-semibold text-slate-800 mb-1">{realStudents.length} students are waiting for a mentor</p>
-                     <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you'd like to mentor. You can review their profiles and questionnaire responses below.</p>
+                <Card className="bg-indigo-50/60 border border-indigo-100/40 p-5 mt-4 rounded-[1.25rem] flex items-start gap-3.5 relative overflow-hidden shadow-3xs">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
+                  <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                  <div className="relative z-10">
+                     <p className="text-[13px] font-semibold text-slate-800 mb-1 leading-tight">{realStudents.length} student{realStudents.length !== 1 ? 's' : ''} {realStudents.length === 1 ? 'is' : 'are'} waiting for a mentor</p>
+                     <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you&apos;d like to mentor. You can review their profiles and questionnaire responses below.</p>
                   </div>
-                </div>
+                </Card>
 
                 {/* Sort Bar */}
-                <div className="flex items-center gap-4 mt-10 mb-6">
-                   <span className="text-[12px] text-slate-400 font-medium">Sort by:</span>
-                   <button className="bg-[#0f172a] text-white px-4 py-1.5 rounded-full text-[12px] font-medium shadow-sm">Best Match</button>
-                   <button className="bg-slate-50 text-slate-500 hover:bg-slate-100 px-4 py-1.5 rounded-full text-[12px] font-medium border border-slate-200 transition-colors">Recent</button>
+                <div className="flex items-center gap-3 mt-6 mb-4 px-1">
+                   <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
+                   <button className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[12px] font-semibold shadow-sm transition-all hover:bg-slate-800">Best Match</button>
+                   <button className="bg-white text-slate-600 hover:bg-slate-50 px-4 py-1.5 rounded-full text-[12px] font-semibold border border-slate-100 shadow-3xs transition-all">Recent</button>
                 </div>
 
                 {/* Student List */}
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {realStudents.map(student => {
                     const isExpanded = expandedStudents.includes(student.id);
                     const isSelected = selectedStudents.includes(student.id);
                     return (
-                    <div key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-[0_0_0_1.5px_rgba(15,23,42,1)]' : 'border-slate-100'} p-6 pb-5 shadow-sm transition-all relative flex flex-col`}>
+                    <Card key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-xs ring-1 ring-slate-900' : 'border-slate-100'} p-5.5 transition-all relative flex flex-col hover:border-slate-200`}>
                       
                       {isExpanded ? (
-                        <>
-                          <button onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="flex justify-center items-center text-[13px] text-slate-400 font-medium pb-4 hover:text-slate-600 w-full mt-[-4px]">
-                            Hide Details <ChevronUp className="w-4 h-4 ml-1" />
-                          </button>
-                          
-                          <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[14px] text-slate-600 w-full border border-slate-100/50">
-                            <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-medium">{student.email || "vikram.p@gmail.com"}</span>
+                        <div className="flex flex-col">
+                          {/* Expanded Header info */}
+                          <div className="flex gap-4 mb-4">
+                            <div className="relative shrink-0">
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                {student.avatar_url ? (
+                                  <img 
+                                    className="w-full h-full object-cover" 
+                                    src={student.avatar_url} 
+                                    alt={student.name}
+                                  />
+                                ) : (
+                                  <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                    {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start mb-0.5">
+                                <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
+                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                              </div>
+                              <p className="text-[12px] text-slate-500 leading-relaxed font-medium line-clamp-1">{student.desc}</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[13px] text-slate-600 w-full border border-slate-100/50">
+                            <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-semibold">{student.email || "student@example.com"}</span>
                           </div>
                           
-                          <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-[#ede9fe]">
-                            <div className="flex items-center gap-2 text-slate-700 mb-2.5">
+                          <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-indigo-50/50">
+                            <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
                               <Target className="w-4 h-4 shrink-0" />
                               <span className="text-[13px] font-semibold">Learning Goal</span>
                             </div>
-                            <p className="text-[14px] text-slate-700 leading-relaxed font-medium">
+                            <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
                               {student.desc}
                             </p>
                           </div>
@@ -3293,37 +4134,54 @@ export default function OnboardingFlow() {
                           <div className="mb-6 px-1">
                             <div className="flex items-center gap-2 text-slate-500 mb-4">
                               <BookOpen className="w-[18px] h-[18px] shrink-0" />
-                              <span className="text-[14px] font-medium">Questionnaire Responses</span>
+                              <span className="text-[13px] font-semibold text-slate-700">Questionnaire Responses</span>
                             </div>
                             <div className="space-y-3.5">
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
                                  <span className="text-slate-400">Inspiration</span>
                                  <span className="text-slate-800 font-medium text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
                                </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
                                  <span className="text-slate-400">Movie Preference</span>
                                  <span className="text-slate-800 font-medium text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
                                </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 border-b border-slate-50 pb-2.5">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
                                  <span className="text-slate-400">Learning Style</span>
                                  <span className="text-slate-800 font-medium text-right">{student.preferences?.style || "Hands-on projects"}</span>
                                </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[14px] gap-1 pb-1">
+                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 pb-1">
                                  <span className="text-slate-400">Location</span>
                                  <span className="text-slate-800 font-medium text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
                                </div>
                             </div>
                           </div>
                           
-                          <button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`w-full py-[14px] rounded-[14px] text-[15px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200' : 'bg-[#0f172a] hover:bg-[#1e293b] text-white shadow-sm'}`}>
-                            {isSelected ? "Deselect This Student" : <><Check className="w-[18px] h-[18px]" /> Select This Student</>}
-                          </button>
-                        </>
+                          <div className="flex gap-3">
+                            <Button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`flex-1 py-5 rounded-[12px] text-[13.5px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'}`}>
+                              {isSelected ? "Deselect Student" : <><Check className="w-4 h-4" /> Select Student</>}
+                            </Button>
+                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="text-[13px] text-slate-400 font-medium hover:text-slate-600 hover:bg-slate-100/50 rounded-[12px]">
+                              Collapse
+                            </Button>
+                          </div>
+                        </div>
                       ) : (
                         <div onClick={() => setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id])} className="cursor-pointer">
                           <div className="flex gap-4">
                             <div className="relative shrink-0">
-                              <img src={student.image} alt={student.name} className="w-14 h-14 rounded-full object-cover shadow-sm bg-slate-100 grayscale hover:grayscale-0 transition-all border border-slate-100" />
+                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                {student.avatar_url ? (
+                                  <img 
+                                    className="w-full h-full object-cover" 
+                                    src={student.avatar_url} 
+                                    alt={student.name}
+                                  />
+                                ) : (
+                                  <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                    {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <div className="flex-1">
                               <div className="flex justify-between items-start mb-0.5">
@@ -3337,26 +4195,26 @@ export default function OnboardingFlow() {
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {student.tags.map((tag: string) => (
-                                  <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2 py-1 rounded-md font-medium">{tag}</span>
+                                  <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2.5 py-1 rounded-md font-medium">{tag}</span>
                                 ))}
                               </div>
                             </div>
                           </div>
-                          <div className="mt-4 pt-3 border-t border-slate-50 flex justify-center text-[12px] text-slate-400 font-medium items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
+                          <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-center text-[12px] text-slate-400 font-semibold items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
                             View Full Profile <ChevronDown className="w-3.5 h-3.5" />
                           </div>
                         </div>
                       )}
-                    </div>
+                    </Card>
                   )})}
                 </div>
 
                 {/* Fixed Bottom Action Container */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-5 sm:rounded-b-2xl z-50">
-                   <button onClick={() => { if(selectedStudents.length > 0) setState("MENTOR_DASHBOARD") }} className={`w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
+                <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-5 sm:rounded-b-2xl z-50">
+                   <Button onClick={async () => { if(selectedStudents.length > 0) { await markMatchingAsSeen(); } }} className={`w-full h-[52px] rounded-xl text-[14px] font-semibold flex gap-2 items-center justify-center transition-all shadow-md ${selectedStudents.length > 0 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10 active:scale-[0.98]" : "bg-slate-200/60 text-slate-400 pointer-events-none"}`}>
                      {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
-                   </button>
-                   <button onClick={() => setState("MENTOR_DASHBOARD")} className="text-[12px] text-slate-400 font-medium hover:text-slate-600 mt-4 text-center">
+                   </Button>
+                   <button onClick={markMatchingAsSeen} className="text-[12px] text-slate-400 font-semibold hover:text-slate-600 mt-4 text-center transition-colors">
                      Skip for now — I&apos;ll review students later
                    </button>
                 </div>
@@ -3365,62 +4223,196 @@ export default function OnboardingFlow() {
             )}
 
              {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
-                <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
-                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative font-inter">
+                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
                    
                    {/* Mentor Portal Shared Header (only for main dashboard) */}
                    {state === "MENTOR_DASHBOARD" && (
-                     <div className="w-full flex flex-col pt-6 pb-2 gap-4">
+                     <div className="w-full flex flex-col pt-0 pb-2 gap-4">
                         <div className="w-full flex justify-between items-center">
                           <div className="space-y-1">
-                            <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Mentor'}! 👋</h2>
+                            <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Mentor'}! 👋</h2>
                             <p className="text-[13px] font-medium text-slate-400">Your guidance makes all the difference today.</p>
                           </div>
-                          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                            <span className="text-sm font-bold text-slate-700">5.0</span>
-                          </div>
+                          <button
+                            onClick={() => setIsFeedbackModalOpen(true)}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 active:scale-95 transition-all shrink-0"
+                            title="Share Feedback"
+                          >
+                            <MessageSquare className="w-4.5 h-4.5" />
+                          </button>
                         </div>
                      </div>
                    )}
-                  {state === "MENTOR_DASHBOARD" && <MentorHome />}
-                  {state === "MENTOR_STUDENTS" && <MentorStudents />}
-                  {state === "MENTOR_COURSES" && <MentorCourses />}
-                  {state === "MENTOR_NOTES" && <MentorNotes />}
-                  {state === "MENTOR_CIRCLE" && <MentorCircle />}
-                  {state === "MENTOR_ACCOUNT" && <MentorProfile onSignOut={handleSignOut} />}
+                  {state === "MENTOR_DASHBOARD" && featureFlags.mentor_dashboard !== false && (
+                    <MentorHome 
+                      featureFlags={featureFlags} 
+                      onSelectStudent={(studentId) => {
+                        setActiveStudentId(studentId);
+                        setState("MENTOR_STUDENTS");
+                      }} 
+                    />
+                  )}
+                  {state === "MENTOR_STUDENTS" && featureFlags.mentor_students !== false && (
+                    <MentorStudents 
+                      activeStudentId={activeStudentId} 
+                      onSelectStudent={setActiveStudentId} 
+                    />
+                  )}
+                  {state === "MENTOR_COURSES" && featureFlags.mentor_courses !== false && <MentorCourses />}
+                  {state === "MENTOR_NOTES" && featureFlags.mentor_sessions !== false && <MentorNotes />}
+                  {state === "MENTOR_CIRCLE" && featureFlags.mentor_circle !== false && <MentorCircle />}
+                  {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && <MentorProfile onSignOut={handleSignOut} />}
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
                   <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 flex justify-between px-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
-                    <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                    {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-bold" : "font-semibold"}`}>Home</span>
-                    </button>
-                    <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-medium" : "font-semibold"}`}>Home</span>
+                    </button>}
+                    {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-bold" : "font-semibold"}`}>Students</span>
-                    </button>
-                    <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-medium" : "font-semibold"}`}>Students</span>
+                    </button>}
+                    {featureFlags.mentor_courses !== false && <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <GraduationCap className={`w-5 h-5 ${state === "MENTOR_COURSES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-bold" : "font-semibold"}`}>Courses</span>
-                    </button>
-                    <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-medium" : "font-semibold"}`}>Courses</span>
+                    </button>}
+                    {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-bold" : "font-semibold"}`}>Notes</span>
-                    </button>
-                    <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-medium" : "font-semibold"}`}>Notes</span>
+                    </button>}
+                    {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <Users className={`w-5 h-5 ${state === "MENTOR_CIRCLE" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-bold" : "font-semibold"}`}>Circle</span>
-                    </button>
-                    <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                      <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-medium" : "font-semibold"}`}>Circle</span>
+                    </button>}
+                    {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                       <User className={`w-5 h-5 ${state === "MENTOR_ACCOUNT" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-bold" : "font-semibold"}`}>Profile</span>
-                    </button>
+                      <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-medium" : "font-semibold"}`}>Profile</span>
+                    </button>}
                   </div>
               </motion.div>
             )}
 
+          </AnimatePresence>
+
+
+
+          <AnimatePresence>
+            {isFeedbackModalOpen && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="bg-white rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl border border-slate-100/80 flex flex-col relative font-inter"
+                >
+                  {/* Close Button */}
+                  <button
+                    onClick={() => {
+                      setIsFeedbackModalOpen(false);
+                      setFeedbackMessage("");
+                      setFeedbackImageUrl("");
+                    }}
+                    className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-50 border border-slate-150 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all z-50 shadow-sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  {/* Header Section */}
+                  <div className="p-6 pb-4 border-b border-slate-50 bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/30 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-3xs shrink-0">
+                      <MessageSquare className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div>
+                      <h3 className="text-[17px] font-bold text-slate-900 tracking-tight leading-tight">Share Your Feedback</h3>
+                      <p className="text-[11.5px] font-semibold text-indigo-500 uppercase tracking-widest mt-1">Platform Improvement</p>
+                    </div>
+                  </div>
+
+                  {/* Form Body */}
+                  <div className="p-6 space-y-5">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block ml-0.5">Your Message <span className="text-red-500">*</span></label>
+                      <textarea
+                        value={feedbackMessage}
+                        onChange={(e) => setFeedbackMessage(e.target.value)}
+                        placeholder="What went well? What can we do better? Found a bug? Let us know in detail!"
+                        rows={4}
+                        required
+                        className="w-full border border-slate-200 rounded-2xl px-5 py-4 bg-slate-50 text-[14px] text-slate-800 outline-none hover:bg-slate-50/50 hover:border-slate-350 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none shadow-inner"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center px-0.5">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest block">Screenshot URL <span className="text-slate-350 font-normal font-sans tracking-normal capitalize">(Optional)</span></label>
+                        <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
+                      </div>
+                      <input
+                        type="url"
+                        value={feedbackImageUrl}
+                        onChange={(e) => setFeedbackImageUrl(e.target.value)}
+                        placeholder="Paste link to an image/screenshot (e.g. imgur link)"
+                        className="w-full h-11 border border-slate-200 rounded-xl px-4 bg-slate-50 text-[13px] text-slate-800 outline-none hover:border-slate-300 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-inner"
+                      />
+                    </div>
+
+                    {feedbackImageUrl && (
+                      <div className="rounded-xl overflow-hidden border border-slate-100 max-h-32 flex justify-center bg-slate-50">
+                        <img
+                          src={feedbackImageUrl}
+                          alt="Feedback attachment preview"
+                          className="object-cover w-full h-full max-h-32"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/f1f5f9/94a3b8?text=Invalid+Image+URL';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer Section */}
+                  <div className="p-5 border-t border-slate-50 bg-slate-50 flex items-center justify-between gap-3">
+                    <div className="hidden xs:block">
+                      <p className="text-[10px] text-slate-400 leading-none">Submitting as:</p>
+                      <p className="text-[11px] text-slate-600 font-bold leading-none mt-1.5 truncate max-w-[130px]">{name || "Student"}</p>
+                    </div>
+                    <div className="flex gap-2.5 ml-auto w-full xs:w-auto">
+                      <button
+                        onClick={() => {
+                          setIsFeedbackModalOpen(false);
+                          setFeedbackMessage("");
+                          setFeedbackImageUrl("");
+                        }}
+                        className="flex-1 xs:flex-none h-11 px-5 border border-slate-200 hover:border-slate-300 bg-white text-[13px] font-semibold text-slate-600 rounded-xl active:scale-95 transition-all shadow-3xs"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitFeedback}
+                        disabled={isSubmittingFeedback || !feedbackMessage.trim()}
+                        className="flex-1 xs:flex-none h-11 px-6 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-slate-950/15"
+                      >
+                        {isSubmittingFeedback ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            <span>Submitting...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-3.5 h-3.5" />
+                            <span>Send Feedback</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
           </AnimatePresence>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Plus, FileText, Clock, Trash2, Edit2, X } from "lucide-react";
+import { Search, Plus, FileText, Clock, Trash2, Edit2, X, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase";
 
 const supabase = createClient();
 
-export function MentorNotes() {
+export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
   const [notes, setNotes] = useState<any[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [activeNote, setActiveNote] = useState<any>(null);
@@ -117,10 +117,10 @@ export function MentorNotes() {
            >
              <X className="w-5 h-5"/>
            </Button>
-           <h2 className="text-xl font-bold font-volkhov text-slate-900 tracking-tight">{activeNote ? 'Edit Note' : 'New Note'}</h2>
+           <h2 className="text-[17px] font-medium tracking-tight text-slate-900 tracking-tight">{activeNote ? 'Edit Note' : 'New Note'}</h2>
            <Button 
              onClick={handleSaveNote} 
-             className="bg-slate-900 text-white px-5 h-10 rounded-xl text-[13px] font-bold shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
+             className="bg-slate-900 text-white px-5 h-10 rounded-xl text-[13px] font-medium shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
            >
              Save
            </Button>
@@ -132,11 +132,11 @@ export function MentorNotes() {
             <Input 
               type="text" 
               placeholder="Note Title" 
-              className="text-2xl font-bold text-slate-900 border-none outline-none bg-transparent placeholder:text-slate-200 h-auto p-0 focus-visible:ring-0 shadow-none focus-visible:border-transparent font-volkhov relative z-10"
+              className="text-xl font-medium tracking-tight text-slate-900 border-none outline-none bg-transparent placeholder:text-slate-200 h-auto p-0 focus-visible:ring-0 shadow-none focus-visible:border-transparent relative z-10"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
             />
-            <div className="flex items-center gap-2 text-[11px] text-slate-400 font-bold uppercase tracking-widest relative z-10">
+            <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium uppercase tracking-widest relative z-10">
               <Clock className="w-4 h-4 text-indigo-400"/> {activeNote ? activeNote.time : 'New Session Note'}
             </div>
             <div className="w-full h-px bg-slate-50 relative z-10"></div>
@@ -154,10 +154,22 @@ export function MentorNotes() {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between mt-8 px-1">
-        <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight leading-tight">Session Notes</h2>
+        <div className="flex items-center gap-3">
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform shrink-0"
+            >
+              <ArrowLeft className="w-4.5 h-4.5 text-slate-600" />
+            </Button>
+          )}
+          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Session Notes</h2>
+        </div>
         <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 shadow-3xs">
           <FileText className="w-4 h-4" />
-          <span className="text-[11px] font-black uppercase tracking-wider">{notes.length} Total</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider">{notes.length} Total</span>
         </div>
       </div>
 
@@ -179,7 +191,7 @@ export function MentorNotes() {
                <FileText className="w-10 h-10" />
              </div>
              <div>
-               <p className="text-slate-900 font-bold font-volkhov">No notes found</p>
+               <p className="text-slate-900 font-medium">No notes found</p>
                <p className="text-slate-400 text-xs font-medium mt-1">Start recording your session insights today.</p>
              </div>
           </div>
@@ -193,11 +205,11 @@ export function MentorNotes() {
              <div className="flex flex-col gap-3">
                <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                 <h3 className="text-[16px] font-bold text-slate-900 font-volkhov truncate pr-12">{n.title}</h3>
+                 <h3 className="text-[16px] font-medium text-slate-900 truncate pr-12">{n.title}</h3>
                </div>
                <p className="text-[14px] text-slate-500 font-medium leading-relaxed line-clamp-2">{n.content}</p>
                <div className="flex items-center gap-2 mt-2">
-                 <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                 <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
                    <Clock className="w-3.5 h-3.5 text-indigo-400"/> {n.time}
                  </div>
                </div>

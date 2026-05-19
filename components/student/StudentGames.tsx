@@ -19,6 +19,7 @@ interface GameProps {
   onBack: () => void;
   onPlayComplete?: (game: "snakes" | "ludo" | "kbc", score: number, coinsEarned: number) => void;
   enrolledCourse?: any;
+  featureFlags?: Record<string, boolean>;
 }
 
 // --- Constants ---
@@ -174,7 +175,7 @@ function LimitReachedView({ gameName }: { gameName: string }) {
       <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mb-4">
         <Lock className="w-6 h-6 text-rose-500 animate-pulse" />
       </div>
-      <h3 className="text-slate-800 text-[16px] font-bold mb-1">Daily Limit Reached</h3>
+      <h3 className="text-slate-800 text-[16px] font-medium mb-1">Daily Limit Reached</h3>
       <p className="text-slate-400 text-xs leading-normal max-w-[240px]">
         You've completed your daily practice sessions for <strong className="text-slate-600">{gameName}</strong>. Come back tomorrow!
       </p>
@@ -199,10 +200,30 @@ export function CustomCoin({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 // --- Main Container Component ---
-export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPlayComplete, enrolledCourse }: GameProps) {
+export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPlayComplete, enrolledCourse, featureFlags }: GameProps) {
   const [activeTab, setActiveTab] = useState<GameType>("snakes");
   const [dailyPlays, setDailyPlays] = useState<Record<string, number>>({ snakes: 0, ludo: 0, kbc: 0 });
   
+  const isSnakesEnabled = featureFlags?.student_game_snakes !== false;
+  const isLudoEnabled = featureFlags?.student_game_ludo !== false;
+  const isKbcEnabled = featureFlags?.student_game_kbc !== false;
+
+  useEffect(() => {
+    if (activeTab === "snakes" && !isSnakesEnabled) {
+      if (isLudoEnabled) setActiveTab("ludo");
+      else if (isKbcEnabled) setActiveTab("kbc");
+      else setActiveTab("leaderboard");
+    } else if (activeTab === "ludo" && !isLudoEnabled) {
+      if (isSnakesEnabled) setActiveTab("snakes");
+      else if (isKbcEnabled) setActiveTab("kbc");
+      else setActiveTab("leaderboard");
+    } else if (activeTab === "kbc" && !isKbcEnabled) {
+      if (isSnakesEnabled) setActiveTab("snakes");
+      else if (isLudoEnabled) setActiveTab("ludo");
+      else setActiveTab("leaderboard");
+    }
+  }, [isSnakesEnabled, isLudoEnabled, isKbcEnabled, activeTab]);
+
   const [dbGames, setDbGames] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -312,28 +333,24 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <h2 className="text-slate-800 text-[16px] font-bold">Learning Arena</h2>
+            <h2 className="text-slate-800 text-[16px] font-medium">Learning Arena</h2>
             <p className="text-slate-400 text-xs font-semibold">Interactive Education Games</p>
           </div>
           <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-full px-3 py-1.5 shadow-sm">
             <CustomCoin className="w-4 h-4" />
-            <span className="text-amber-700 text-xs font-bold tabular-nums">{userCoins}</span>
+            <span className="text-amber-700 text-xs font-medium tabular-nums">{userCoins}</span>
           </div>
         </div>
 
-        {/* Reset Trigger for Testing */}
-        <div className="flex justify-between items-center px-1">
-          <button
-            onClick={resetTestingLimits}
-            className="text-[10px] text-rose-500 font-semibold underline underline-offset-2 hover:text-rose-600 transition-colors"
-          >
-            🔄 Reset Daily Limits (Dev Testing)
-          </button>
-        </div>
 
         {/* Game Tabs */}
         <div className="flex bg-slate-100 rounded-xl p-1 gap-1.5 mt-3">
-          {(["snakes", "ludo", "kbc", "leaderboard"] as const).map((tab) => {
+          {(["snakes", "ludo", "kbc", "leaderboard"] as const).filter((tab) => {
+            if (tab === "snakes") return isSnakesEnabled;
+            if (tab === "ludo") return isLudoEnabled;
+            if (tab === "kbc") return isKbcEnabled;
+            return true;
+          }).map((tab) => {
             const isActive = activeTab === tab;
             const isLimitReached = tab !== "leaderboard" && getRemainingPlays(tab) === 0;
             
@@ -353,7 +370,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all relative flex items-center justify-center gap-1.5 ${
+                className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all relative flex items-center justify-center gap-1.5 ${
                   isActive
                     ? "bg-white text-slate-800 shadow-sm"
                     : isLimitReached
@@ -714,7 +731,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
               🎲
             </div>
             <div>
-              <h3 className="text-slate-800 text-[16px] font-bold">Snake & Ladder Quiz</h3>
+              <h3 className="text-slate-800 text-[16px] font-medium">Snake & Ladder Quiz</h3>
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">Combine intelligence & luck to win!</p>
             </div>
           </div>
@@ -743,22 +760,22 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex flex-col items-center gap-1">
-                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium text-sm shadow-md">
                   {firstLetter}
                 </div>
-                <p className="text-slate-600 text-[10px] font-bold">You</p>
+                <p className="text-slate-600 text-[10px] font-medium">You</p>
               </div>
-              <div className="bg-slate-800 text-white text-[10px] px-3 py-1 rounded-full font-bold">VS</div>
+              <div className="bg-slate-800 text-white text-[10px] px-3 py-1 rounded-full font-medium">VS</div>
               <div className="flex flex-col items-center gap-1">
                 <img src={opponent.avatar} alt="" className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-slate-200" />
-                <p className="text-slate-600 text-[10px] font-bold">{opponent.name}</p>
+                <p className="text-slate-600 text-[10px] font-medium">{opponent.name}</p>
               </div>
             </div>
           </div>
 
           <Button
             onClick={startGame}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
           >
             Play Snake & Ladder
           </Button>
@@ -778,30 +795,30 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
         <div className="flex items-center gap-3">
           {/* Player Progress */}
           <div className={`flex-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all ${activeTurn === "player" && !isGameOver ? "bg-blue-50/50 ring-1 ring-blue-100" : ""}`}>
-            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">{firstLetter}</div>
+            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-medium shrink-0">{firstLetter}</div>
             <div className="flex-1 min-w-0">
-              <p className="text-slate-800 text-[10px] font-bold">You</p>
+              <p className="text-slate-800 text-[10px] font-medium">You</p>
               <div className="flex items-center gap-1.5">
                 <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
                   <motion.div className="h-full bg-blue-500 rounded-full" animate={{ width: `${pPercent}%` }} transition={{ type: "spring", damping: 15 }} />
                 </div>
-                <span className="text-blue-500 text-[9px] font-bold">{playerPosition}</span>
+                <span className="text-blue-500 text-[9px] font-medium">{playerPosition}</span>
               </div>
             </div>
           </div>
 
-          <span className="text-slate-300 text-[10px] font-bold">VS</span>
+          <span className="text-slate-300 text-[10px] font-medium">VS</span>
 
           {/* AI Progress */}
           <div className={`flex-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all flex-row-reverse ${activeTurn === "opponent" && !isGameOver ? "bg-rose-50/50 ring-1 ring-rose-100" : ""}`}>
             <img src={opponent.avatar} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 border border-rose-100" />
             <div className="flex-1 min-w-0">
-              <p className="text-slate-800 text-[10px] font-bold text-right">{opponent.name.split(" ")[0]}</p>
+              <p className="text-slate-800 text-[10px] font-medium text-right">{opponent.name.split(" ")[0]}</p>
               <div className="flex items-center gap-1.5 flex-row-reverse">
                 <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden rotate-180">
                   <motion.div className="h-full bg-rose-500 rounded-full" animate={{ width: `${aiPercent}%` }} transition={{ type: "spring", damping: 15 }} />
                 </div>
-                <span className="text-rose-500 text-[9px] font-bold">{aiPosition}</span>
+                <span className="text-rose-500 text-[9px] font-medium">{aiPosition}</span>
               </div>
             </div>
           </div>
@@ -878,7 +895,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                 exit={{ scale: 0 }}
               >
                 <span className="text-3xl">{slideAnimation.type === "snake" ? "🐍" : "🪜"}</span>
-                <p className="text-xs font-bold">{slideAnimation.type === "snake" ? "Snake Attack!" : "Ladder Climb!"}</p>
+                <p className="text-xs font-medium">{slideAnimation.type === "snake" ? "Snake Attack!" : "Ladder Climb!"}</p>
                 <p className="text-[10px] font-medium opacity-90">
                   {slideAnimation.from} ➔ {slideAnimation.to}
                 </p>
@@ -934,22 +951,22 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
 
           <div className="grid grid-cols-3 gap-2.5 mb-5 text-center">
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{turnCount}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Turns</p>
+              <p className="text-slate-800 font-medium text-xs">{turnCount}</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Turns</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
               <p className="text-amber-600 font-extrabold text-xs">+{coinsEarned}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Coins</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Coins</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{playerPosition}/30</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Final</p>
+              <p className="text-slate-800 font-medium text-xs">{playerPosition}/30</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Final</p>
             </div>
           </div>
 
           <div className="flex gap-2.5">
-            <Button onClick={handleExit} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl h-11 text-xs">Exit</Button>
-            <Button onClick={startGame} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-11 text-xs flex items-center justify-center gap-1">🎲 Play Again</Button>
+            <Button onClick={handleExit} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl h-11 text-xs">Exit</Button>
+            <Button onClick={startGame} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl h-11 text-xs flex items-center justify-center gap-1">🎲 Play Again</Button>
           </div>
         </motion.div>
       )}
@@ -973,15 +990,15 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                   <span className="text-lg">🎲</span>
                   <p className="text-slate-800 text-xs font-extrabold">Answer correctly to roll!</p>
                 </div>
-                <div className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-600 text-[10px] font-bold">
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-600 text-[10px] font-medium">
                   <span>Pos {playerPosition}</span>
                 </div>
               </div>
 
               {/* Module Banner */}
               <div className="flex items-center gap-2 mb-3 bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
-                <div className="w-6 h-6 rounded bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">P</div>
-                <p className="text-slate-500 text-xs font-bold">Python Basics Practice</p>
+                <div className="w-6 h-6 rounded bg-emerald-500 text-white flex items-center justify-center text-xs font-medium">P</div>
+                <p className="text-slate-500 text-xs font-medium">Python Basics Practice</p>
                 <span className={`ml-auto px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
                   currentQuestion.difficulty === "easy" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
                 }`}>
@@ -989,7 +1006,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                 </span>
               </div>
 
-              <p className="text-slate-800 text-[14px] font-bold leading-relaxed mb-4">{currentQuestion.question}</p>
+              <p className="text-slate-800 text-[14px] font-medium leading-relaxed mb-4">{currentQuestion.question}</p>
 
               {/* Options Grid */}
               <div className="space-y-2">
@@ -1014,7 +1031,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                       className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-bold text-slate-400 shrink-0">
+                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium text-slate-400 shrink-0">
                           {String.fromCharCode(65 + idx)}
                         </span>
                         <span className="flex-1">{opt}</span>
@@ -1027,7 +1044,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
               {/* Dice Roll section if correct */}
               <AnimatePresence>
                 {answerStatus === "wrong" && (
-                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
                     <span>😔</span> Wrong — no dice roll this turn!
                   </motion.div>
                 )}
@@ -1057,7 +1074,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                 {answerStatus === "correct" && selectedRoll > 0 && !isDiceRolling && (
                   <motion.div className="mt-4 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                     <span className="text-4xl">➔ {["⚀", "⚁", "⚂"][selectedRoll - 1]}</span>
-                    <p className="text-xs font-bold">You rolled {selectedRoll}! Moving forward {selectedRoll} step{selectedRoll > 1 ? "s" : ""}.</p>
+                    <p className="text-xs font-medium">You rolled {selectedRoll}! Moving forward {selectedRoll} step{selectedRoll > 1 ? "s" : ""}.</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1310,7 +1327,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
               🎲
             </div>
             <div>
-              <h3 className="text-slate-800 text-[16px] font-bold">Ludo Quiz Challenge</h3>
+              <h3 className="text-slate-800 text-[16px] font-medium">Ludo Quiz Challenge</h3>
               <p className="text-slate-400 text-xs font-semibold leading-relaxed">Roll & race to home before the AI!</p>
             </div>
           </div>
@@ -1340,7 +1357,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
           <Button
             onClick={startGame}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
           >
             Start Ludo Quiz
           </Button>
@@ -1358,14 +1375,14 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
       {/* Mini Scoreboard */}
       <div className="flex items-center justify-between bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-6.5 h-6.5 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs ring-2 ring-blue-100">{firstLetter}</div>
+          <div className="w-6.5 h-6.5 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium text-xs ring-2 ring-blue-100">{firstLetter}</div>
           <div>
             <p className="text-slate-800 font-extrabold text-[10px]">You</p>
-            <p className="text-blue-500 text-[9px] font-bold">{playerPosition === 0 ? "In Base" : playerPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${playerPosition}`}</p>
+            <p className="text-blue-500 text-[9px] font-medium">{playerPosition === 0 ? "In Base" : playerPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${playerPosition}`}</p>
           </div>
         </div>
 
-        <div className="text-center px-4 font-bold text-slate-400">
+        <div className="text-center px-4 font-medium text-slate-400">
           {diceVal > 0 ? (
             <motion.span className="text-3xl text-indigo-600" animate={isRolling ? { rotate: 360, scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
               {["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][diceVal - 1]}
@@ -1376,10 +1393,10 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
         </div>
 
         <div className="flex items-center gap-2 flex-row-reverse">
-          <div className="w-6.5 h-6.5 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs ring-2 ring-rose-100">🤖</div>
+          <div className="w-6.5 h-6.5 rounded-full bg-rose-500 text-white flex items-center justify-center font-medium text-xs ring-2 ring-rose-100">🤖</div>
           <div className="text-right">
             <p className="text-slate-800 font-extrabold text-[10px]">{opponent.name.split(" ")[0]}</p>
-            <p className="text-rose-500 text-[9px] font-bold">{aiPosition === 0 ? "In Base" : aiPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${aiPosition}`}</p>
+            <p className="text-rose-500 text-[9px] font-medium">{aiPosition === 0 ? "In Base" : aiPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${aiPosition}`}</p>
           </div>
         </div>
       </div>
@@ -1464,13 +1481,13 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
         {/* Safe Bases Status Alerts */}
         {playerPosition === 0 && (
-          <div className="flex items-center gap-1.5 mt-2 px-1 text-[9px] text-blue-500 font-bold">
+          <div className="flex items-center gap-1.5 mt-2 px-1 text-[9px] text-blue-500 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5px] font-extrabold">{firstLetter}</div>
             <span>Your token is at home — roll a 6 to open!</span>
           </div>
         )}
         {aiPosition === 0 && (
-          <div className="flex items-center gap-1.5 mt-1 px-1 text-[9px] text-rose-400 font-bold">
+          <div className="flex items-center gap-1.5 mt-1 px-1 text-[9px] text-rose-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-rose-500 flex items-center justify-center text-white text-[5px] font-extrabold">🤖</div>
             <span>Opponent token is in base.</span>
           </div>
@@ -1484,7 +1501,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
             <motion.div className="bg-indigo-500 text-white px-5 py-3 rounded-2xl shadow-xl text-center border border-indigo-400" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
               <span className="text-4xl block mb-1">🎯</span>
               <p className="text-xs font-black">Rolled a 6!</p>
-              <p className="text-[10px] text-white/80 font-bold">{playerPosition === 0 ? "Releasing token!" : "Bonus Turn Granted!"}</p>
+              <p className="text-[10px] text-white/80 font-medium">{playerPosition === 0 ? "Releasing token!" : "Bonus Turn Granted!"}</p>
             </motion.div>
           </motion.div>
         )}
@@ -1522,16 +1539,16 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
           <div className="grid grid-cols-3 gap-2.5 my-4 text-center">
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{turnCount}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Turns</p>
+              <p className="text-slate-800 font-medium text-xs">{turnCount}</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Turns</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
               <p className="text-amber-600 font-extrabold text-xs">+{coinsEarned}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Coins</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Coins</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{playerPosition}/35</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Progress</p>
+              <p className="text-slate-800 font-medium text-xs">{playerPosition}/35</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Progress</p>
             </div>
           </div>
 
@@ -1555,7 +1572,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
             >
               <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-4" />
 
-              <p className="text-slate-800 text-[14px] font-bold leading-relaxed mb-4">{currentQuestion.question}</p>
+              <p className="text-slate-800 text-[14px] font-medium leading-relaxed mb-4">{currentQuestion.question}</p>
 
               <div className="space-y-2">
                 {currentQuestion.options.map((opt: string, idx: number) => {
@@ -1579,7 +1596,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
                       className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-bold text-slate-400 shrink-0">
+                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium text-slate-400 shrink-0">
                           {String.fromCharCode(65 + idx)}
                         </span>
                         <span className="flex-1">{opt}</span>
@@ -1592,7 +1609,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
               {/* Rolling Controls */}
               <AnimatePresence>
                 {answerStatus === "wrong" && (
-                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
                     😔 Wrong answer — turn skipped!
                   </motion.div>
                 )}
@@ -1863,13 +1880,13 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
           <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 mb-5 text-amber-700">
             <ShieldAlert className="w-4 h-4 shrink-0" />
-            <p className="text-[10px] font-bold">This KBC game can be played once per day limit. Make it count!</p>
+            <p className="text-[10px] font-medium">This KBC game can be played once per day limit. Make it count!</p>
           </div>
 
           <Button
             onClick={startKbc}
             disabled={isLoadingQuestions}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-500/10 active:scale-[0.98] transition-all"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-md shadow-indigo-500/10 active:scale-[0.98] transition-all"
           >
             {isLoadingQuestions ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             Play KBC Tech Edition
@@ -1908,22 +1925,22 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
           <div className="grid grid-cols-3 gap-2 my-5">
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{level + (revealingStatus === "correct" ? 1 : 0)}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Level</p>
+              <p className="text-slate-800 font-medium text-xs">{level + (revealingStatus === "correct" ? 1 : 0)}</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Level</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
               <p className="text-amber-600 font-extrabold text-xs">+{accumulatedCoins}</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Coins</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Coins</p>
             </div>
             <div className="bg-slate-50 rounded-xl py-2 px-1">
-              <p className="text-slate-800 font-bold text-xs">{2 - Object.values(lifelines).filter(Boolean).length}/2</p>
-              <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Lifelines</p>
+              <p className="text-slate-800 font-medium text-xs">{2 - Object.values(lifelines).filter(Boolean).length}/2</p>
+              <p className="text-slate-400 text-[9px] font-medium uppercase tracking-wider">Lifelines</p>
             </div>
           </div>
 
           <Button
             onClick={startKbc}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 rounded-xl text-xs font-bold"
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 rounded-xl text-xs font-medium"
           >
             Play Again
           </Button>
@@ -1942,19 +1959,19 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-100">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span className={`text-xs font-bold tabular-nums ${timer <= 10 ? "text-rose-500" : "text-slate-600"}`}>{timer}s</span>
+            <span className={`text-xs font-medium tabular-nums ${timer <= 10 ? "text-rose-500" : "text-slate-600"}`}>{timer}s</span>
           </div>
 
           <button
             onClick={() => setShowQuestionsList(!showQuestionsList)}
-            className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 active:scale-95 transition-all"
+            className="text-xs font-medium text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 active:scale-95 transition-all"
           >
             Income Ladder: {activeLadderNode.amount}
           </button>
 
           <button
             onClick={handleQuitGame}
-            className="text-xs font-bold text-slate-400 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 hover:text-slate-600 active:bg-slate-100"
+            className="text-xs font-medium text-slate-400 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 hover:text-slate-600 active:bg-slate-100"
           >
             {confirmQuitPrompt ? "Confirm Quit?" : "Quit"}
           </button>
@@ -1983,7 +2000,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
               return (
                 <div
                   key={ladder.level}
-                  className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[10px] font-bold ${
+                  className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[10px] font-medium ${
                     isCurrent
                       ? "bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm"
                       : isPassed
@@ -2010,7 +2027,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
           <span className="text-indigo-300">Question {level + 1} of 15</span>
           <span className="text-yellow-400">For {activeLadderNode.amount}</span>
         </div>
-        <p className="text-white text-xs font-bold leading-relaxed">{activeQuestion.question}</p>
+        <p className="text-white text-xs font-medium leading-relaxed">{activeQuestion.question}</p>
       </div>
 
       {/* Options Grid */}
@@ -2023,10 +2040,10 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
           let btnStyle = "bg-white border-slate-200 text-slate-700";
           if (isRemoved) btnStyle = "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed";
           else if (revealingStatus) {
-            if (isCorrect) btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-bold";
-            else if (isSelected) btnStyle = "bg-rose-50 border-rose-500 text-rose-700 font-bold";
+            if (isCorrect) btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-medium";
+            else if (isSelected) btnStyle = "bg-rose-50 border-rose-500 text-rose-700 font-medium";
           } else if (isSelected) {
-            btnStyle = "bg-indigo-50 border-indigo-500 text-indigo-700 font-bold ring-1 ring-indigo-400";
+            btnStyle = "bg-indigo-50 border-indigo-500 text-indigo-700 font-medium ring-1 ring-indigo-400";
           }
 
           return (
@@ -2058,7 +2075,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
             <div className="space-y-2">
               {audiencePoll.map((percent, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-purple-500 w-3">{["A", "B", "C", "D"][idx]}</span>
+                  <span className="text-[10px] font-medium text-purple-500 w-3">{["A", "B", "C", "D"][idx]}</span>
                   <div className="flex-1 h-3 bg-purple-100 rounded-full overflow-hidden">
                     <motion.div className="h-full bg-purple-500 rounded-full" initial={{ width: 0 }} animate={{ width: `${percent}%` }} transition={{ duration: 0.6 }} />
                   </div>
@@ -2075,7 +2092,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
         <button
           onClick={triggerFiftyFifty}
           disabled={!lifelines.fifty || isRevealing || !!revealingStatus}
-          className={`flex-1 py-3 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1 border transition-all ${
+          className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
             lifelines.fifty && !isRevealing && !revealingStatus
               ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
               : "bg-slate-100 border-slate-200 text-slate-300"
@@ -2088,7 +2105,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
         <button
           onClick={triggerAudiencePoll}
           disabled={!lifelines.audience || isRevealing || !!revealingStatus}
-          className={`flex-1 py-3 rounded-xl text-[10px] font-bold flex flex-col items-center gap-1 border transition-all ${
+          className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
             lifelines.audience && !isRevealing && !revealingStatus
               ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
               : "bg-slate-100 border-slate-200 text-slate-300"
@@ -2127,7 +2144,7 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
       <AnimatePresence>
         {revealingStatus && (
           <motion.div
-            className={`rounded-xl px-3.5 py-3 flex items-center gap-2 text-xs font-bold border ${
+            className={`rounded-xl px-3.5 py-3 flex items-center gap-2 text-xs font-medium border ${
               revealingStatus === "correct" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"
             }`}
             initial={{ opacity: 0, y: 10 }}
@@ -2174,7 +2191,7 @@ function LeaderboardView({ userName, userCoins }: { userName: string; userCoins:
             🏆
           </div>
           <div>
-            <h3 className="text-slate-800 text-[15px] font-bold">Arena Leaderboard</h3>
+            <h3 className="text-slate-800 text-[15px] font-medium">Arena Leaderboard</h3>
             <p className="text-slate-400 text-[11px] font-semibold">Live rankings based on earned coins</p>
           </div>
         </div>
@@ -2211,7 +2228,7 @@ function LeaderboardView({ userName, userCoins }: { userName: string; userCoins:
 
                 {/* Name */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold truncate">{std.isUser ? "You" : std.name}</p>
+                  <p className="text-[12px] font-medium truncate">{std.isUser ? "You" : std.name}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className={`text-[9px] font-medium ${std.isUser ? "text-slate-300" : "text-slate-400"}`}>Streak</span>
                     <span className="text-orange-500 text-[10px] font-extrabold flex items-center">

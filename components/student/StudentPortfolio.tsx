@@ -205,14 +205,14 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
 
   return (
     <motion.div
-      className="flex flex-col h-full bg-gray-50 -mx-5"
+      className="flex flex-col h-full bg-gray-50 -mx-6 md:-mx-8"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header */}
-      <div className="bg-white px-5 pt-3 pb-3 border-b border-gray-100 shrink-0">
+      <div className="bg-white px-6 pt-3 pb-3 md:px-8 border-b border-gray-100 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -234,7 +234,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
       </div>
 
       {/* Main Panel scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 space-y-4">
         {/* Gamified Profile Metrics */}
         {profile && (
           <motion.div
@@ -282,8 +282,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex items-center justify-between">
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Curriculum Progress</p>
-              <p className="text-indigo-600 text-xs font-bold">{enrollmentProgress.progress_pct || 0}% Complete</p>
+              <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Curriculum Progress</p>
+              <p className="text-indigo-600 text-xs font-medium">{enrollmentProgress.progress_pct || 0}% Complete</p>
             </div>
             
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -305,16 +305,16 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-            <p className="text-gray-900 text-lg font-bold leading-none">{completedCount}</p>
-            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-bold mt-1">Completed</p>
+            <p className="text-gray-900 text-lg font-medium leading-none">{completedCount}</p>
+            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-medium mt-1">Completed</p>
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-            <p className="text-gray-900 text-lg font-bold leading-none">{uniqueModulesUsed}</p>
-            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-bold mt-1">Modules</p>
+            <p className="text-gray-900 text-lg font-medium leading-none">{uniqueModulesUsed}</p>
+            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-medium mt-1">Modules</p>
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-            <p className="text-gray-900 text-lg font-bold leading-none">{totalSkillsCount}</p>
-            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-bold mt-1">Skills</p>
+            <p className="text-gray-900 text-lg font-medium leading-none">{totalSkillsCount}</p>
+            <p className="text-gray-400 text-[9px] uppercase tracking-wider font-medium mt-1">Skills</p>
           </div>
         </motion.div>
 
@@ -326,8 +326,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
           transition={{ delay: 0.05 }}
         >
           <div className="flex items-center justify-between">
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Course coverage</p>
-            <p className="text-gray-900 text-xs font-bold">{uniqueModulesUsed}/12 modules</p>
+            <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Course coverage</p>
+            <p className="text-gray-900 text-xs font-medium">{uniqueModulesUsed}/12 modules</p>
           </div>
           
           <div className="flex gap-1.5 h-2">
@@ -369,7 +369,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             <button
               key={tab.key}
               onClick={() => setActiveFilter(tab.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
                 activeFilter === tab.key
                   ? "bg-gray-900 text-white border-transparent shadow-sm"
                   : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
@@ -394,7 +394,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-indigo-500 text-sm">📁</span>
-                <p className="text-gray-900 text-xs font-bold uppercase tracking-wider">New Project</p>
+                <p className="text-gray-900 text-xs font-medium uppercase tracking-wider">New Project</p>
               </div>
 
               <input
@@ -416,13 +416,13 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
 
               {/* Related module select block */}
               <div className="space-y-1.5">
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Related Syllabus Module</p>
+                <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Related Syllabus Module</p>
                 <div className="flex flex-wrap gap-1.5">
                   {syllabusModules.map(mod => (
                     <button
                       key={mod.id}
                       onClick={() => setNewModuleId(mod.id)}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                      className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-all border ${
                         newModuleId === mod.id
                           ? `${mod.color} text-white border-transparent`
                           : "bg-gray-50 text-gray-400 border-gray-100"
@@ -461,7 +461,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                 <button
                   onClick={handleAddProject}
                   disabled={!newTitle.trim() || !newDesc.trim()}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md ${
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md ${
                     newTitle.trim() && newDesc.trim()
                       ? "bg-gray-900 text-white shadow-gray-900/10 hover:bg-black"
                       : "bg-gray-100 text-gray-300 pointer-events-none"
@@ -481,7 +481,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-3xl">
               📦
             </div>
-            <h3 className="text-gray-800 text-xs font-bold">No projects yet</h3>
+            <h3 className="text-gray-800 text-xs font-medium">No projects yet</h3>
             <p className="text-gray-400 text-[10px] mt-1">Tap the float button below to add your first project.</p>
           </div>
         ) : (
@@ -504,13 +504,13 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                     onClick={() => setExpandedProjectId(isExpanded ? null : proj.id)}
                     className="w-full p-4 text-left flex items-start gap-3 hover:bg-gray-50/50 transition-colors"
                   >
-                    <div className={`w-8 h-8 rounded-lg ${relatedMod?.color || "bg-gray-400"} flex items-center justify-center shrink-0 text-white font-bold`}>
+                    <div className={`w-8 h-8 rounded-lg ${relatedMod?.color || "bg-gray-400"} flex items-center justify-center shrink-0 text-white font-medium`}>
                       {relatedMod?.icon || "📁"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-gray-900 text-xs font-bold truncate flex-1">{proj.title}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0 ${statusInfo.bg} ${statusInfo.color}`}>
+                        <p className="text-gray-900 text-xs font-medium truncate flex-1">{proj.title}</p>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium shrink-0 ${statusInfo.bg} ${statusInfo.color}`}>
                           {statusInfo.label}
                         </span>
                       </div>
@@ -542,7 +542,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                               {proj.skills.map((skill, sIdx) => (
                                 <span
                                   key={sIdx}
-                                  className="px-2 py-0.5 bg-gray-50 border border-gray-100 text-gray-500 text-[10px] font-bold rounded-md"
+                                  className="px-2 py-0.5 bg-gray-50 border border-gray-100 text-gray-500 text-[10px] font-medium rounded-md"
                                 >
                                   {skill}
                                 </span>
@@ -556,7 +556,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                               href={proj.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-indigo-500 text-[11px] font-bold w-fit hover:underline"
+                              className="flex items-center gap-1.5 text-indigo-500 text-[11px] font-medium w-fit hover:underline"
                             >
                               <LinkIcon className="w-3.5 h-3.5" />
                               <span className="truncate max-w-[200px]">{proj.link}</span>
@@ -576,7 +576,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                                       e.stopPropagation();
                                       handleUpdateStatus(proj.id, status);
                                     }}
-                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
                                       isCurrent
                                         ? "bg-gray-900 text-white shadow-sm"
                                         : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
@@ -629,7 +629,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
       {!isAddOpen && (
         <button
           onClick={() => setIsAddOpen(true)}
-          className="absolute bottom-20 right-5 w-12 h-12 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all z-50 hover:bg-black"
+          className="absolute bottom-20 right-6 md:right-8 w-12 h-12 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all z-50 hover:bg-black"
         >
           <Plus className="w-5 h-5" strokeWidth={3} />
         </button>

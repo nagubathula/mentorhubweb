@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 const supabase = createClient();
 
@@ -14,7 +15,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
     email: "vikram.p@kindmentor.com",
     role: "Senior React Developer",
     location: "Mumbai, India",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop"
+    avatar: null
   });
 
   const [metrics, setMetrics] = useState({
@@ -43,7 +44,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
           email: profData.email || "",
           role: profData.expertise || "Senior Software Developer",
           location: (profData.preferences as any)?.location || "Bangalore, India",
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUserId}`
+          avatar: profData.avatar_url || null
         });
       }
 
@@ -97,7 +98,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between mt-8 px-1">
-        <h2 className="text-2xl font-bold font-volkhov text-slate-900 tracking-tight">My Profile</h2>
+        <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">My Profile</h2>
         <Button variant="ghost" size="icon" className="w-11 h-11 rounded-2xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600 active:scale-95 transition-transform">
           <Settings className="w-5 h-5" />
         </Button>
@@ -107,10 +108,16 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl -translate-y-20 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-28 h-28 bg-emerald-500/5 rounded-full blur-2xl translate-y-14 -translate-x-14"></div>
 
-        <div className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 group-hover:scale-105 transition-transform duration-500">
-          <img src={profile.avatar} className="w-full h-full object-cover" alt={profile.name}/>
+        <div className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
+          {profile.avatar ? (
+            <img src={profile.avatar} className="w-full h-full object-cover" alt={profile.name}/>
+          ) : (
+            <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
+              <User className="w-12 h-12 stroke-[1.5]" />
+            </div>
+          )}
         </div>
-        <h3 className="text-2xl font-bold text-slate-900 mt-6 font-volkhov relative z-10">{profile.name}</h3>
+        <h3 className="text-xl font-medium tracking-tight text-slate-900 mt-6 relative z-10">{profile.name}</h3>
         <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2 relative z-10">{profile.role}</p>
 
         <div className="w-full mt-10 grid grid-cols-1 gap-4 pb-8 border-b border-slate-50 relative z-10">
@@ -126,17 +133,17 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
 
         <div className="w-full flex justify-between mt-8 relative z-10">
             <div className="flex flex-col items-center flex-1">
-              <span className="text-2xl font-black text-slate-900 font-volkhov">{metrics.mentees}</span>
+              <span className="text-2xl font-black text-slate-900">{metrics.mentees}</span>
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-2">Mentees</span>
             </div>
             <div className="w-px h-10 bg-slate-100 self-center"></div>
             <div className="flex flex-col items-center flex-1">
-              <span className="text-2xl font-black text-slate-900 font-volkhov">{metrics.sessions}</span>
+              <span className="text-2xl font-black text-slate-900">{metrics.sessions}</span>
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-2">Sessions</span>
             </div>
             <div className="w-px h-10 bg-slate-100 self-center"></div>
             <div className="flex flex-col items-center flex-1">
-              <span className="text-2xl font-black text-slate-900 font-volkhov flex items-center gap-1.5">
+              <span className="text-2xl font-black text-slate-900 flex items-center gap-1.5">
                 {metrics.rating}
                 <Star className="w-4.5 h-4.5 fill-amber-400 text-amber-400"/>
               </span>
@@ -152,7 +159,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                <BookOpen className="w-5 h-5" />
              </div>
-             <p className="text-[15px] font-bold text-slate-900">Training Modules</p>
+             <p className="text-[15px] font-medium text-slate-900">Training Modules</p>
            </div>
            <Button variant="ghost" className="text-[11px] font-black text-indigo-600 uppercase tracking-wider px-0 hover:bg-transparent">View All</Button>
          </div>
@@ -172,7 +179,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
                </div>
                <div className="flex-1 min-w-0">
                  <h4 className={cn(
-                   "text-[14px] font-bold truncate transition-colors",
+                   "text-[14px] font-medium truncate transition-colors",
                    course.locked ? 'text-slate-400' : 'text-slate-900 group-hover:text-indigo-600'
                  )}>{course.title}</h4>
                  <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
@@ -190,7 +197,7 @@ export function MentorProfile({ onSignOut }: { onSignOut?: () => void }) {
       <div className="px-1">
         <Button 
           onClick={onSignOut} 
-          className="w-full h-16 bg-white hover:bg-rose-50 border border-slate-100 hover:border-rose-100 text-slate-400 hover:text-rose-600 font-bold text-[14px] uppercase tracking-[0.15em] rounded-[1.5rem] flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.98] group"
+          className="w-full h-16 bg-white hover:bg-rose-50 border border-slate-100 hover:border-rose-100 text-slate-400 hover:text-rose-600 font-medium text-[14px] uppercase tracking-[0.15em] rounded-[1.5rem] flex items-center justify-center gap-3 shadow-sm transition-all active:scale-[0.98] group"
         >
           <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" /> 
           Sign Out

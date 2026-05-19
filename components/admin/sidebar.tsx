@@ -18,6 +18,7 @@ import {
   Star,
   Sparkles,
   MessageCircle,
+  MessageSquare,
   Heart,
   Handshake,
   Settings,
@@ -43,7 +44,9 @@ const othersNavItems = [
   { name: "Inspiration", href: "/admin/inspiration", icon: Sparkles },
   { name: "Messages", href: "/admin/messages", icon: MessageCircle },
   { name: "Gratitude Wall", href: "/admin/gratitude-wall", icon: Heart },
+  { name: "User Feedback", href: "/admin/feedback", icon: MessageSquare },
   { name: "CSR Sponsors", href: "/admin/csr-sponsors", icon: Handshake },
+  { name: "Feature Controls", href: "/admin/features", icon: Settings },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -57,7 +60,7 @@ export function Sidebar() {
           <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center shadow-lg">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <span className="font-bold text-xl flex-1 tracking-tight text-slate-900">MentorHub</span>
+          <span className="font-medium text-xl flex-1 tracking-tight text-slate-900">MentorHub</span>
         </div>
 
         <div className="flex flex-col px-3 space-y-1">

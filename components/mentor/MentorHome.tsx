@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,101 @@ import { Textarea } from "@/components/ui/textarea";
 import { AnimatePresence, motion } from "framer-motion";
 import { MentorPlaybook } from "./MentorPlaybook";
 import { MentorInspiration } from "./MentorInspiration";
+import { MentorCircle } from "./MentorCircle";
+import { MentorNotes } from "./MentorNotes";
+import { MentorCourses } from "./MentorCourses";
+import { MentorShareMaterials } from "./MentorShareMaterials";
 
 const supabase = createClient();
 
-export function MentorHome() {
-  const [showNotification, setShowNotification] = useState(true);
+const ROADMAP_WEEKS = [
+  {
+    week: 1,
+    title: "Introduction & Goals",
+    items: ["Understand student goals", "Define target role", "Create growth plan"],
+    status: "completed"
+  },
+  {
+    week: 2,
+    title: "Course Guidance",
+    items: ["Explain course roadmap", "Set weekly milestones", "Share resources & best practices"],
+    status: "completed"
+  },
+  {
+    week: 3,
+    title: "Learning Support",
+    items: ["Review progress and assignments", "Solve learning blockers", "Build consistency"],
+    status: "active"
+  },
+  {
+    week: 4,
+    title: "Resume, Portfolio & Branding",
+    items: ["Build resume and portfolio", "Improve LinkedIn profile", "Showcase projects effectively"],
+    status: "upcoming"
+  },
+  {
+    week: 5,
+    title: "Project Improvement",
+    items: ["Refine course projects", "Improve storytelling and visuals", "Create portfolio-ready work"],
+    status: "upcoming"
+  },
+  {
+    week: 6,
+    title: "Communication & Confidence",
+    items: ["Practice presentations", "Improve project explanation", "Build confidence"],
+    status: "upcoming"
+  },
+  {
+    week: 7,
+    title: "Interview & Career Prep",
+    items: ["Practice interview questions", "Explore opportunities", "Learn networking basics"],
+    status: "upcoming"
+  },
+  {
+    week: 8,
+    title: "Final Review & Launch",
+    items: ["Final resume review", "Polish portfolio", "Start applying 🚀"],
+    status: "upcoming"
+  }
+];
+
+const AESTHETIC_GRADIENTS = [
+  "from-indigo-500 to-purple-600",
+  "from-emerald-500 to-teal-600",
+  "from-pink-500 to-rose-600",
+  "from-amber-500 to-orange-600",
+  "from-cyan-500 to-blue-600",
+  "from-violet-500 to-indigo-600",
+];
+
+const getGradientClass = (id: string) => {
+  if (!id) return AESTHETIC_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AESTHETIC_GRADIENTS.length;
+  return AESTHETIC_GRADIENTS[index];
+};
+
+interface MentorHomeProps {
+  featureFlags?: Record<string, boolean>;
+  onSelectStudent?: (studentId: string) => void;
+}
+
+export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomeProps) {
+  const [showNotification, setShowNotification] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const dismissed = localStorage.getItem("mentor_assigned_student_notification_dismissed");
+      if (!dismissed) {
+        setShowNotification(true);
+      }
+    }
+  }, []);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [expandedWeek, setExpandedWeek] = useState<number | null>(3);
   const [stats, setStats] = useState({ students: 0, hours: 0, rating: 5.0 });
   const [latestGratitude, setLatestGratitude] = useState<any>(null);
   
@@ -25,11 +114,17 @@ export function MentorHome() {
   const [mentorName, setMentorName] = useState("Mentor");
   const [showPlaybook, setShowPlaybook] = useState(false);
   const [showInspiration, setShowInspiration] = useState(false);
+  const [showCircle, setShowCircle] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showCourses, setShowCourses] = useState(false);
   const [assignedStudents, setAssignedStudents] = useState<any[]>([]);
-  const [replyInput, setReplyInput] = useState("");
+  const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
-  const [sendSuccess, setSendSuccess] = useState(false);
+  const [sendSuccessMap, setSendSuccessMap] = useState<Record<string, boolean>>({});
   const [sessions, setSessions] = useState<any[]>([]);
+  const [outreachStudentId, setOutreachStudentId] = useState<string>("");
+  const [showShareMaterials, setShowShareMaterials] = useState(false);
+  const [selectedStudentForSharing, setSelectedStudentForSharing] = useState<string>("");
 
   // Interactive review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -121,12 +216,17 @@ export function MentorHome() {
         const completedTopics = studentEnrollment?.progress?.length || 0;
         const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
+        const createdDate = p.created_at ? new Date(p.created_at) : new Date();
+        const diffTime = Math.abs(Date.now() - createdDate.getTime());
+        const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
         return {
           ...p,
           id: p.id,
           name: p.name || p.email?.split('@')[0] || 'Unknown Student',
           progress: progressPercent,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.id}`
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.id}`,
+          daysJoined: diffDays
         };
       });
     }
@@ -249,7 +349,7 @@ export function MentorHome() {
   }, []);
 
   const handleReply = async (studentId: string, studentName: string, bodyText?: string) => {
-    const text = bodyText || replyInput;
+    const text = bodyText || replyInputs[studentId] || "";
     if (!text.trim() || !mentorId) return;
 
     setIsSending(true);
@@ -266,9 +366,11 @@ export function MentorHome() {
       console.error("Error replying:", error);
       alert("Error sending message: " + error.message);
     } else {
-      setReplyInput("");
-      setSendSuccess(true);
-      setTimeout(() => setSendSuccess(false), 3000);
+      setReplyInputs(prev => ({ ...prev, [studentId]: "" }));
+      setSendSuccessMap(prev => ({ ...prev, [studentId]: true }));
+      setTimeout(() => {
+        setSendSuccessMap(prev => ({ ...prev, [studentId]: false }));
+      }, 3000);
     }
   };
 
@@ -314,91 +416,34 @@ export function MentorHome() {
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       
       {/* 14. New Student Notifications (Real Data) - Premium Light Theme */}
-      {showNotification && assignedStudents.length > 0 && (
-        <div className="bg-white border border-slate-100 p-6 mx-1 mt-6 relative overflow-hidden rounded-[2rem] shadow-xl shadow-slate-200/50 group flex gap-5 items-start">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
-           
-           <div className="bg-slate-950 rounded-2xl p-3 text-white shrink-0 shadow-lg relative z-10">
-             <Bell className="w-5 h-5 text-indigo-300" />
-           </div>
-           
-           <div className="flex-1 min-w-0 relative z-10 pt-1">
-              <h3 className="text-slate-900 font-bold text-[16px] font-volkhov tracking-tight">You have {assignedStudents.length} assigned student{assignedStudents.length > 1 ? 's' : ''}!</h3>
-              <p className="text-slate-500 text-[13px] mt-1.5 leading-relaxed font-medium">
-                Latest student: <span className="text-indigo-600 font-bold">"{assignedStudents[0].name || assignedStudents[0].email.split('@')[0]}"</span>. Check the Students tab for details.
-              </p>
-           </div>
-
-           <Button 
-             variant="ghost" 
-             size="icon" 
-             onClick={() => setShowNotification(false)} 
-             className="text-slate-300 hover:text-slate-600 transition-colors p-1 shrink-0 w-9 h-9 rounded-full hover:bg-slate-50 relative z-10"
-           >
-             <X className="w-4.5 h-4.5" />
-           </Button>
+      {featureFlags.mentor_students !== false && showNotification && assignedStudents.length > 0 && (
+        <div className="bg-indigo-50/70 border border-indigo-100/50 px-5 py-3.5 mx-1 mt-6 rounded-[1.25rem] flex items-center justify-between gap-3 text-indigo-700 shadow-3xs relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
+          <div className="flex items-center gap-2.5 min-w-0 relative z-10">
+            <Bell className="w-4.5 h-4.5 text-indigo-500 shrink-0 animate-bounce" />
+            <p className="text-[12.5px] font-semibold tracking-tight text-slate-800 leading-tight">
+              You have {assignedStudents.length} assigned student{assignedStudents.length > 1 ? 's' : ''}! Latest student: <span className="text-indigo-600 font-black">"{assignedStudents[0].name || assignedStudents[0].email.split('@')[0]}"</span>. Check the Students tab for details.
+            </p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => {
+              setShowNotification(false);
+              localStorage.setItem("mentor_assigned_student_notification_dismissed", "true");
+            }} 
+            className="text-slate-400 hover:text-slate-700 transition-colors shrink-0 w-7 h-7 rounded-lg hover:bg-slate-100/50 relative z-10"
+          >
+            <X className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
-      {/* 7. Daily Inspiration Widget - Premium Light Theme */}
-      <div 
-        onClick={() => setShowInspiration(true)}
-        className="bg-white border border-slate-100 p-7 mx-1 mt-4 relative overflow-hidden cursor-pointer hover:shadow-2xl hover:border-indigo-100 active:scale-[0.99] transition-all rounded-[2rem] shadow-xl shadow-slate-200/50 group"
-      >
-         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50 rounded-full blur-[80px] -translate-y-24 translate-x-20"></div>
-         <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50 rounded-full blur-[60px] translate-y-16 -translate-x-16"></div>
-         
-         <div className="flex items-center gap-2 mb-5 text-slate-400 font-black text-[10px] tracking-[0.2em] uppercase relative z-10">
-           <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> Morning Thought
-         </div>
-         <p className="text-[20px] font-medium leading-relaxed italic text-slate-800 mb-8 font-volkhov relative z-10">
-           "The best mentors don't just give answers, they help students fall in love with the questions."
-         </p>
-         <div className="flex justify-between pt-6 border-t border-slate-100 relative z-10">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Day Streak</span>
-              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><Flame className="w-5 h-5 text-orange-500 fill-orange-500" /> 5</span>
-            </div>
-            <div className="w-px bg-slate-100 my-1"></div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Responses</span>
-              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><MessageSquare className="w-5 h-5 text-indigo-500 fill-indigo-500" /> 12</span>
-            </div>
-            <div className="w-px bg-slate-100 my-1"></div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Improved</span>
-              <span className="text-xl font-bold flex items-center gap-2 text-slate-900"><Trophy className="w-5 h-5 text-amber-500 fill-amber-500" /> 8</span>
-            </div>
-         </div>
-      </div>
 
-      {/* 8. Mentor Stats */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4 px-1">
-         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-2">
-              <BookOpen className="w-5 h-5"/>
-            </div>
-            <div className="text-xl font-bold text-slate-900 leading-none">{stats.students}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Mentees</div>
-         </div>
-         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 mb-2">
-              <Clock className="w-5 h-5"/>
-            </div>
-            <div className="text-xl font-bold text-slate-900 leading-none">{stats.hours}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Hours</div>
-         </div>
-         <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 mb-2">
-              <Star className="w-5 h-5 fill-emerald-500"/>
-            </div>
-            <div className="text-xl font-bold text-slate-900 leading-none">{stats.rating}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Rating</div>
-         </div>
-      </div>
 
       {/* 1. Student Messages (Real Data) */}
-      <Card className="p-5 shadow-sm">
+      {featureFlags.mentor_messages !== false && (
+        <Card className="p-5 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
             <MessageSquare className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> 
@@ -412,74 +457,192 @@ export function MentorHome() {
           <Button variant="link" size="xs" className="text-slate-400 hover:text-slate-600 font-medium p-0">View All</Button>
         </div>
 
-        <div className="space-y-6">
-          {messages.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-slate-400 text-[13px]">No messages yet from your students.</p>
-            </div>
-          ) : (
-            messages.filter(m => m.from_user_id !== mentorId).slice(0, 1).map((msg) => (
-              <div key={msg.id} className="flex gap-4 relative group items-start">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 uppercase font-bold text-[14px] shadow-sm">
-                  {msg.sender_name?.substring(0, 2) || "S"}
+        <div className="space-y-5">
+          {(() => {
+            const latestMessagesPerStudent: any[] = [];
+            const seenStudents = new Set();
+            messages
+              .filter(m => m.from_user_id !== mentorId)
+              .forEach(m => {
+                if (!seenStudents.has(m.from_user_id)) {
+                  seenStudents.add(m.from_user_id);
+                  latestMessagesPerStudent.push(m);
+                }
+              });
+
+            if (latestMessagesPerStudent.length === 0) {
+              if (assignedStudents.length === 0) {
+                return (
+                  <div className="py-6 text-center">
+                    <p className="text-slate-400 text-[13px]">No assigned mentees yet. Once a mentee is assigned, you can send them messages.</p>
+                  </div>
+                );
+              }
+
+              const targetStudentId = outreachStudentId || assignedStudents[0]?.id || "";
+              const targetStudent = assignedStudents.find(s => s.id === targetStudentId);
+              const studentName = targetStudent?.name || targetStudent?.email?.split('@')[0] || "Student";
+              const currentInput = replyInputs[targetStudentId] || "";
+              const isSuccess = sendSuccessMap[targetStudentId] || false;
+
+              return (
+                <div className="flex flex-col gap-3.5 py-1.5 animate-in fade-in duration-300">
+                  <p className="text-slate-500 text-[12.5px] font-medium leading-normal bg-indigo-50/40 p-3 rounded-2xl border border-indigo-50/60">
+                    👋 No messages yet from your students. Choose a student below to reach out and say hello!
+                  </p>
+                  
+                  <div className="flex flex-col gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Reach out to:</span>
+                      <select
+                        value={targetStudentId}
+                        onChange={(e) => setOutreachStudentId(e.target.value)}
+                        className="bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 transition-colors shadow-3xs cursor-pointer min-w-[140px]"
+                      >
+                        {assignedStudents.map(student => (
+                          <option key={student.id} value={student.id}>
+                            {student.name || student.email?.split('@')[0]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mt-1">
+                      {isSuccess ? (
+                        <div className="text-[11.5px] text-emerald-600 font-medium flex items-center gap-1.5 bg-emerald-50/80 p-2.5 px-3.5 rounded-xl border border-emerald-100 animate-in fade-in slide-in-from-top-1">
+                          <Check className="w-3.5 h-3.5" strokeWidth={3.5} /> Message sent to {studentName} successfully!
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Input 
+                            value={currentInput}
+                            onChange={(e) => setReplyInputs(prev => ({ ...prev, [targetStudentId]: e.target.value }))}
+                            onKeyDown={(e) => e.key === 'Enter' && currentInput.trim() && handleReply(targetStudentId, studentName)}
+                            placeholder={`Type a friendly message to ${studentName}...`}
+                            disabled={isSending}
+                            className="flex-1 bg-white hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
+                          />
+                          <Button 
+                            onClick={() => handleReply(targetStudentId, studentName)}
+                            disabled={isSending || !currentInput.trim()}
+                            className={`w-9.5 h-9.5 rounded-xl flex items-center justify-center transition-all shrink-0 shadow-sm ${currentInput.trim() && !isSending ? 'bg-slate-900 text-white hover:bg-slate-800 scale-100 active:scale-95' : 'bg-slate-100 text-slate-300'}`}
+                            size="icon"
+                          >
+                            {isSending ? <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" strokeWidth={2.5} />}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-slate-900 text-[14px]">{msg.sender_name}</span> 
-                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span> 
-                    {!msg.is_read && <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>}
+              );
+            }
+
+            return latestMessagesPerStudent.slice(0, 3).map((msg, index) => {
+              const studentReplyInput = replyInputs[msg.from_user_id] || "";
+              const studentSendSuccess = sendSuccessMap[msg.from_user_id] || false;
+
+              return (
+                <div key={msg.id} className="group relative flex flex-col gap-2.5">
+                  {index > 0 && <div className="border-t border-slate-100/60 pt-4.5 mt-2"></div>}
+                  
+                  {/* Header: Avatar, Name, Time & Delete */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-xs uppercase shadow-sm shrink-0">
+                      {msg.sender_name?.substring(0, 2) || "S"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900 text-[13.5px] truncate">{msg.sender_name}</span>
+                        {!msg.is_read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse shrink-0"></span>}
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mt-0.5">
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    
+                    {/* Delete Button on Hover */}
                     <Button 
                       variant="ghost" 
                       size="icon" 
                       onClick={() => handleDeleteMessage(msg.id)} 
-                      className="ml-auto opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all w-8 h-8 rounded-full" 
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50/50 transition-all w-8 h-8 rounded-full shrink-0" 
                       title="Delete Message"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                  <div className="bg-slate-50 rounded-2xl rounded-tl-none p-4 border border-slate-100 shadow-sm">
-                    <p className="text-[14px] text-slate-600 leading-relaxed font-medium">{msg.body}</p>
+
+                  {/* Message Body */}
+                  <div className="pl-1">
+                    <p className="text-[13px] text-slate-600 leading-relaxed font-medium">{msg.body}</p>
                   </div>
                   
-                  <div className="mt-4">
-                    {sendSuccess ? (
-                      <div className="text-[12px] text-emerald-500 font-bold flex items-center gap-1.5 bg-emerald-50 p-3 rounded-xl border border-emerald-100 animate-in fade-in slide-in-from-top-1">
-                        <Check className="w-4 h-4" strokeWidth={3} /> Reply sent successfully!
+                  {/* Reply Section */}
+                  <div className="mt-1">
+                    {studentSendSuccess ? (
+                      <div className="text-[11.5px] text-emerald-600 font-medium flex items-center gap-1.5 bg-emerald-50/80 p-2 px-3 rounded-xl border border-emerald-100 animate-in fade-in slide-in-from-top-1">
+                        <Check className="w-3.5 h-3.5" strokeWidth={3.5} /> Reply sent successfully!
                       </div>
                     ) : (
                       <div className="flex gap-2">
                         <Input 
-                          value={replyInput}
-                          onChange={(e) => setReplyInput(e.target.value)}
+                          value={studentReplyInput}
+                          onChange={(e) => setReplyInputs(prev => ({ ...prev, [msg.from_user_id]: e.target.value }))}
                           onKeyDown={(e) => e.key === 'Enter' && handleReply(msg.from_user_id, msg.sender_name)}
                           placeholder={`Reply to ${msg.sender_name}...`}
                           disabled={isSending}
-                          className="flex-1 bg-white hover:border-slate-300 focus:ring-2 focus:ring-indigo-100 text-[14px] transition-all disabled:opacity-50 h-12 px-4 rounded-2xl border-slate-200 shadow-sm"
+                          className="flex-1 bg-white/95 hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
                         />
                         <Button 
                           onClick={() => handleReply(msg.from_user_id, msg.sender_name)}
-                          disabled={isSending || !replyInput.trim()}
-                          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shrink-0 shadow-lg ${replyInput.trim() && !isSending ? 'bg-slate-900 text-white hover:bg-slate-800 scale-100 active:scale-95' : 'bg-slate-100 text-slate-300'}`}
+                          disabled={isSending || !studentReplyInput.trim()}
+                          className={`w-9.5 h-9.5 rounded-xl flex items-center justify-center transition-all shrink-0 shadow-sm ${studentReplyInput.trim() && !isSending ? 'bg-slate-900 text-white hover:bg-slate-800 scale-100 active:scale-95' : 'bg-slate-100 text-slate-300'}`}
                           size="icon"
                         >
-                          {isSending ? <div className="w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" strokeWidth={2.5} />}
+                          {isSending ? <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" strokeWidth={2.5} />}
                         </Button>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              );
+            });
+          })()}
         </div>
+
+        {/* Resource Sharing Banner Promotion - Encourages mentors to send resources */}
+        {assignedStudents.length > 0 && (
+          <div className="mt-5 pt-4.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-slate-50/50 to-indigo-50/20 p-4 rounded-2xl border border-slate-100/50 animate-in fade-in duration-300">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600 shadow-3xs">
+                <Lightbulb className="w-4.5 h-4.5 animate-pulse-subtle" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-bold text-slate-800 leading-tight">Pro-Tip: Share useful learning links!</p>
+                <p className="text-[11px] text-slate-400 font-semibold mt-0.5 leading-normal">Send curated Next.js docs, CSS cheat sheets, or custom roadmaps with 1-click.</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => {
+                const activeStudent = outreachStudentId || assignedStudents[0]?.id || "";
+                setSelectedStudentForSharing(activeStudent);
+                setShowShareMaterials(true);
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] h-9 px-4.5 rounded-xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm self-start sm:self-auto shrink-0"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Share Materials
+            </Button>
+          </div>
+        )}
       </Card>
+      )}
 
       {/* 2 & 3. Today's Plan & Mentees Overview */}
-      <Card className="p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      {(featureFlags.mentor_students !== false || featureFlags.mentor_sessions !== false) && (
+        <Card className="p-5.5 shadow-sm h-auto flex flex-col gap-0">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
             <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
           </div>
@@ -490,8 +653,10 @@ export function MentorHome() {
         </div>
 
         {/* 3. Mentees */}
-        <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black mb-5 uppercase">My Mentees</p>
-        <div className="flex gap-5 mb-8 overflow-x-auto pb-4 hidden-scrollbar">
+        {featureFlags.mentor_students !== false && (
+          <>
+            <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold mb-2 uppercase">My Mentees</p>
+            <div className="flex gap-4.5 mb-1.5 overflow-x-auto pb-1 hidden-scrollbar">
           {assignedStudents.length === 0 ? (
             <div className="w-full py-6 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
               <Users className="w-8 h-8 text-slate-300 mb-2" />
@@ -499,37 +664,48 @@ export function MentorHome() {
             </div>
           ) : (
             assignedStudents.map((stud, idx) => (
-              <div key={stud.id} className="flex flex-col items-center min-w-[70px] group cursor-pointer">
+              <div 
+                key={stud.id} 
+                onClick={() => onSelectStudent?.(stud.id)}
+                className="flex flex-col items-center min-w-[70px] group cursor-pointer"
+              >
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-3xl overflow-hidden border-2 border-white shadow-sm bg-slate-100 group-hover:shadow-md transition-all group-active:scale-95">
-                    <img 
-                      className="w-full h-full object-cover" 
-                      src={stud.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${stud.id}`} 
-                      alt={stud.name}
-                    />
+                  <div className="w-16 h-16 rounded-[22px] overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 group-hover:shadow-md group-hover:border-slate-200/50 transition-all duration-300 group-active:scale-95 flex items-center justify-center relative">
+                    {stud.avatar_url ? (
+                      <img 
+                        className="w-full h-full object-cover" 
+                        src={stud.avatar_url} 
+                        alt={stud.name}
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(stud.id)} flex items-center justify-center text-white font-black text-xl uppercase tracking-tight shadow-inner`}>
+                        {stud.name ? stud.name.trim().charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
                   </div>
                   {idx === 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white rounded-full border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-bold leading-none z-10">
+                      {stud.daysJoined || 1}
                     </div>
                   )}
                 </div>
-                <span className="text-[12px] text-slate-900 mt-2.5 font-bold truncate max-w-[75px]">
+                <span className="text-[12px] text-slate-900 mt-2 font-medium truncate max-w-[75px] group-hover:text-indigo-600 transition-colors">
                   {stud.name?.split(" ")[0]}
                 </span>
-                <div className="w-10 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden shadow-inner">
-                   <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${stud.progress || 0}%` }}></div>
-                </div>
               </div>
             ))
           )}
         </div>
+          </>
+        )}
 
-        <div className="border-t border-slate-50 my-6"></div>
+        {featureFlags.mentor_sessions !== false && (
+          <>
+            <div className="border-t border-slate-100/60 my-2.5"></div>
 
-        {/* Sessions */}
-        <div className="flex items-center justify-between mb-5">
-          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black uppercase">Upcoming Sessions</p>
+            {/* Sessions */}
+        <div className="flex items-center justify-between mb-3.5">
+          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold uppercase">Upcoming Sessions</p>
           <Button
             variant="outline"
             size="xs"
@@ -542,17 +718,14 @@ export function MentorHome() {
               setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
               setIsScheduleOpen(true);
             }}
-            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-black h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
+            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-semibold h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
           >
             + New Session
           </Button>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {sessions.length === 0 ? (
-            <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-               <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-               <p className="text-xs text-slate-400 font-medium">No upcoming sessions scheduled yet.</p>
-            </div>
+            <p className="text-[12.5px] text-slate-400 font-medium py-1.5 pl-1">No upcoming sessions scheduled yet.</p>
           ) : (
             sessions.map((sess) => {
               const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
@@ -563,18 +736,18 @@ export function MentorHome() {
               return (
                 <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
                   <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                    <span className="text-[13px] font-bold leading-none">{timeStr.split(' ')[0]}</span>
-                    <span className="text-[9px] font-black uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
+                    <span className="text-[13px] font-medium leading-none">{timeStr.split(' ')[0]}</span>
+                    <span className="text-[9px] font-semibold uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[14px] font-bold truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900 font-volkhov'}`}>{sess.title}</p>
+                    <p className={`text-[14px] font-medium truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900'}`}>{sess.title}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{sess.student?.name || "Student"}</span>
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{sess.student?.name || "Student"}</span>
                       <span className="text-slate-200 text-[10px]">|</span>
-                      <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{dateStr}</span>
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{dateStr}</span>
                     </div>
                   </div>
-                  <div className={`px-3 py-1.5 rounded-xl font-bold text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                  <div className={`px-3 py-1.5 rounded-xl font-medium text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
                     {sess.duration_minutes || 30}M
                   </div>
                 </div>
@@ -582,77 +755,195 @@ export function MentorHome() {
             })
           )}
         </div>
-
-        <div className="border-t border-slate-50 my-6"></div>
-        {/* 4. Review Queue List directly in Home Plan */}
-        <p className="text-[11px] text-slate-400 tracking-widest font-semibold mb-4 uppercase">Pending Reviews</p>
-        <div className="space-y-3">
-          {reviews.map(r => (
-            <div key={r.id} className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:border-blue-100 transition-colors">
-              <div className="bg-blue-50 text-blue-500 rounded-lg p-2"><Medal className="w-4 h-4"/></div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-medium text-slate-800 truncate">{r.title}</p>
-                <p className="text-[12px] text-slate-400">{r.student} • {r.time}</p>
-              </div>
-              <Button 
-                onClick={() => handleOpenReviewModal(r)} 
-                className="text-[11px] font-medium rounded-full shrink-0 shadow-sm hover:scale-105 transition-transform"
-                size="sm"
-              >
-                Review
-              </Button>
-            </div>
-          ))}
-          {reviews.length === 0 && <p className="text-[13px] text-slate-400">All caught up!</p>}
-        </div>
+          </>
+        )}
       </Card>
+      )}
 
-      {/* 9. Student Gratitude Wall */}
-      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 p-6 relative overflow-hidden shadow-sm hover:shadow-md transition-all rounded-[1.5rem]">
-        <Heart className="absolute -bottom-6 -right-6 w-28 h-28 text-emerald-200/40 -rotate-12" />
-        <div className="flex items-center gap-2 mb-4 text-emerald-800 font-black text-[13px] uppercase tracking-widest relative z-10">
-          <Heart className="w-4 h-4 fill-emerald-500 text-emerald-500" strokeWidth={2.5}/> Gratitude Wall
-        </div>
-        <div className="bg-white/90 backdrop-blur-md p-5 rounded-2xl border border-white/50 relative z-10 shadow-sm">
-          <p className="text-[15px] text-slate-800 italic leading-relaxed font-volkhov font-medium">
-            "{latestGratitude?.message_content || latestGratitude?.message || "Honestly transformed how I approach debugging. Thanks for being so patient with me during our session yesterday!"}"
-          </p>
-          <div className="flex items-center gap-3 mt-5">
-             <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-[11px] uppercase shrink-0 shadow-3xs">
-               {(latestGratitude?.display_name || latestGratitude?.name || "Priya S.").substring(0, 2)}
-             </div>
-             <span className="text-[12px] font-black text-emerald-800 tracking-wide uppercase">
-               — {latestGratitude?.display_name || latestGratitude?.name || "Priya S."}
-             </span>
-          </div>
-        </div>
-      </Card>
 
-      {/* 11. Mentor Best Practices */}
+
+      {/* 10. 8-Week Roadmap Tile */}
       <div className="px-1">
-        <p className="text-[10px] text-slate-400 tracking-[0.15em] font-black mb-4 uppercase">Resources & Playbook</p>
+        <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl">
+          <div className="flex items-center gap-2.5 mb-6">
+            <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600">
+              <Zap className="w-4 h-4 fill-indigo-100" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">8-Week Roadmap</p>
+              <h3 className="text-slate-900 font-bold text-[15px] mt-1.5 leading-none">8-Week Mentor-Led Career Journey 🚀</h3>
+            </div>
+          </div>
+
+          <div className="space-y-5 relative pl-1">
+            {ROADMAP_WEEKS.map((w, idx) => {
+              const isExpanded = expandedWeek === w.week;
+              const isCompleted = w.status === "completed";
+              const isActive = w.status === "active";
+              
+              let circleBg = "bg-slate-50 border border-slate-200 text-slate-400";
+              let titleColor = "text-slate-500 font-medium";
+              
+              if (isCompleted) {
+                circleBg = "bg-emerald-500 text-white";
+                titleColor = "text-slate-700 font-medium";
+              } else if (isActive) {
+                circleBg = "bg-violet-50 border-2 border-violet-500 text-violet-600 font-bold animate-pulse";
+                titleColor = "text-violet-600 font-bold";
+              }
+
+              return (
+                <div key={w.week} className="relative flex items-start gap-4">
+                  {/* Vertical timeline connector */}
+                  {idx < ROADMAP_WEEKS.length - 1 && (
+                    <div className={`absolute left-3 top-7 bottom-[-25px] w-[2px] ${
+                      isCompleted ? "bg-emerald-200" : "bg-slate-100"
+                    }`} />
+                  )}
+
+                  {/* Icon Circle */}
+                  <button 
+                    onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 z-10 transition-all active:scale-90 ${circleBg}`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    ) : (
+                      w.week
+                    )}
+                  </button>
+
+                  {/* Content Block */}
+                  <div className="flex-1 min-w-0">
+                    <div 
+                      onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
+                      className="flex items-center justify-between cursor-pointer py-0.5 group"
+                    >
+                      <span className={`text-[13px] transition-colors group-hover:text-slate-900 ${titleColor}`}>
+                        Week {w.week} — {w.title}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {isActive && (
+                          <span className="bg-violet-50 border border-violet-100 text-violet-600 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0">
+                            This week
+                          </span>
+                        )}
+                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                          isExpanded ? "rotate-180 text-slate-600" : ""
+                        }`} />
+                      </div>
+                    </div>
+
+                    {/* Sub-items Accordion */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-2.5 ml-1 space-y-2 border-l border-slate-100 pl-3">
+                            {w.items.map((item, itemIdx) => (
+                              <div key={itemIdx} className="flex items-start gap-2 text-slate-500 hover:text-slate-800 transition-colors py-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
+                                <span className="text-[12px] font-medium leading-relaxed">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
+
+      {/* 11. Resources & Community Grid */}
+      <div className="px-1 mt-6">
+        <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold mb-4 uppercase">Resources & Community</p>
         <div className="grid grid-cols-2 gap-3">
+          {/* Mentor Circle Card */}
+          <div 
+            onClick={() => setShowCircle(true)}
+            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-teal-200 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-teal-50/70 flex items-center justify-center text-teal-600 shrink-0 group-hover:scale-105 transition-transform">
+              <Users className="w-5.5 h-5.5 text-teal-600 fill-teal-50" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-slate-900 leading-tight">Mentor Circle</p>
+              <p className="text-[10.5px] text-slate-400 font-medium mt-1">6+ mentors</p>
+            </div>
+          </div>
+
+          {/* Best Practices Card */}
           <div 
             onClick={() => setShowPlaybook(true)}
-            className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer group active:scale-[0.98]"
+            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
           >
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
-              <Lightbulb className="w-5 h-5 fill-indigo-500"/>
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50/70 flex items-center justify-center text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
+              <BookOpen className="w-5.5 h-5.5 text-indigo-500 fill-indigo-50" />
             </div>
-            <p className="text-[13px] font-bold text-slate-900 leading-tight">Mentor Playbook</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Best Practices</p>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-slate-900 leading-tight">Best Practices</p>
+              <p className="text-[10.5px] text-slate-400 font-medium mt-1">10 techniques</p>
+            </div>
           </div>
+
+          {/* Session Notes Card */}
           <div 
-            className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-amber-200 transition-all cursor-pointer group active:scale-[0.98]"
+            onClick={() => setShowNotes(true)}
+            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-slate-300 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
           >
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 mb-3 group-hover:scale-110 transition-transform">
-              <Sparkles className="w-5 h-5 fill-amber-500"/>
+            <div className="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shrink-0 group-hover:scale-105 transition-transform">
+              <FileText className="w-5.5 h-5.5 text-slate-600" />
             </div>
-            <p className="text-[13px] font-bold text-slate-900 leading-tight">Activity Ideas</p>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Engagement</p>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-slate-900 leading-tight">Session Notes</p>
+              <p className="text-[10.5px] text-slate-400 font-medium mt-1">3 notes</p>
+            </div>
+          </div>
+
+          {/* My Courses Card */}
+          <div 
+            onClick={() => setShowCourses(true)}
+            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-emerald-200 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
+          >
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-5.5 h-5.5 text-emerald-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-slate-900 leading-tight">My Courses</p>
+              <p className="text-[10.5px] text-slate-400 font-medium mt-1">4 enrolled</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* 9. Student Gratitude Wall (Subtle design moved to bottom) */}
+      {featureFlags.mentor_gratitude !== false && (
+        <div className="px-1 mt-7 mb-4">
+          <div className="bg-emerald-50/20 border border-emerald-100/40 rounded-2xl p-4.5 text-center relative overflow-hidden">
+            <Heart className="w-4 h-4 fill-emerald-500/80 text-emerald-500/80 mx-auto mb-2.5 animate-pulse-subtle" />
+            <p className="text-[12.5px] text-emerald-800/90 italic leading-relaxed font-medium max-w-md mx-auto">
+              "{latestGratitude?.message_content || latestGratitude?.message || "Honestly transformed how I approach debugging. Thanks for being so patient with me during our session yesterday!"}"
+            </p>
+            <div className="flex items-center justify-center gap-1.5 mt-2.5">
+              <div className="w-5 h-5 rounded-md bg-emerald-100/50 text-emerald-600 flex items-center justify-center shadow-3xs shrink-0">
+                <GraduationCap className="w-3 h-3" />
+              </div>
+              <span className="text-[10.5px] text-emerald-700/80 font-bold uppercase tracking-wider">
+                {latestGratitude?.display_name || latestGratitude?.name || "Priya S."} • Student Gratitude
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Full-Screen Overlays */}
       <AnimatePresence>
@@ -661,6 +952,56 @@ export function MentorHome() {
         )}
         {showInspiration && (
           <MentorInspiration mentorName={mentorName} onClose={() => setShowInspiration(false)} />
+        )}
+        {showCircle && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-inter overflow-hidden"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+          >
+            <div className="flex-1 overflow-y-auto hidden-scrollbar p-6">
+              <MentorCircle onClose={() => setShowCircle(false)} />
+            </div>
+          </motion.div>
+        )}
+        {showNotes && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-inter overflow-hidden"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+          >
+            <div className="flex-1 overflow-y-auto hidden-scrollbar p-6">
+              <MentorNotes onClose={() => setShowNotes(false)} />
+            </div>
+          </motion.div>
+        )}
+        {showCourses && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-inter overflow-hidden"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+          >
+            <div className="flex-1 overflow-y-auto hidden-scrollbar">
+              <MentorCourses onClose={() => setShowCourses(false)} />
+            </div>
+          </motion.div>
+        )}
+        {showShareMaterials && (
+          <MentorShareMaterials 
+            mentorId={mentorId || ""}
+            assignedStudents={assignedStudents}
+            defaultStudentId={selectedStudentForSharing}
+            onClose={() => {
+              setShowShareMaterials(false);
+              if (mentorId) fetchAllMentorData(mentorId, true);
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -676,7 +1017,7 @@ export function MentorHome() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-slate-950 font-bold text-base">Write Review Feedback</h3>
+                  <h3 className="text-slate-950 font-medium text-base">Write Review Feedback</h3>
                   <p className="text-slate-400 text-xs mt-0.5">Session: {selectedReviewSession.title}</p>
                 </div>
                 <button 
@@ -684,7 +1025,7 @@ export function MentorHome() {
                     setIsReviewModalOpen(false);
                     setSelectedReviewSession(null);
                   }}
-                  className="text-slate-300 hover:text-slate-600 text-sm font-bold w-6 h-6 rounded-full hover:bg-slate-50 flex items-center justify-center"
+                  className="text-slate-300 hover:text-slate-600 text-sm font-medium w-6 h-6 rounded-full hover:bg-slate-50 flex items-center justify-center"
                 >
                   ✕
                 </button>
@@ -692,7 +1033,7 @@ export function MentorHome() {
 
               <div className="space-y-3.5 pt-2">
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Rating Score</p>
+                  <p className="text-slate-400 text-[10px] uppercase font-medium tracking-wider">Rating Score</p>
                   <div className="flex gap-1.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -708,7 +1049,7 @@ export function MentorHome() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Comments & Mentorship Notes</p>
+                  <p className="text-slate-400 text-[10px] uppercase font-medium tracking-wider">Comments & Mentorship Notes</p>
                   <textarea
                     rows={3}
                     placeholder="Provide constructive feedback, next steps, or learning outcomes for this student..."
@@ -772,8 +1113,8 @@ export function MentorHome() {
                     <Calendar className="w-5 h-5 text-amber-400" />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-bold font-volkhov tracking-tight">Schedule 1:1 Session</h3>
-                    <p className="text-[11px] text-slate-400 font-bold font-mulish uppercase tracking-wider">Invite your mentee to a live interactive session</p>
+                    <h3 className="text-[17px] font-medium tracking-tight">Schedule 1:1 Session</h3>
+                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Invite your mentee to a live interactive session</p>
                   </div>
                 </div>
               </div>
@@ -781,12 +1122,12 @@ export function MentorHome() {
               {/* Form */}
               <form 
                 onSubmit={handleScheduleSession} 
-                className="p-6 space-y-4 overflow-y-auto hidden-scrollbar pb-8 font-mulish"
+                className="p-6 space-y-4 overflow-y-auto hidden-scrollbar pb-8"
               >
                 
                 {/* Select Mentee */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Select Mentee</Label>
+                  <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Select Mentee</Label>
                   <select
                     value={schedStudentId}
                     onChange={(e) => setSchedStudentId(e.target.value)}
@@ -802,7 +1143,7 @@ export function MentorHome() {
 
                 {/* Session Title */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Session Title</Label>
+                  <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Session Title</Label>
                   <Input 
                     value={schedTitle}
                     onChange={(e) => setSchedTitle(e.target.value)}
@@ -814,7 +1155,7 @@ export function MentorHome() {
 
                 {/* Topics / Notes */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Topics / Notes</Label>
+                  <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Topics / Notes</Label>
                   <Textarea 
                     value={schedNotes}
                     onChange={(e) => setSchedNotes(e.target.value)}
@@ -829,7 +1170,7 @@ export function MentorHome() {
                   
                   {/* Date */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Date</Label>
+                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Date</Label>
                     <Input 
                       type="date"
                       value={schedDate}
@@ -841,7 +1182,7 @@ export function MentorHome() {
 
                   {/* Time */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Time</Label>
+                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Time</Label>
                     <Input 
                       type="time"
                       value={schedTime}
@@ -855,7 +1196,7 @@ export function MentorHome() {
 
                 {/* Duration */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-bold font-mulish uppercase tracking-wider ml-1">Duration</Label>
+                  <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Duration</Label>
                   <select 
                     value={schedDuration}
                     onChange={(e) => setSchedDuration(e.target.value)}
@@ -874,14 +1215,14 @@ export function MentorHome() {
                     type="button" 
                     variant="ghost" 
                     onClick={() => setIsScheduleOpen(false)}
-                    className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-bold font-mulish"
+                    className="flex-1 h-11 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-medium"
                     disabled={isScheduling}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
-                    className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-bold text-xs font-mulish shadow-md"
+                    className="flex-1 h-11 rounded-xl bg-[#0f172a] text-white hover:bg-slate-800 font-medium text-xs shadow-md"
                     disabled={isScheduling || !schedTitle.trim() || !schedDate || !schedTime}
                   >
                     {isScheduling ? "Booking..." : "Book Session"}

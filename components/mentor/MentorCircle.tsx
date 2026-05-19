@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-export function MentorCircle() {
+export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
   const [circles, setCircles] = useState<any[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [circleMembers, setCircleMembers] = useState<any[]>([]);
@@ -180,13 +180,25 @@ export function MentorCircle() {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between mt-6 px-1">
-        <div>
-          <h2 className="text-[20px] font-semibold text-slate-800">Mentorship Circles</h2>
-          <p className="text-[13px] text-slate-500 font-medium">{circles.length} Active communities</p>
+        <div className="flex items-center gap-3">
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform shrink-0"
+            >
+              <ArrowLeft className="w-4.5 h-4.5 text-slate-600" />
+            </Button>
+          )}
+          <div>
+            <h2 className="text-[20px] font-semibold text-slate-800">Mentorship Circles</h2>
+            <p className="text-[13px] text-slate-500 font-medium">{circles.length} Active communities</p>
+          </div>
         </div>
         <Button 
           onClick={() => setIsCreateOpen(!isCreateOpen)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center gap-1.5 px-4.5 py-2 text-xs font-bold shadow-md"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center gap-1.5 px-4.5 py-2 text-xs font-medium shadow-md"
         >
           <Plus className="w-4 h-4" />
           <span>New Circle</span>
@@ -195,7 +207,7 @@ export function MentorCircle() {
 
       {isCreateOpen && (
         <Card className="p-5 border-indigo-100 bg-indigo-50/20 space-y-3">
-          <h4 className="text-sm font-bold text-slate-800">Create Circle</h4>
+          <h4 className="text-sm font-medium text-slate-800">Create Circle</h4>
           <input 
             type="text" 
             placeholder="Circle Name"
@@ -212,7 +224,7 @@ export function MentorCircle() {
           />
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setIsCreateOpen(false)} className="flex-1 py-2 text-xs font-semibold rounded-xl">Cancel</Button>
-            <Button size="sm" onClick={handleCreateCircle} className="flex-1 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl">Create & Join</Button>
+            <Button size="sm" onClick={handleCreateCircle} className="flex-1 py-2 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl">Create & Join</Button>
           </div>
         </Card>
       )}
@@ -230,7 +242,7 @@ export function MentorCircle() {
             <h3 className="text-lg font-black">{selectedCircle.name}</h3>
             <p className="text-xs text-slate-300 leading-relaxed mt-1">{selectedCircle.description}</p>
             <div className="flex items-center gap-3 mt-4">
-              <span className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold">{selectedCircle.memberCount} Members</span>
+              <span className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-medium">{selectedCircle.memberCount} Members</span>
               {selectedCircle.isMember ? (
                 <Button size="xs" variant="destructive" onClick={() => handleLeaveCircle(selectedCircle.id)} className="text-[10px] h-7 px-3 py-1 rounded-full flex items-center gap-1.5"><LogOut className="w-3.5 h-3.5"/> Leave</Button>
               ) : (
@@ -246,8 +258,8 @@ export function MentorCircle() {
                 <div className="flex items-center gap-3">
                   <img src={m.avatar} className="w-9 h-9 rounded-full bg-slate-100 object-cover" alt="" />
                   <div>
-                    <h4 className="text-xs font-bold text-slate-800">{m.name}</h4>
-                    <span className="px-1.5 py-0.5 rounded-md bg-slate-50 border text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1 inline-block">{m.expertise}</span>
+                    <h4 className="text-xs font-medium text-slate-800">{m.name}</h4>
+                    <span className="px-1.5 py-0.5 rounded-md bg-slate-50 border text-[9px] font-medium text-slate-400 uppercase tracking-wide mt-1 inline-block">{m.expertise}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 bg-indigo-50 border border-indigo-100/50 rounded-full px-2.5 py-1 text-indigo-600 text-[10px] font-black">
@@ -266,7 +278,7 @@ export function MentorCircle() {
                <Users className="w-5 h-5 text-slate-300" />
                <span className="font-semibold text-[15px]">Circles Network</span>
              </div>
-             <p className="text-3xl font-bold mt-2 relative z-10">{circles.length}</p>
+             <p className="text-2xl font-medium tracking-tight mt-2 relative z-10">{circles.length}</p>
              <p className="text-slate-300 text-[13px] font-medium relative z-10">Active groups for code-reviews, sharing, & mentoring</p>
           </Card>
 
@@ -276,7 +288,7 @@ export function MentorCircle() {
               <Card key={c.id} onClick={() => selectCircle(c)} className="p-4.5 hover:border-slate-300 cursor-pointer transition-all shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-start justify-between">
-                    <h4 className="text-sm font-bold text-slate-800">{c.name}</h4>
+                    <h4 className="text-sm font-medium text-slate-800">{c.name}</h4>
                     {c.isMember && (
                       <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide">Joined</span>
                     )}
@@ -285,7 +297,7 @@ export function MentorCircle() {
                 </div>
                 <div className="flex items-center justify-between border-t border-slate-50 pt-3 mt-3">
                   <span className="text-[10px] font-semibold text-slate-400">{c.memberCount} Members</span>
-                  <Button size="xs" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-bold text-xs">Enter Circle &rarr;</Button>
+                  <Button size="xs" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-medium text-xs">Enter Circle &rarr;</Button>
                 </div>
               </Card>
             ))}

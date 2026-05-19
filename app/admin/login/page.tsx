@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
           <div className="mb-2 hover:scale-105 transition-all duration-300">
             <img src="/logo.svg" alt="Kind Mentor Logo" className="w-20 h-20 object-contain" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Kind Mentor</h1>
+          <h1 className="text-xl font-medium tracking-tight tracking-tight text-slate-900">Kind Mentor</h1>
           <p className="text-sm text-slate-500 font-medium">Admin Portal Access</p>
         </div>
 
