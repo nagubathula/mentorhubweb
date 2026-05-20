@@ -2130,7 +2130,7 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
       // Merge db and local, avoid duplicates based on id
       const allFeedbackMap = new Map();
       localFeedback.forEach(item => allFeedbackMap.set(item.id, item));
-      (dbData || []).forEach(item => allFeedbackMap.set(item.id, item));
+      (dbData || []).forEach((item: any) => allFeedbackMap.set(item.id, item));
       
       const merged = Array.from(allFeedbackMap.values()).sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
