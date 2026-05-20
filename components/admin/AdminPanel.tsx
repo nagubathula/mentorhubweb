@@ -2107,7 +2107,7 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
   const fetchFeedback = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
-    const { data: dbData, error } = await supabase
+    const { data: dbData, error } = await (supabase as any)
       .from("platform_feedback")
       .select("*")
       .order("created_at", { ascending: false });
@@ -2149,7 +2149,7 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
     const supabase = createClient();
     
     // Delete from DB
-    await supabase.from("platform_feedback").delete().eq("id", id);
+    await (supabase as any).from("platform_feedback").delete().eq("id", id);
     
     // Delete from LocalStorage
     try {

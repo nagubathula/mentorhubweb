@@ -1425,7 +1425,7 @@ export default function OnboardingFlow() {
     };
 
     // 1. Submit to Supabase DB
-    const { error } = await supabase.from('platform_feedback').insert([feedbackPayload]);
+    const { error } = await (supabase as any).from('platform_feedback').insert([feedbackPayload]);
 
     // 2. Submit to localStorage fallback
     try {
