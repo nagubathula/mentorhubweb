@@ -423,7 +423,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-sans overflow-hidden"
+      className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-inter overflow-hidden"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -443,7 +443,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-indigo-500" />
-              <p className="text-slate-900 text-[15px] font-bold">Mentor Hub Playbook</p>
+              <p className="text-slate-900 text-[15px] font-medium">Mentor Hub Playbook</p>
             </div>
             <p className="text-slate-400 text-[11px] font-medium mt-0.5">
               {activeTab === "practices" ? "Techniques to help students learn faster" : "Structured conversation guide for sessions"}
@@ -455,7 +455,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
         <div className="flex gap-1.5 bg-slate-100 rounded-xl p-1 shrink-0">
           <button
             onClick={() => setActiveTab("practices")}
-            className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-all ${
               activeTab === "practices" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -463,7 +463,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
           </button>
           <button
             onClick={() => setActiveTab("checklist")}
-            className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-all ${
               activeTab === "checklist" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -493,7 +493,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                     transition={{ type: "spring", damping: 20 }}
                   />
                 </div>
-                <span className="text-slate-500 text-[11px] font-bold shrink-0">{readPracticeIds.size}/{PLAYBOOK_PRACTICES.length} read</span>
+                <span className="text-slate-500 text-[11px] font-medium shrink-0">{readPracticeIds.size}/{PLAYBOOK_PRACTICES.length} read</span>
               </div>
 
               {/* Guide Card */}
@@ -530,7 +530,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-slate-800 text-[14px] font-bold leading-tight truncate">{p.title}</p>
+                            <p className="text-slate-800 text-[14px] font-medium leading-tight truncate">{p.title}</p>
                             {isRead && (
                               <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                                 <Check className="w-2.5 h-2.5 text-emerald-600" strokeWidth={3} />
@@ -624,7 +624,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <Heart className="w-6 h-6 text-indigo-500" />
                   </div>
-                  <p className="text-slate-800 text-xs font-bold mb-1">You're Making a Difference</p>
+                  <p className="text-slate-800 text-xs font-medium mb-1">You're Making a Difference</p>
                   <p className="text-slate-400 text-[11px] leading-relaxed font-semibold px-2">
                     Every interaction matters. These practices help you guide students more effectively, build strong relationships, and ensure consistent mentoring quality.
                   </p>
@@ -649,7 +649,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                     transition={{ type: "spring", damping: 20 }}
                   />
                 </div>
-                <span className="text-slate-500 text-[11px] font-bold shrink-0">{checkedItems.size}/{totalChecklistItems} done</span>
+                <span className="text-slate-500 text-[11px] font-medium shrink-0">{checkedItems.size}/{totalChecklistItems} done</span>
               </div>
 
               {/* Student Profile Selection Snapshot */}
@@ -668,7 +668,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                     <button
                       key={idx}
                       onClick={() => setActiveStudentIndex(idx)}
-                      className={`flex-1 flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+                      className={`flex-1 flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-medium transition-all border ${
                         activeStudentIndex === idx
                           ? "bg-white shadow-xs text-slate-900 border-sky-300"
                           : "bg-sky-50/50 text-slate-500 border-transparent hover:bg-sky-50"
@@ -691,7 +691,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                       {currentStudent.avatar}
                     </div>
                     <div>
-                      <p className="text-slate-800 text-[13px] font-bold leading-tight">{currentStudent.name}</p>
+                      <p className="text-slate-800 text-[13px] font-medium leading-tight">{currentStudent.name}</p>
                       <p className="text-sky-500 text-[10px] font-black uppercase tracking-wider mt-0.5">{currentStudent.track}</p>
                     </div>
                   </div>
@@ -704,20 +704,20 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                       { label: "Inspiration", value: currentStudent.interests.inspiration, icon: "💡" }
                     ].map((interest, iIdx) => (
                       <div key={iIdx} className="bg-slate-50/80 rounded-lg p-2.5 border border-slate-100">
-                        <p className="text-slate-400 text-[8.5px] font-bold uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                        <p className="text-slate-400 text-[8.5px] font-medium uppercase tracking-wider flex items-center gap-1 mb-0.5">
                           <span>{interest.icon}</span> {interest.label}
                         </p>
-                        <p className="text-slate-700 text-xs font-bold truncate">{interest.value}</p>
+                        <p className="text-slate-700 text-xs font-medium truncate">{interest.value}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Hobbies */}
                   <div className="bg-slate-50/80 rounded-lg p-2.5 border border-slate-100 flex flex-col">
-                    <p className="text-slate-400 text-[8.5px] font-bold uppercase tracking-wider mb-1.5">🎮 Hobbies & Passions</p>
+                    <p className="text-slate-400 text-[8.5px] font-medium uppercase tracking-wider mb-1.5">🎮 Hobbies & Passions</p>
                     <div className="flex flex-wrap gap-1">
                       {currentStudent.interests.hobbies.map((hobby, hIdx) => (
-                        <span key={hIdx} className="px-2 py-0.5 bg-sky-50 text-sky-600 text-[10.5px] font-bold rounded-full border border-sky-100/30">
+                        <span key={hIdx} className="px-2 py-0.5 bg-sky-50 text-sky-600 text-[10.5px] font-medium rounded-full border border-sky-100/30">
                           {hobby}
                         </span>
                       ))}
@@ -759,7 +759,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className={`text-[14px] font-bold leading-tight truncate ${isFinished ? 'text-emerald-700 font-extrabold' : 'text-slate-800'}`}>
+                            <p className={`text-[14px] font-medium leading-tight truncate ${isFinished ? 'text-emerald-700 font-extrabold' : 'text-slate-800'}`}>
                               {cl.title}
                             </p>
                             {isFinished && (
@@ -817,7 +817,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
 
                             {/* Conversation starter quote */}
                             <div className={`${cl.bgColor} rounded-xl px-3 py-3 border border-slate-100`}>
-                              <p className="text-slate-400 text-[8.5px] font-bold uppercase tracking-wider mb-1">Example Prompt</p>
+                              <p className="text-slate-400 text-[8.5px] font-medium uppercase tracking-wider mb-1">Example Prompt</p>
                               <p className="text-slate-700 text-xs italic font-medium leading-relaxed">"{cl.example}"</p>
                             </div>
                           </motion.div>
@@ -832,7 +832,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-50 to-sky-50 flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <Sparkles className="w-6 h-6 text-teal-500" />
                   </div>
-                  <p className="text-slate-800 text-xs font-bold mb-1">Conversations Build Trust</p>
+                  <p className="text-slate-800 text-xs font-medium mb-1">Conversations Build Trust</p>
                   <p className="text-slate-400 text-[11px] leading-relaxed font-semibold px-2">
                     When students feel understood as a person — not just a learner — they engage more, learn faster, and stay motivated throughout their journey.
                   </p>

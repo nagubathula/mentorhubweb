@@ -118,14 +118,14 @@ export function MentalWellness({ onBack, coins, onCoinsEarned }: MentalWellnessP
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-6 md:-mx-8"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header */}
-      <div className="bg-white px-5 pt-3 pb-3 border-b border-gray-100 shrink-0">
+      <div className="bg-white px-6 pt-3 pb-3 md:px-8 border-b border-gray-100 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <button
@@ -271,7 +271,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
 
   return (
     <motion.div
-      className="px-5 pt-4 pb-6 space-y-4"
+      className="px-6 pt-4 pb-6 md:px-8 space-y-4"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
@@ -282,7 +282,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
         <div className="flex items-center justify-center gap-2 mb-1.5">
           <Sparkles className="w-4 h-4 text-teal-500" />
           <p className="text-teal-900 text-xs font-semibold">5-Minute Brain Recharge Mode</p>
-          <span className="bg-teal-100 text-teal-600 text-[9px] px-1.5 py-0.5 rounded font-bold">RELAX</span>
+          <span className="bg-teal-100 text-teal-600 text-[9px] px-1.5 py-0.5 rounded font-medium">RELAX</span>
         </div>
         <p className="text-teal-700 text-[11px] leading-relaxed">
           Deep, deliberate breathing signals your brain to lower stress, increases oxygen, and resets your cognitive load for better learning.
@@ -364,7 +364,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
                 transition={{ duration: currentExercise.duration, ease: "easeInOut" }}
               >
                 <span className="text-2xl mb-1">{currentExercise.icon}</span>
-                <span className="text-teal-800 text-xl font-bold">{timeLeft}s</span>
+                <span className="text-teal-800 text-[17px] font-medium tracking-tight">{timeLeft}s</span>
               </motion.div>
             </div>
 
@@ -393,7 +393,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
 
       {/* Rotating affirmation footer card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center shadow-sm">
-        <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider mb-1">Affirmation of the Moment</p>
+        <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider mb-1">Affirmation of the Moment</p>
         <AnimatePresence mode="wait">
           <motion.p
             key={activeAffirmationIdx}
@@ -470,7 +470,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
 
   return (
     <motion.div
-      className="px-5 pt-4 pb-6 space-y-4"
+      className="px-6 pt-4 pb-6 md:px-8 space-y-4"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
@@ -484,13 +484,13 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
               🙏
             </div>
             <div>
-              <p className="text-gray-900 text-xs font-bold">Gratitude Points</p>
+              <p className="text-gray-900 text-xs font-medium">Gratitude Points</p>
               <p className="text-rose-600 text-[10px] font-semibold">Level {levelNum}: {levelName}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-gray-900 text-lg font-bold leading-none">{points}</p>
-            <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider">points</p>
+            <p className="text-gray-900 text-lg font-medium leading-none">{points}</p>
+            <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider">points</p>
           </div>
         </div>
 
@@ -519,7 +519,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
             <BookOpen className="w-3.5 h-3.5 text-amber-500" />
             <span className="text-gray-600 text-[10px] font-semibold">{entries.length} total entries</span>
           </div>
-          <span className="text-rose-500 text-[10px] ml-auto font-bold">+5 coins each</span>
+          <span className="text-rose-500 text-[10px] ml-auto font-medium">+5 coins each</span>
         </div>
       </div>
 
@@ -528,7 +528,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm">📝</span>
           <p className="text-gray-900 text-xs font-semibold">Write 3 Good Things Today</p>
-          <span className="ml-auto px-1.5 py-0.5 bg-rose-50 text-rose-500 text-[10px] rounded-md font-bold">
+          <span className="ml-auto px-1.5 py-0.5 bg-rose-50 text-rose-500 text-[10px] rounded-md font-medium">
             {filledCount}/3
           </span>
         </div>
@@ -543,8 +543,8 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
             >
               🎉
             </motion.div>
-            <p className="text-gray-900 text-xs font-bold">Gratitude Recorded!</p>
-            <div className="flex items-center justify-center gap-1.5 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-1 w-fit mx-auto text-amber-600 text-xs font-bold">
+            <p className="text-gray-900 text-xs font-medium">Gratitude Recorded!</p>
+            <div className="flex items-center justify-center gap-1.5 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-1 w-fit mx-auto text-amber-600 text-xs font-medium">
               <Coins className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
               +{filledCount * 5} coins earned
             </div>
@@ -584,7 +584,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
             <button
               onClick={handleSubmit}
               disabled={filledCount === 0}
-              className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-md ${
+              className={`w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-md ${
                 filledCount > 0
                   ? "bg-rose-500 text-white shadow-rose-500/10 hover:bg-rose-600"
                   : "bg-gray-100 text-gray-300 pointer-events-none"
@@ -613,7 +613,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
             </span>
             <motion.span
               animate={{ rotate: isJournalOpen ? 90 : 0 }}
-              className="text-gray-400 text-xs font-bold"
+              className="text-gray-400 text-xs font-medium"
             >
               ▶
             </motion.span>
@@ -697,7 +697,7 @@ function MemesCarousel() {
 
   return (
     <motion.div
-      className="px-5 pt-4 pb-6 space-y-4"
+      className="px-6 pt-4 pb-6 md:px-8 space-y-4"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
@@ -727,7 +727,7 @@ function MemesCarousel() {
           transition={{ duration: 0.2 }}
         >
           <div className="p-5 text-center flex-1 flex flex-col justify-center items-center">
-            <span className="px-2 py-0.5 bg-white/70 text-gray-600 text-[9px] font-bold rounded-full uppercase tracking-wider mb-2">
+            <span className="px-2 py-0.5 bg-white/70 text-gray-600 text-[9px] font-medium rounded-full uppercase tracking-wider mb-2">
               {activeMeme.category}
             </span>
             <motion.div
@@ -804,7 +804,7 @@ function MemesCarousel() {
 
       {/* All Memes Selector Cards Grid */}
       <div className="bg-white rounded-2xl border border-gray-100 p-3.5 shadow-sm space-y-2">
-        <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider mb-1">Meme Deck</p>
+        <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider mb-1">Meme Deck</p>
         <div className="grid grid-cols-3 gap-2">
           {memesData.map((m, idx) => (
             <button

@@ -129,7 +129,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
   return (
     <motion.div
-      className="absolute inset-0 z-40 bg-gray-50 flex flex-col h-full"
+      className="flex flex-col h-full bg-gray-50 -mx-5"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -177,7 +177,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                 <IconComponent className="w-3.5 h-3.5" />
                 {tab.label}
                 {tab.key === "saved" && savedFacts.size > 0 && (
-                  <span className="ml-1 w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[9px] flex items-center justify-center font-bold">
+                  <span className="ml-1 w-4 h-4 rounded-full bg-violet-100 text-violet-600 text-[9px] flex items-center justify-center font-medium">
                     {savedFacts.size}
                   </span>
                 )}
@@ -188,7 +188,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
       </div>
 
       {/* Main Content scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-20">
+      <div className="flex-1 overflow-y-auto px-5 py-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait">
           {activeTab === "feed" && (
             <motion.div
@@ -208,7 +208,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                     <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-amber-300" />
                     </div>
-                    <p className="text-white/85 text-[10px] uppercase font-bold tracking-wider">Fact of the Day</p>
+                    <p className="text-white/85 text-[10px] uppercase font-medium tracking-wider">Fact of the Day</p>
                   </div>
                   
                   <p className="text-sm font-medium leading-relaxed">"{factOfTheDay.text}"</p>
@@ -216,7 +216,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                   <div className="flex items-center gap-3 pt-1">
                     <button
                       onClick={() => handleLikeFact(factOfTheDay.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
                         likedFacts.has(factOfTheDay.id)
                           ? "bg-white/30 text-white"
                           : "bg-white/10 text-white/70 hover:bg-white/15"
@@ -227,7 +227,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                     </button>
                     <button
                       onClick={() => handleSaveFact(factOfTheDay.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
                         savedFacts.has(factOfTheDay.id)
                           ? "bg-white/30 text-white"
                           : "bg-white/10 text-white/70 hover:bg-white/15"
@@ -249,7 +249,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                     <button
                       key={cat.key}
                       onClick={() => setSelectedCategory(cat.key)}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all shrink-0 border ${
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-all shrink-0 border ${
                         isSelected
                           ? `${cat.bg} ${cat.color} border-transparent shadow-sm`
                           : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
@@ -285,7 +285,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                           <p className="text-gray-700 text-xs font-semibold leading-relaxed">{fact.text}</p>
                           
                           <div className="flex items-center justify-between">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${styles.badge} ${styles.badgeText}`}>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider ${styles.badge} ${styles.badgeText}`}>
                               {fact.category}
                             </span>
                             <div className="flex items-center gap-3">
@@ -330,16 +330,16 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
                     <Trophy className="w-4 h-4 text-amber-200" />
-                    <p className="text-white/80 text-[10px] font-bold uppercase tracking-wider">Weekly Curiosity Challenge</p>
+                    <p className="text-white/80 text-[10px] font-medium uppercase tracking-wider">Weekly Curiosity Challenge</p>
                   </div>
-                  <p className="text-white/90 text-xs font-bold mt-1">Did you know?</p>
+                  <p className="text-white/90 text-xs font-medium mt-1">Did you know?</p>
                   <p className="text-sm font-semibold leading-relaxed">"{triviaChallenge.fact}"</p>
                 </div>
               </div>
 
               {/* Challenge Quiz Box */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
-                <p className="text-gray-800 text-xs font-bold">{triviaChallenge.question}</p>
+                <p className="text-gray-800 text-xs font-medium">{triviaChallenge.question}</p>
                 
                 <div className="space-y-2">
                   {triviaChallenge.options.map((option, idx) => {
@@ -352,7 +352,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                         key={idx}
                         disabled={isChallengeSubmitted}
                         onClick={() => setSelectedOption(idx)}
-                        className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-between ${
+                        className={`w-full text-left px-4 py-3 rounded-xl text-xs font-medium transition-all border flex items-center justify-between ${
                           showCorrect
                             ? "border-emerald-300 bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-500/5"
                             : showWrong
@@ -363,7 +363,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                          <span className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-medium ${
                             isSelected ? "border-violet-400 bg-violet-100" : "border-gray-200 bg-white"
                           }`}>
                             {showCorrect ? <Check className="w-3 h-3 text-emerald-500" strokeWidth={3} /> : String.fromCharCode(65 + idx)}
@@ -379,7 +379,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`p-4 rounded-xl text-xs text-center border font-bold ${
+                    className={`p-4 rounded-xl text-xs text-center border font-medium ${
                       selectedOption === triviaChallenge.correctIndex
                         ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                         : "bg-amber-50 text-amber-700 border-amber-100"
@@ -394,7 +394,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-2xl">🤔</span>
                         <p>Nice try! The correct answer is: "{triviaChallenge.options[triviaChallenge.correctIndex]}"</p>
-                        <p className="text-[10px] text-amber-600/70 mt-1 uppercase tracking-wider font-bold">Keep exploring — curiosity is your superpower!</p>
+                        <p className="text-[10px] text-amber-600/70 mt-1 uppercase tracking-wider font-medium">Keep exploring — curiosity is your superpower!</p>
                       </div>
                     )}
                   </motion.div>
@@ -402,7 +402,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                   <button
                     onClick={handleChallengeSubmit}
                     disabled={selectedOption === null}
-                    className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md ${
+                    className={`w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-md ${
                       selectedOption !== null
                         ? "bg-violet-600 text-white shadow-violet-600/10 hover:bg-violet-700 active:scale-[0.98]"
                         : "bg-gray-100 text-gray-400 pointer-events-none"
@@ -416,18 +416,18 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
               {/* Curiosity Stats Row */}
               <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                <p className="text-gray-400 text-[9px] uppercase font-bold tracking-wider mb-3">Your Curiosity Metrics</p>
+                <p className="text-gray-400 text-[9px] uppercase font-medium tracking-wider mb-3">Your Curiosity Metrics</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center bg-gray-50/50 p-2 rounded-xl">
-                    <p className="text-gray-900 text-lg font-bold">{likedFacts.size}</p>
+                    <p className="text-gray-900 text-lg font-medium">{likedFacts.size}</p>
                     <p className="text-gray-400 text-[10px] font-semibold">Liked</p>
                   </div>
                   <div className="text-center bg-gray-50/50 p-2 rounded-xl">
-                    <p className="text-gray-900 text-lg font-bold">{savedFacts.size}</p>
+                    <p className="text-gray-900 text-lg font-medium">{savedFacts.size}</p>
                     <p className="text-gray-400 text-[10px] font-semibold">Saved</p>
                   </div>
                   <div className="text-center bg-gray-50/50 p-2 rounded-xl">
-                    <p className="text-gray-900 text-lg font-bold">{isChallengeSubmitted ? 1 : 0}</p>
+                    <p className="text-gray-900 text-lg font-medium">{isChallengeSubmitted ? 1 : 0}</p>
                     <p className="text-gray-400 text-[10px] font-semibold">Challenges</p>
                   </div>
                 </div>
@@ -437,12 +437,12 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
               <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-4 border border-indigo-100 space-y-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-indigo-500" />
-                  <p className="text-indigo-900 text-[10px] font-bold uppercase tracking-wider">Mentor's Fact of the Day</p>
+                  <p className="text-indigo-900 text-[10px] font-medium uppercase tracking-wider">Mentor's Fact of the Day</p>
                 </div>
                 <p className="text-gray-700 text-xs italic leading-relaxed font-medium">
                   "Did you know debugging skills are one of the most valuable skills in software engineering? Master the art of finding bugs!"
                 </p>
-                <p className="text-indigo-400 text-[10px] font-bold">— Pradeep K., Your Mentor</p>
+                <p className="text-indigo-400 text-[10px] font-medium">— Pradeep K., Your Mentor</p>
               </div>
             </motion.div>
           )}
@@ -460,7 +460,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                   <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 text-2xl text-gray-300">
                     📂
                   </div>
-                  <h3 className="text-gray-800 text-xs font-bold">No saved facts yet</h3>
+                  <h3 className="text-gray-800 text-xs font-medium">No saved facts yet</h3>
                   <p className="text-gray-400 text-[10px] max-w-[200px] mt-1 leading-relaxed">
                     Tap the save bookmark icon on any fact in your feed to bookmark it here for later.
                   </p>
@@ -487,7 +487,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
                             <p className="text-gray-700 text-xs font-semibold leading-relaxed">{fact.text}</p>
                             
                             <div className="flex items-center justify-between">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${styles.badge} ${styles.badgeText}`}>
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider ${styles.badge} ${styles.badgeText}`}>
                                 {fact.category}
                               </span>
                               <div className="flex items-center gap-3">

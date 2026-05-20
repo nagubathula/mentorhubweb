@@ -7,9 +7,10 @@ import {
   CalendarDays, Star, Sparkles, MessageCircle, Heart, Handshake,
   Settings, Search, Bell, Plus, X, Menu, Send,
   TrendingUp, Zap, Target, Clock, Flame, Trophy,
-  ChevronDown, CheckCircle, ArrowRight, Video,
+  ChevronDown, CheckCircle, ArrowRight, ArrowLeft, Check, Video,
   UserPlus, Shield, RefreshCw, Download, Upload,
   MapPin, BookMarked, Layers, BarChart2, Activity, ChevronRight,
+  ChevronLeft, Cpu, Lightbulb, Save, Trash2, Edit3, MessageSquare, Image as ImageIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
@@ -23,7 +24,7 @@ type AdminPage =
   | "dashboard" | "courses" | "mentors" | "mentees" | "registrations"
   | "mapping" | "enrollments" | "games" | "questionnaires" | "circles"
   | "sessions" | "reviews" | "inspiration" | "messages" | "gratitude-wall"
-  | "csr-sponsors" | "settings";
+  | "csr-sponsors" | "settings" | "features" | "feedback";
 
 type ModalKey =
   | "add-student" | "add-mentor" | "schedule-session"
@@ -50,7 +51,9 @@ const NAV_OTHERS = [
   { key: "inspiration",    label: "Inspiration",      icon: Sparkles },
   { key: "messages",       label: "Messages",         icon: MessageCircle },
   { key: "gratitude-wall", label: "Gratitude Wall",   icon: Heart },
+  { key: "feedback",       label: "User Feedback",    icon: MessageSquare },
   { key: "csr-sponsors",   label: "CSR Sponsors",     icon: Handshake },
+  { key: "features",       label: "Feature Controls", icon: Settings },
   { key: "settings",       label: "Settings",         icon: Settings },
 ] as const;
 
@@ -140,7 +143,7 @@ function Av({ name, size = 8, src }: { name?: string; size?: number; src?: strin
   const sz = `w-${size} h-${size}`;
   if (src) return <img src={src} className={cn(sz, "rounded-full object-cover bg-slate-100")} alt={name} />;
   return (
-    <div className={cn(sz, "rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0", bg)}>
+    <div className={cn(sz, "rounded-full flex items-center justify-center text-[11px] font-medium text-white shrink-0", bg)}>
       {initials(name)}
     </div>
   );
@@ -186,9 +189,9 @@ function Card({ children, className, onClick }: { children: React.ReactNode; cla
   );
 }
 
-function BtnPrimary({ children, onClick, type = "button" }: { children: React.ReactNode; onClick?: () => void; type?: "button"|"submit" }) {
+function BtnPrimary({ children, onClick, type = "button", disabled }: { children: React.ReactNode; onClick?: () => void; type?: "button"|"submit"; disabled?: boolean }) {
   return (
-    <Button type={type} onClick={onClick} className="h-9 px-4 bg-[#0f172a] text-white text-[13px] font-medium rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shrink-0">
+    <Button type={type} onClick={onClick} disabled={disabled} className="h-9 px-4 bg-[#0f172a] text-white text-[13px] font-medium rounded-xl hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shrink-0">
       {children}
     </Button>
   );
@@ -209,7 +212,7 @@ function PageShell({ title, subtitle, action, children }: {
     <div className="flex flex-col gap-5">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-slate-900">{title}</h1>
+          <h1 className="text-[22px] font-medium text-slate-900">{title}</h1>
           {subtitle && <p className="text-[13px] text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
         {action && <div className="flex items-center gap-2">{action}</div>}
@@ -277,7 +280,7 @@ function ModalWrap({ title, onClose, onSave, children }: {
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-white border border-slate-100 rounded-2xl shadow-2xl">
         <DialogHeader className="px-5 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
-          <DialogTitle className="text-[16px] font-bold text-slate-900">{title}</DialogTitle>
+          <DialogTitle className="text-[16px] font-medium text-slate-900">{title}</DialogTitle>
         </DialogHeader>
         <div className="px-5 py-4 flex flex-col gap-4 text-slate-700">{children}</div>
         <DialogFooter className="flex justify-end gap-2 px-5 pb-5 pt-2 bg-slate-50 border-t border-slate-100">
@@ -352,7 +355,7 @@ function ScheduleSessionModal({ onClose, students, mentors }: { onClose: () => v
 }
 
 function SendInspirationModal({ onClose, students, mentors }: { onClose: () => void; students: any[]; mentors: any[] }) {
-  const [target, setTarget] = useState("all"); const [category, setCategory] = useState("quote");
+  const [target, setTarget] = useState("all"); const [category, setCategory] = useState("Quote");
   const [emoji, setEmoji] = useState("🌟"); const [message, setMessage] = useState(""); const [author, setAuthor] = useState("");
   const supabase = createClient();
   const save = async () => {
@@ -363,7 +366,7 @@ function SendInspirationModal({ onClose, students, mentors }: { onClose: () => v
   return (
     <ModalWrap title="Send Inspiration" onClose={onClose} onSave={save}>
       <FieldRow label="Target"><SInput value={target} onChange={setTarget} options={[{ value:"all",label:"Everyone"}, ...students.map((s) => ({ value: s.id, label: `Student: ${s.name||s.email}` })), ...mentors.map((m) => ({ value: m.id, label: `Mentor: ${m.name||m.email}` }))]} /></FieldRow>
-      <FieldRow label="Category"><SInput value={category} onChange={setCategory} options={[{ value:"quote",label:"Quote"},{ value:"tip",label:"Tip"},{ value:"challenge",label:"Challenge"},{ value:"story",label:"Story"}]} /></FieldRow>
+      <FieldRow label="Category"><SInput value={category} onChange={setCategory} options={[{ value:"Quote",label:"Quote"},{ value:"Tip",label:"Tip"},{ value:"Challenge",label:"Challenge"},{ value:"Story",label:"Story"}]} /></FieldRow>
       <FieldRow label="Emoji">
         <div className="flex flex-wrap gap-1.5">
           {EMOJIS.map((e) => (
@@ -397,9 +400,29 @@ function CreateEnrollmentModal({ onClose, students, courses, circles }: { onClos
     if (!isUUID) {
       const selectedCourse = courses.find(c => c.id === course);
       if (selectedCourse) {
+        const serializedDescription = JSON.stringify({
+          description: selectedCourse.description || "",
+          difficulty: selectedCourse.difficulty || "Beginner",
+          duration: selectedCourse.duration || "10 hours",
+          category: selectedCourse.category || "General",
+          modules: (selectedCourse.modules || []).map((m: any) => ({
+            id: m.id,
+            title: m.title,
+            description: m.description || "",
+            enabled: m.enabled !== false,
+            lessons: (m.lessons || []).map((l: any) => ({
+              id: l.id,
+              title: l.title,
+              duration: l.duration || "15 mins",
+              type: l.type || "video",
+              enabled: l.enabled !== false
+            }))
+          }))
+        });
+
         const coursePayload = {
           title: selectedCourse.title,
-          description: selectedCourse.description,
+          description: serializedDescription,
           status: 'Active'
         };
         const { data: newCourse, error: createError } = await supabase.from('courses').insert(coursePayload).select().single();
@@ -483,9 +506,9 @@ function DashboardPage({ data, onNavigate, openModal }: {
 
   const topStudents = students.slice(0, 5).map((s: any) => ({
     ...s,
-    streak: seedNum(s.id, 14, 1),
-    xp: seedNum(s.id, 4500, 500) + 500,
-    coins: seedNum(s.id, 600, 100),
+    streak: s.streak || 0,
+    xp: s.xp || 0,
+    coins: s.coins || 0,
   })).sort((a: any, b: any) => b.streak - a.streak);
 
   const topXP = [...topStudents].sort((a: any, b: any) => b.xp - a.xp);
@@ -520,13 +543,13 @@ function DashboardPage({ data, onNavigate, openModal }: {
       {/* Title + quick actions */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-slate-900">Admin Dashboard</h1>
+          <h1 className="text-[22px] font-medium text-slate-900">Admin Dashboard</h1>
           <p className="text-[13px] text-slate-500 mt-0.5">Welcome back! Here's your overview for today.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           {quickActions.map((a) => (
             <button key={a.label} onClick={() => a.modal && openModal(a.modal)}
-              className={cn("h-9 px-4 text-white text-[13px] font-semibold rounded-xl transition-colors", a.bg)}>
+              className={cn("h-9 px-4 text-white text-[13px] font-semibold rounded-xl transition-colors whitespace-nowrap", a.bg)}>
               {a.label}
             </button>
           ))}
@@ -534,7 +557,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.label} onClick={() => onNavigate(s.page)} className="p-5">
             <div className="flex items-start justify-between mb-3">
@@ -543,29 +566,29 @@ function DashboardPage({ data, onNavigate, openModal }: {
               </div>
               <span className={cn("text-[11px] font-semibold", s.deltaColor)}>{s.delta}</span>
             </div>
-            <p className="text-[30px] font-bold text-slate-900 leading-none">{s.value}</p>
+            <p className="text-[30px] font-medium text-slate-900 leading-none">{s.value}</p>
             <p className="text-[12px] text-slate-500 mt-1">{s.label}</p>
           </Card>
         ))}
       </div>
 
       {/* Metrics strip */}
-      <div className="grid grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {metrics.map((m) => (
           <Card key={m.label} className="p-3 flex flex-col items-center text-center gap-1">
             <m.icon className="w-4 h-4 text-slate-400" />
-            <p className="text-[18px] font-bold text-slate-800 leading-none">{m.value}</p>
+            <p className="text-[17px] font-medium text-slate-800 leading-none">{m.value}</p>
             <p className="text-[10px] text-slate-400 uppercase tracking-wide leading-tight">{m.label}</p>
           </Card>
         ))}
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Weekly Activity – horizontal bars */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-bold text-slate-800">Weekly Activity</h3>
+            <h3 className="text-[14px] font-medium text-slate-800">Weekly Activity</h3>
             <span className="text-[12px] text-slate-400">Last 7 days</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -600,7 +623,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
         {/* Game Breakdown */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-bold text-slate-800">Game Breakdown</h3>
+            <h3 className="text-[14px] font-medium text-slate-800">Game Breakdown</h3>
             <button onClick={() => onNavigate("games")} className="text-[12px] text-blue-500 hover:text-blue-700">View all</button>
           </div>
           {gameItems.length > 0 ? (
@@ -630,17 +653,17 @@ function DashboardPage({ data, onNavigate, openModal }: {
           )}
           <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
             <span className="text-[12px] text-slate-500">Total coins from games</span>
-            <span className="text-[13px] font-bold text-amber-500">{totalCoins} coins</span>
+            <span className="text-[13px] font-medium text-amber-500">{totalCoins} coins</span>
           </div>
         </Card>
       </div>
 
       {/* Leaderboards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Streak Leaders */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="text-[14px] font-medium text-slate-800 flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400" /> Streak Leaders
             </h3>
             <button onClick={() => onNavigate("mentees")} className="text-[12px] text-blue-500 hover:text-blue-700">View all</button>
@@ -648,7 +671,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
           <div className="flex flex-col gap-3">
             {topStudents.map((s: any, i: number) => (
               <div key={s.id} className="flex items-center gap-3">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0",
+                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-medium text-white shrink-0",
                   i===0?"bg-amber-400":i===1?"bg-slate-400":i===2?"bg-amber-700":"bg-slate-200 text-slate-500")}>
                   {i+1}
                 </div>
@@ -657,7 +680,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
                   <p className="text-[13px] font-semibold text-slate-800 truncate">{s.name || "Unknown"}</p>
                   <p className="text-[11px] text-slate-400">{s.xp} XP · {s.coins} coins</p>
                 </div>
-                <div className="flex items-center gap-1 text-[13px] font-bold text-orange-500 shrink-0">
+                <div className="flex items-center gap-1 text-[13px] font-medium text-orange-500 shrink-0">
                   <Flame className="w-3.5 h-3.5" />{s.streak}d
                 </div>
               </div>
@@ -669,7 +692,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
         {/* XP Leaders */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="text-[14px] font-medium text-slate-800 flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-400" /> XP Leaders
             </h3>
             <button onClick={() => onNavigate("mentees")} className="text-[12px] text-blue-500 hover:text-blue-700">View all</button>
@@ -677,7 +700,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
           <div className="flex flex-col gap-3">
             {topXP.map((s: any, i: number) => (
               <div key={s.id} className="flex items-center gap-3">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0",
+                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-medium text-white shrink-0",
                   i===0?"bg-amber-400":i===1?"bg-slate-400":i===2?"bg-amber-700":"bg-slate-200 text-slate-500")}>
                   {i+1}
                 </div>
@@ -685,7 +708,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[13px] font-semibold text-slate-800 truncate">{s.name || "Unknown"}</span>
-                    <span className="text-[12px] font-bold text-violet-600 shrink-0 ml-2">⚡ {s.xp.toLocaleString()}</span>
+                    <span className="text-[12px] font-medium text-violet-600 shrink-0 ml-2">⚡ {s.xp.toLocaleString()}</span>
                   </div>
                   <PBar value={s.xp} max={5000} color="bg-violet-400" />
                 </div>
@@ -701,110 +724,144 @@ function DashboardPage({ data, onNavigate, openModal }: {
 
 // ─── Courses ──────────────────────────────────────────────────────────────────
 function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
+  const iconMap: Record<string, any> = {
+    "Data Analytics": BarChart2,
+    "VLSI Design": Zap,
+    "Embedded Systems": Cpu,
+    "UX Design": Lightbulb,
+  };
+  const Icon = iconMap[course.title] || GraduationCap;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group flex items-center gap-5 p-4 bg-white hover:bg-slate-50 transition-all cursor-pointer border-b border-slate-50 last:border-0"
+      className="group p-6 bg-white hover:bg-slate-50 transition-all cursor-pointer border-b border-slate-50 last:border-0 relative"
       onClick={() => onView(course)}
     >
-      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", course.bgColor || "bg-indigo-600")}>
-        {React.isValidElement(course.icon) ? React.cloneElement(course.icon as React.ReactElement<{ className?: string }>, { className: "w-7 h-7 text-white" }) : <BookMarked className="w-7 h-7 text-white" />}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-            {course.title}
-          </h3>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{course.difficulty}</span>
+      <div className="flex items-start gap-6">
+        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105", course.bgColor || "bg-blue-600")}>
+           <Icon className="w-8 h-8 text-white" />
         </div>
-        <p className="text-[13px] text-slate-500 line-clamp-1 mb-2">{course.description}</p>
-        <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {course.duration}</span>
-          <span className="flex items-center gap-1.5"><Layers className="w-3 h-3" /> {course.modules?.length} Modules</span>
-          {course.progress > 0 && <span className="text-blue-600">{course.progress}% Complete</span>}
+        
+        <div className="flex-1 min-w-0 pt-1">
+          <div className="flex items-center gap-3 mb-1.5">
+            <h3 className="text-[17px] font-medium text-slate-900 group-hover:text-blue-600 transition-colors tracking-tight">{course.title}</h3>
+            <span className="px-3 py-0.5 rounded-lg bg-blue-50 text-blue-600 text-[11px] font-medium uppercase tracking-wider">{course.difficulty}</span>
+            {course.enrolled && <span className="px-3 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-[11px] font-medium uppercase tracking-wider">Enrolled</span>}
+          </div>
+          
+          <p className="text-[14px] text-slate-500 line-clamp-1 mb-4 leading-relaxed font-medium">{course.description}</p>
+          
+          <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-[12px] font-semibold text-slate-400">
+             <span>{course.modules?.length || 10} modules</span>
+             <span>35 lessons</span>
+             <span>42 hours</span>
+             <span className="text-slate-500">{course.category || "General"}</span>
+             <span className="flex items-center gap-1 text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-lg">
+                <HelpCircle className="w-3.5 h-3.5" /> 5 quiz Q
+             </span>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-end gap-3 mt-2">
+          <ChevronDown className="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(course);
+            }}
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity px-4 py-2 bg-slate-900 text-white hover:bg-blue-600 text-[11px] font-semibold rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+          >
+            <Edit3 className="w-3.5 h-3.5" /> Edit Course
+          </button>
         </div>
       </div>
-
-      <div className="p-2 rounded-full group-hover:bg-blue-50 transition-all">
-        <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500" />
+      
+      {/* Progress Bar at the bottom */}
+      <div className="mt-6 flex items-center gap-4">
+         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className={cn("h-full rounded-full transition-all duration-1000", course.bgColor || "bg-blue-600")} style={{ width: `${course.progress || 0}%` }} />
+         </div>
+         <span className="text-[12px] font-medium text-slate-400">{course.progress || 0}%</span>
       </div>
     </motion.div>
   );
 }
 
-function CoursesPage({ data, onView, onEdit }: { data: any; onView: (c: MentorCourse) => void; onEdit: (c: MentorCourse) => void }) {
-  const [filter, setFilter] = useState<string>("All Categories");
+function CoursesPage({ data, setSelectedCourse, setCourseViewMode, onEdit }: { 
+  data: any; 
+  setSelectedCourse: (c: MentorCourse | null) => void;
+  setCourseViewMode: (m: "list" | "detail" | "edit") => void;
+  onEdit: (c: MentorCourse) => void 
+}) {
+  const [activeTab, setActiveTab] = useState<"All" | "Enrolled" | "Available">("All");
   const [q, setQ] = useState("");
 
   const allCourses = [...(data.courses || []), ...mentorCoursesCatalog.filter(c => !(data.courses || []).find((sc: any) => sc.title === c.title))];
-  const categories = ["All Categories", ...Array.from(new Set(allCourses.map(c => c.category)))];
 
   const filtered = allCourses.filter(c => {
-    const matchesFilter = filter === "All Categories" || c.category === filter;
+    const matchesTab = activeTab === "All" || (activeTab === "Enrolled" ? c.enrolled : !c.enrolled);
     const matchesSearch = (c.title || "").toLowerCase().includes(q.toLowerCase()) || (c.description || "").toLowerCase().includes(q.toLowerCase());
-    return matchesFilter && matchesSearch;
+    return matchesTab && matchesSearch;
   });
+
+  const enrolledCount = allCourses.filter(c => c.enrolled).length;
 
   return (
     <PageShell 
-      title="Engineering Catalog" 
-      subtitle={`Empowering mentors with ${allCourses.length} premium industrial paths`}
+      title="Course Library" 
+      subtitle={`${allCourses.length} courses · ${enrolledCount} enrolled`}
       action={
         <div className="flex gap-3">
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="h-11 px-6 bg-white border border-slate-200 text-slate-600 text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-sm flex items-center gap-2"
-          >
-            <Upload className="w-4 h-4" /> Batch Import
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onEdit({} as any)}
-            className="h-11 px-6 bg-[#0f172a] text-white text-[13px] font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-slate-200 flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" /> Architect Path
-          </motion.button>
+          <button className="h-11 px-6 bg-white border border-slate-200 text-slate-600 text-[13px] font-medium rounded-2xl flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+            <Upload className="w-4 h-4 text-slate-400" /> Upload Course
+          </button>
+          <button onClick={() => onEdit({} as any)} className="h-11 px-6 bg-[#0f172a] text-white text-[13px] font-medium rounded-2xl flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+            <Plus className="w-5 h-5" /> Add Course
+          </button>
         </div>
       }
     >
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex gap-2 bg-white p-1.5 rounded-[1.25rem] border border-slate-100 shadow-sm overflow-x-auto max-w-full">
-            {categories.map((cat) => (
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+          <div className="flex gap-3 p-1 bg-white rounded-full border border-slate-100 shadow-sm">
+            {["All", "Enrolled", "Available"].map((t) => (
               <button 
-                key={cat} 
-                onClick={() => setFilter(cat)}
+                key={t} 
+                onClick={() => setActiveTab(t as any)}
                 className={cn(
-                  "px-5 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all",
-                  filter === cat ? "bg-slate-900 text-white shadow-lg" : "text-slate-500 hover:bg-slate-50"
+                  "px-6 py-2 rounded-full text-[13px] font-medium transition-all",
+                  activeTab === t ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-800"
                 )}
               >
-                {cat}
+                {t}
               </button>
             ))}
           </div>
           <div className="w-full md:w-80">
-            <SearchInput value={q} onChange={setQ} placeholder="Search engineering paths..." />
+            <SearchInput value={q} onChange={setQ} placeholder="Search courses..." />
           </div>
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-[1.85rem] overflow-hidden divide-y divide-slate-50 shadow-sm">
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden divide-y divide-slate-50 shadow-sm">
           {filtered.map(c => (
-            <CourseItem key={c.id} course={c} onView={onView} onEdit={onEdit} />
+            <CourseItem 
+              key={c.id} 
+              course={c} 
+              onView={(course) => { setSelectedCourse(course); setCourseViewMode("detail"); }} 
+              onEdit={onEdit} 
+            />
           ))}
         </div>
 
         {filtered.length === 0 && (
-          <div className="py-32 text-center bg-white rounded-[2.25rem] border border-slate-100 shadow-sm">
+          <div className="py-32 text-center bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
               <Search className="w-10 h-10" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No paths found</h3>
-            <p className="text-slate-400 text-[14px] font-medium">Try adjusting your search or category filters.</p>
+            <h3 className="text-[17px] font-medium tracking-tight text-slate-900 mb-2">No courses found</h3>
+            <p className="text-slate-400 text-[14px] font-medium">Try adjusting your filters or search query.</p>
           </div>
         )}
       </div>
@@ -832,9 +889,10 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   return (
     <PageShell title="Mentors" subtitle={`${mentors.length} active mentors`}
       action={<BtnPrimary onClick={() => openModal("add-mentor")}><Plus className="w-4 h-4" />Add Mentor</BtnPrimary>}>
-      <Card>
+      <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100"><SearchInput value={q} onChange={setQ} placeholder="Search mentors…" /></div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
               <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Mentor</th>
@@ -886,6 +944,7 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </PageShell>
   );
@@ -900,7 +959,7 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
     .filter((s: any) => !q || (s.name || s.email || "").toLowerCase().includes(q.toLowerCase()))
     .map((s: any) => {
       const progress = seedNum(s.id, 90, 10);
-      const streak = seedNum(s.id, 14, 1);
+      const streak = s.streak || 0;
       const quizAvg = seedNum(s.id, 95, 60);
       const needsAttention = progress < 30 || streak < 2;
       const enrollment = enrollments.find((e: any) => e.student_id === s.id);
@@ -911,9 +970,10 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   return (
     <PageShell title="Mentees" subtitle={`${students.length} active students`}
       action={<BtnPrimary onClick={() => openModal("add-student")}><Plus className="w-4 h-4" />Add Mentee</BtnPrimary>}>
-      <Card>
+      <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100"><SearchInput value={q} onChange={setQ} placeholder="Search mentees…" /></div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
               <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Student</th>
@@ -967,6 +1027,7 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </PageShell>
   );
@@ -1018,7 +1079,7 @@ function RegistrationsPage({ data }: { data: any }) {
           { label: "Avg Completion",      value: "100%",             color: "text-blue-600",    icon: null },
         ].map((s) => (
           <Card key={s.label} className="p-4 text-center">
-            <p className={cn("text-[28px] font-bold", s.color)}>{s.value}</p>
+            <p className={cn("text-[28px] font-medium", s.color)}>{s.value}</p>
             <div className="flex items-center justify-center gap-1.5 mt-1">
               {s.icon && <s.icon className={cn("w-3.5 h-3.5", s.color)} />}
               <p className="text-[12px] text-slate-500">{s.label}</p>
@@ -1050,11 +1111,11 @@ function RegistrationsPage({ data }: { data: any }) {
             <Card key={p.id} className="p-5">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className={cn("w-11 h-11 rounded-full flex items-center justify-center text-[15px] font-bold text-white shrink-0", bg)}>
+                  <div className={cn("w-11 h-11 rounded-full flex items-center justify-center text-[15px] font-medium text-white shrink-0", bg)}>
                     {initials(p.name)}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[14px] font-bold text-slate-900 truncate">{p.name || "—"}</p>
+                    <p className="text-[14px] font-medium text-slate-900 truncate">{p.name || "—"}</p>
                     <p className="text-[12px] text-slate-400 truncate">{p.email || "—"}</p>
                   </div>
                 </div>
@@ -1154,7 +1215,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
               </div>
               <span className={cn("text-[12px] font-semibold", s.color)}>{stats[0].label === s.label ? "Active" : s.label.split(" ")[0]}</span>
             </div>
-            <p className={cn("text-[28px] font-bold", s.color)}>{s.value}</p>
+            <p className={cn("text-[28px] font-medium", s.color)}>{s.value}</p>
             <p className="text-[12px] text-slate-500 mt-0.5">{s.label}</p>
           </Card>
         ))}
@@ -1182,9 +1243,9 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             {(tab === "overview" || tab === "awaiting") && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[13px] font-bold text-slate-700 flex items-center gap-2">
+                  <h3 className="text-[13px] font-medium text-slate-700 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-amber-500" /> Awaiting Students
-                    <span className="text-amber-500 font-bold">{awaitingStudents.length}</span>
+                    <span className="text-amber-500 font-medium">{awaitingStudents.length}</span>
                   </h3>
                   <button className="text-[12px] text-blue-500">View all</button>
                 </div>
@@ -1209,9 +1270,9 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
             {(tab === "overview" || tab === "available") && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[13px] font-bold text-slate-700 flex items-center gap-2">
+                  <h3 className="text-[13px] font-medium text-slate-700 flex items-center gap-2">
                     <UserCheck className="w-4 h-4 text-blue-500" /> Mentor Availability
-                    <span className="text-blue-500 font-bold">{availableMentors.length} available</span>
+                    <span className="text-blue-500 font-medium">{availableMentors.length} available</span>
                   </h3>
                   <button className="text-[12px] text-blue-500">View all</button>
                 </div>
@@ -1227,7 +1288,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                         <span className="flex items-center gap-0.5 text-[12px] text-amber-500 font-medium">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />{m.rating}
                         </span>
-                        <span className="text-[12px] font-bold text-emerald-600">{m.slots} slots</span>
+                        <span className="text-[12px] font-medium text-emerald-600">{m.slots} slots</span>
                       </div>
                     </div>
                   ))}
@@ -1302,7 +1363,7 @@ function EnrollmentsPage({ data, openModal }: { data: any; openModal: (m: ModalK
           { label:"Avg Progress",      value: `${avgProgress}%`, color:"text-blue-600" },
         ].map((s) => (
           <Card key={s.label} className="p-5 text-center">
-            <p className={cn("text-[28px] font-bold", s.color)}>{s.value}</p>
+            <p className={cn("text-[28px] font-medium", s.color)}>{s.value}</p>
             <p className="text-[12px] text-slate-500 mt-1">{s.label}</p>
           </Card>
         ))}
@@ -1354,30 +1415,212 @@ function EnrollmentsPage({ data, openModal }: { data: any; openModal: (m: ModalK
 }
 
 // ─── Remaining pages (simpler implementations) ────────────────────────────────
-function GamesPage({ data }: { data: any }) {
+function GamesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
   const { games = [] } = data;
+  const supabase = createClient();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = games.find((g: any) => g.id === selectedId);
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editType, setEditType] = useState("");
+  const [editQuestions, setEditQuestions] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (selected) {
+      setEditTitle(selected.title || "");
+      setEditType(selected.type || "quiz");
+      setEditQuestions(Array.isArray(selected.questions) ? selected.questions : []);
+    }
+  }, [selected]);
+
+  const handleSave = async () => {
+    if (!selectedId) return;
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("games_quizzes")
+      .update({
+        title: editTitle,
+        type: editType,
+        questions: editQuestions
+      })
+      .eq("id", selectedId);
+    
+    setIsSaving(false);
+    if (error) {
+      alert("Error saving: " + error.message);
+    } else {
+      fetchAll();
+      setSelectedId(null);
+    }
+  };
+
+  if (selectedId && selected) {
+    return (
+      <PageShell 
+        title="Edit Game/Quiz" 
+        subtitle={`Modifying ${selected.title}`}
+        action={
+          <div className="flex gap-3">
+             <BtnSecondary onClick={() => setSelectedId(null)}>Cancel</BtnSecondary>
+             <BtnPrimary onClick={handleSave} disabled={isSaving}>
+               {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
+             </BtnPrimary>
+          </div>
+        }
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="p-6">
+              <h3 className="text-[14px] font-medium text-slate-900 mb-4 uppercase tracking-widest">Settings</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[12px] font-medium text-slate-400 uppercase mb-1.5 block">Game Title</label>
+                  <input 
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-medium focus:ring-2 focus:ring-slate-200 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium text-slate-400 uppercase mb-1.5 block">Game Type</label>
+                  <select 
+                    value={editType}
+                    onChange={(e) => setEditType(e.target.value)}
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-medium focus:ring-2 focus:ring-slate-200 outline-none"
+                  >
+                    <option value="quiz">Standard Quiz</option>
+                    <option value="kbc">KBC Style</option>
+                    <option value="coding">Coding Challenge</option>
+                  </select>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[14px] font-medium text-slate-900 uppercase tracking-widest">Question Bank</h3>
+                <BtnSecondary onClick={() => setEditQuestions([...editQuestions, { 
+                  id: `q-${Date.now()}`, 
+                  question: "New Question Text", 
+                  options: ["Option A", "Option B", "Option C", "Option D"], 
+                  correctIndex: 0, 
+                  difficulty: "easy" 
+                }])}>
+                  <Plus className="w-4 h-4" /> Add Question
+                </BtnSecondary>
+              </div>
+
+              <div className="space-y-6">
+                {editQuestions.map((q, idx) => (
+                  <div key={q.id || idx} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 group relative">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[12px] font-medium text-slate-400 shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <input 
+                          value={q.question}
+                          onChange={(e) => {
+                            const newQ = [...editQuestions];
+                            newQ[idx].question = e.target.value;
+                            setEditQuestions(newQ);
+                          }}
+                          className="w-full bg-transparent border-none text-[16px] font-medium text-slate-900 focus:ring-0 p-0 mb-4"
+                          placeholder="What is the question?"
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                           {q.options.map((opt: string, oIdx: number) => (
+                             <div key={oIdx} className="flex items-center gap-2">
+                               <input 
+                                 type="radio" 
+                                 name={`correct-${idx}`} 
+                                 checked={q.correctIndex === oIdx}
+                                 onChange={() => {
+                                   const newQ = [...editQuestions];
+                                   newQ[idx].correctIndex = oIdx;
+                                   setEditQuestions(newQ);
+                                 }}
+                                 className="w-4 h-4 text-blue-600"
+                               />
+                               <input 
+                                 value={opt}
+                                 onChange={(e) => {
+                                   const newQ = [...editQuestions];
+                                   newQ[idx].options[oIdx] = e.target.value;
+                                   setEditQuestions(newQ);
+                                 }}
+                                 className="flex-1 h-9 px-3 bg-white border border-slate-100 rounded-lg text-[13px] font-medium outline-none focus:border-blue-200"
+                               />
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setEditQuestions(editQuestions.filter((_, i) => i !== idx))}
+                        className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-4 pt-4 border-t border-slate-200/50">
+                       <select 
+                         value={q.difficulty}
+                         onChange={(e) => {
+                           const newQ = [...editQuestions];
+                           newQ[idx].difficulty = e.target.value;
+                           setEditQuestions(newQ);
+                         }}
+                         className="text-[11px] font-medium uppercase tracking-wider bg-white border border-slate-200 rounded-lg px-3 py-1.5 outline-none"
+                       >
+                         <option value="easy">Easy</option>
+                         <option value="medium">Medium</option>
+                         <option value="hard">Hard</option>
+                       </select>
+                       <span className="text-[11px] font-medium text-slate-400 uppercase">Difficulty</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
-    <PageShell title="Games & Quizzes" subtitle={`${games.length} games`}>
-      <Card>
+    <PageShell title="Games & Quizzes" subtitle={`${games.length} content templates`}>
+      <Card className="overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Title</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Type</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Questions</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Game Title</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Type</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Questions</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
             {games.map((g: any) => (
-              <tr key={g.id} className="hover:bg-slate-50/30">
-                <td className="px-5 py-3 text-[14px] font-semibold text-slate-800">{g.title}</td>
-                <td className="px-4 py-3"><Pill color="violet">{g.type || "quiz"}</Pill></td>
-                <td className="px-4 py-3 text-[13px] text-slate-600">{Array.isArray(g.questions) ? g.questions.length : 5}</td>
-                <td className="px-4 py-3"><Pill color={g.is_active ? "green" : "slate"}>{g.is_active ? "Active" : "Inactive"}</Pill></td>
+              <tr key={g.id} className="hover:bg-slate-50/50 transition-colors group">
+                <td className="px-6 py-4 text-[15px] font-medium text-slate-900 group-hover:text-violet-600 transition-colors">{g.title}</td>
+                <td className="px-6 py-4"><Pill color="violet">{g.type || "quiz"}</Pill></td>
+                <td className="px-6 py-4 text-[13px] font-medium text-slate-600">{Array.isArray(g.questions) ? g.questions.length : 0} Items</td>
+                <td className="px-6 py-4"><Pill color={g.is_active ? "green" : "slate"}>{g.is_active ? "Live" : "Inactive"}</Pill></td>
+                <td className="px-6 py-4 text-right">
+                   <button 
+                     onClick={() => setSelectedId(g.id)}
+                     className="px-4 py-2 bg-slate-900 text-white text-[11px] font-medium uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                   >
+                     Manage
+                   </button>
+                </td>
               </tr>
             ))}
-            {games.length === 0 && <tr><td colSpan={4} className="px-4 py-16 text-center text-[13px] text-slate-400">No games yet</td></tr>}
           </tbody>
         </table>
       </Card>
@@ -1385,33 +1628,370 @@ function GamesPage({ data }: { data: any }) {
   );
 }
 
-function QuestionnairesPage({ data }: { data: any }) {
-  const { questionnaires = [] } = data;
+function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire: any, onBack: () => void, onSave: () => void }) {
+  const [title, setTitle] = useState(questionnaire.title || "");
+  const [description, setDescription] = useState(questionnaire.description || "");
+  const [questions, setQuestions] = useState<any[]>(Array.isArray(questionnaire.questions) ? JSON.parse(JSON.stringify(questionnaire.questions)) : []);
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = createClient();
+
+  const saveChanges = async () => {
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('questionnaires')
+      .update({ title, description, questions })
+      .eq('id', questionnaire.id);
+
+    setIsSaving(false);
+    if (error) {
+      alert("Error saving: " + error.message);
+    } else {
+      onSave();
+      onBack();
+    }
+  };
+
+  const addPhase = () => {
+    setQuestions([...questions, {
+      step: questions.length + 1,
+      title: "New Phase",
+      icon: "Star",
+      color: "#3b82f6",
+      questions: []
+    }]);
+  };
+
+  const removePhase = (idx: number) => {
+    if (!confirm("Are you sure you want to remove this entire phase?")) return;
+    setQuestions(questions.filter((_, i) => i !== idx));
+  };
+
+  const addQuestion = (phaseIdx: number) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions.push({
+      id: `q-${Date.now()}`,
+      text: "New Question Text?",
+      type: "chips",
+      options: ["Option 1", "Option 2"]
+    });
+    setQuestions(newQs);
+  };
+
+  const removeQuestion = (phaseIdx: number, qIdx: number) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions = newQs[phaseIdx].questions.filter((_: any, i: number) => i !== qIdx);
+    setQuestions(newQs);
+  };
+
+  const updateQuestion = (phaseIdx: number, qIdx: number, field: string, val: any) => {
+    const newQs = [...questions];
+    newQs[phaseIdx].questions[qIdx][field] = val;
+    setQuestions(newQs);
+  };
+
   return (
-    <PageShell title="Questionnaires" subtitle="Onboarding questionnaire templates">
-      <Card>
+    <div className="space-y-6 pb-32 max-w-5xl mx-auto">
+      {/* Premium Header */}
+      <Card className="p-8 bg-slate-900 border-none shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/20 rounded-full -mr-40 -mt-40 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-32 -mb-32 blur-2xl" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="flex-1 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg shadow-blue-500/30">
+                LIVE EDITOR
+              </div>
+              <div className="h-1 w-1 rounded-full bg-white/20" />
+              <h1 className="text-white/40 text-[12px] font-medium uppercase tracking-widest">Questionnaire Settings</h1>
+            </div>
+            
+            <div className="space-y-2">
+              <input 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+                className="w-full bg-transparent border-none text-3xl md:text-5xl font-black text-white p-0 focus:ring-0 placeholder:text-white/10 tracking-tight" 
+                placeholder="Questionnaire Title"
+              />
+              <textarea 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                className="w-full bg-transparent border-none text-slate-400 text-[16px] p-0 focus:ring-0 resize-none min-h-[40px] placeholder:text-white/20 leading-relaxed" 
+                placeholder="Brief description of this questionnaire..."
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={onBack}
+              className="h-12 px-6 bg-white/5 hover:bg-white/10 text-white font-medium rounded-2xl flex items-center gap-2 transition-all border border-white/10"
+            >
+              <ArrowLeft className="w-4 h-4" /> Cancel
+            </button>
+            <button 
+              onClick={saveChanges}
+              disabled={isSaving}
+              className="h-12 px-8 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+            >
+              {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              SAVE CHANGES
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Main Content Areas */}
+      <div className="space-y-16 mt-12">
+        {questions.map((step: any, sIdx: number) => (
+          <div key={sIdx} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${sIdx * 100}ms` }}>
+            <div className="flex items-center gap-6 group">
+              <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-[18px] shadow-xl ring-4 ring-slate-100">
+                {sIdx + 1}
+              </div>
+              <div className="flex-1 flex items-center gap-4">
+                <input 
+                  value={step.title}
+                  onChange={(e) => {
+                    const newQs = [...questions];
+                    newQs[sIdx].title = e.target.value;
+                    setQuestions(newQs);
+                  }}
+                  className="text-[24px] font-black text-slate-800 bg-transparent border-none p-0 focus:ring-0 flex-1 placeholder:text-slate-200"
+                  placeholder="Phase Title (e.g. Education & Language)"
+                />
+                <button 
+                  onClick={() => removePhase(sIdx)}
+                  className="opacity-0 group-hover:opacity-100 p-3 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="hidden md:block h-[2px] bg-slate-100 flex-[0.5] rounded-full" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-8">
+              {step.questions.map((q: any, qIdx: number) => (
+                <Card key={qIdx} className="p-8 border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500 group/q bg-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-2 h-full bg-slate-50 group-hover/q:bg-blue-600 transition-colors" />
+                  
+                  <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-row lg:flex-col items-center justify-between lg:justify-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 group-hover/q:text-blue-600 group-hover/q:bg-blue-50 flex items-center justify-center font-black text-[15px] transition-all border border-slate-100 group-hover/q:border-blue-100">
+                        {String(qIdx + 1).padStart(2, '0')}
+                      </div>
+                      <button 
+                        onClick={() => removeQuestion(sIdx, qIdx)}
+                        className="p-3 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all lg:mt-2"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="flex-1 space-y-6">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                        <div className="w-full sm:w-[220px]">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Display Type</label>
+                          <select 
+                            value={q.type} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "type", e.target.value)}
+                            className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer"
+                          >
+                            <option value="input">Standard Text Input</option>
+                            <option value="chips">Multiple Choice Chips</option>
+                          </select>
+                        </div>
+                        <div className="w-full sm:w-[120px]">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Q-Label</label>
+                          <input 
+                            value={q.number || `Q${qIdx + 1}.`} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "number", e.target.value)}
+                            className="w-full h-11 text-[13px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 border border-blue-100 rounded-xl px-4 outline-none focus:ring-2 focus:ring-blue-200 transition-all text-center"
+                          />
+                        </div>
+                        <div className="flex-1" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Question Content</label>
+                        <textarea 
+                          value={q.text || q.question || ""} 
+                          onChange={(e) => updateQuestion(sIdx, qIdx, q.text ? "text" : "question", e.target.value)}
+                          placeholder="What would you like to ask students?"
+                          rows={2}
+                          className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-6 py-4 text-[17px] font-medium text-slate-900 focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-50 transition-all outline-none placeholder:text-slate-200 leading-relaxed"
+                        />
+                      </div>
+
+                      {(q.type === "chips" || q.options) && (
+                        <div className="space-y-4 pt-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Options List</label>
+                            <span className="text-[10px] text-slate-300 font-medium">Separate with commas</span>
+                          </div>
+                          <input 
+                            value={Array.isArray(q.options) ? q.options.join(", ") : ""} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "options", e.target.value.split(",").map(s => s.trim()))}
+                            placeholder="e.g. Option A, Option B, Option C..."
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-blue-400 transition-all outline-none shadow-sm"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {Array.isArray(q.options) && q.options.filter(Boolean).map((opt: string, oi: number) => (
+                              <div key={oi} className="px-4 py-1.5 bg-blue-50/50 border border-blue-100 rounded-xl text-[12px] text-blue-600 font-medium flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                {opt}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {q.type === "input" && (
+                        <div className="space-y-2 pt-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Input Hint (Placeholder)</label>
+                          <input 
+                            value={q.placeholder || ""} 
+                            onChange={(e) => updateQuestion(sIdx, qIdx, "placeholder", e.target.value)}
+                            placeholder="e.g. Type your college name here..."
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-blue-400 transition-all outline-none shadow-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+              <button 
+                onClick={() => addQuestion(sIdx)}
+                className="w-full py-6 bg-white border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-300 flex items-center justify-center gap-3 font-black text-[15px] uppercase tracking-widest"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all">
+                  <Plus className="w-5 h-5" />
+                </div>
+                Add New Question to this phase
+              </button>
+            </div>
+          </div>
+        ))}
+
+        <button 
+          onClick={addPhase}
+          className="w-full py-12 bg-slate-50/50 border-4 border-dashed border-slate-100 rounded-[40px] text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all duration-500 flex flex-col items-center justify-center gap-4 group"
+        >
+          <div className="w-16 h-16 rounded-[24px] bg-white shadow-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Plus className="w-8 h-8" />
+          </div>
+          <span className="font-black text-[18px] uppercase tracking-[0.2em] ml-2">Create New Phase</span>
+        </button>
+      </div>
+
+      {/* Sticky Bottom Actions */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-[32px] shadow-2xl flex items-center gap-6 animate-in slide-in-from-bottom-10 duration-700">
+        <div className="hidden md:block">
+          <p className="text-white text-[14px] font-medium tracking-tight">{questions.length} Phases</p>
+          <p className="text-white/40 text-[10px] font-medium uppercase tracking-widest">Live Configuration</p>
+        </div>
+        <div className="w-px h-8 bg-white/10 hidden md:block" />
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="text-white/60 hover:text-white text-[14px] font-medium px-4">Discard</button>
+          <button 
+            onClick={saveChanges}
+            disabled={isSaving}
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-3 shadow-xl shadow-blue-900/40 transition-all active:scale-95"
+          >
+            {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            FINALIZE & PUBLISH
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function QuestionnairesPage({ data, onView, onEdit }: { data: any, onView: (q: any) => void, onEdit: (q: any) => void }) {
+  const { questionnaires = [] } = data;
+
+  const courseQuestions = questionnaires.filter((q: any) => 
+    q.title.toLowerCase().includes("course") || 
+    q.title.toLowerCase().includes("bank")
+  );
+  
+  const onboardingQuestionnaires = questionnaires.filter((q: any) => 
+    !courseQuestions.some((cq: any) => cq.id === q.id)
+  );
+
+  const renderTable = (list: any[], title: string) => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 px-2">
+        <div className="h-6 w-1 bg-blue-600 rounded-full" />
+        <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400">{title}</h3>
+      </div>
+      <Card className="overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50/50 border-b border-slate-100">
             <tr>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Title</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Target Role</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Description</th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Active</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Flow Title</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Target Role</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Total Questions</th>
+              <th className="px-6 py-4 text-left text-[11px] font-medium text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-right text-[11px] font-medium text-slate-400 uppercase tracking-widest">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {questionnaires.map((q: any) => (
-              <tr key={q.id} className="hover:bg-slate-50/30">
-                <td className="px-5 py-3 text-[14px] font-semibold text-slate-800">{q.title}</td>
-                <td className="px-4 py-3"><Pill color="blue">{q.target_role || "all"}</Pill></td>
-                <td className="px-4 py-3 text-[13px] text-slate-500">{(q.description || "—").slice(0, 80)}</td>
-                <td className="px-4 py-3"><Pill color={q.is_active ? "green" : "slate"}>{q.is_active ? "Yes" : "No"}</Pill></td>
+            {list.map((q: any) => {
+              const totalQs = Array.isArray(q.questions) 
+                ? q.questions.reduce((acc: number, step: any) => acc + (step.questions?.length || 0), 0)
+                : 0;
+              
+              return (
+                <tr key={q.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-[15px] font-medium text-slate-900">{q.title}</span>
+                      <span className="text-[12px] text-slate-400 font-medium truncate max-w-[300px]">{q.description}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4"><Pill color="blue">{q.target_role || "all"}</Pill></td>
+                  <td className="px-6 py-4 text-[13px] font-medium text-slate-600">{totalQs} Questions</td>
+                  <td className="px-6 py-4"><Pill color={q.is_active ? "green" : "slate"}>{q.is_active ? "Live" : "Draft"}</Pill></td>
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <button 
+                      onClick={() => onView(q)}
+                      className="text-[11px] font-extrabold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      View
+                    </button>
+                    <button 
+                      onClick={() => onEdit(q)}
+                      className="text-[11px] font-extrabold text-slate-600 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {list.length === 0 && (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-slate-400 text-[13px] font-medium italic">
+                  No {title.toLowerCase()} found.
+                </td>
               </tr>
-            ))}
-            {questionnaires.length === 0 && <tr><td colSpan={4} className="px-4 py-16 text-center text-[13px] text-slate-400">No questionnaires</td></tr>}
+            )}
           </tbody>
         </table>
       </Card>
+    </div>
+  );
+
+  return (
+    <PageShell title="Questionnaires" subtitle="Onboarding and Course question templates">
+      <div className="space-y-12">
+        {renderTable(onboardingQuestionnaires, "Onboarding Flow")}
+        {renderTable(courseQuestions, "Course Questions")}
+      </div>
     </PageShell>
   );
 }
@@ -1430,7 +2010,7 @@ function CirclesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
               <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center mb-3">
                 <CircleIcon className="w-5 h-5 text-violet-600" />
               </div>
-              <h3 className="text-[15px] font-bold text-slate-800">{c.name}</h3>
+              <h3 className="text-[15px] font-medium text-slate-800">{c.name}</h3>
               <p className="text-[12px] text-slate-500 mt-1 line-clamp-2">{c.description || "No description"}</p>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
                 <span className="text-[12px] text-slate-400">{mentor?.name || "No mentor"}</span>
@@ -1519,6 +2099,177 @@ function ReviewsPage({ data }: { data: any }) {
   );
 }
 
+function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
+  const [feedback, setFeedback] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const fetchFeedback = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { data: dbData, error } = await supabase
+      .from("platform_feedback")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    // Read localStorage fallback feedback as well, merge them!
+    let localFeedback: any[] = [];
+    try {
+      const stored = localStorage.getItem("local_platform_feedback");
+      if (stored) {
+        localFeedback = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (error) {
+      console.error("DB error reading platform_feedback, using local feedback only:", error);
+      setFeedback(localFeedback.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    } else {
+      // Merge db and local, avoid duplicates based on id
+      const allFeedbackMap = new Map();
+      localFeedback.forEach(item => allFeedbackMap.set(item.id, item));
+      (dbData || []).forEach(item => allFeedbackMap.set(item.id, item));
+      
+      const merged = Array.from(allFeedbackMap.values()).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setFeedback(merged);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchFeedback();
+  }, [fetchFeedback]);
+
+  const handleDeleteFeedback = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this feedback?")) return;
+    const supabase = createClient();
+    
+    // Delete from DB
+    await supabase.from("platform_feedback").delete().eq("id", id);
+    
+    // Delete from LocalStorage
+    try {
+      const stored = localStorage.getItem("local_platform_feedback");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const filtered = parsed.filter((item: any) => item.id !== id);
+        localStorage.setItem("local_platform_feedback", JSON.stringify(filtered));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
+    fetchFeedback();
+  };
+
+  return (
+    <PageShell 
+      title="User Feedback" 
+      subtitle={`${feedback.length} submissions received`}
+      action={
+        <BtnSecondary onClick={fetchFeedback}>
+          <RefreshCw className="w-4 h-4" /> Refresh
+        </BtnSecondary>
+      }
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {feedback.map((f: any) => (
+          <Card key={f.id} className="p-5 flex flex-col justify-between h-full hover:shadow-md transition-shadow relative group">
+            <div>
+              <div className="flex items-start justify-between mb-3 gap-2">
+                <div className="flex items-center gap-3">
+                  <Av name={f.user_name || "Anonymous"} size={9} />
+                  <div>
+                    <h4 className="text-[14px] font-semibold text-slate-800 leading-tight">
+                      {f.user_name || "Anonymous User"}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 font-semibold leading-none mt-1">
+                      {f.user_email || "no-email@mentorhub.com"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end shrink-0">
+                  <span className={cn(
+                    "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider leading-none",
+                    f.user_role === "student" ? "bg-indigo-50 text-indigo-600" :
+                    f.user_role === "mentor" ? "bg-emerald-50 text-emerald-600" :
+                    "bg-slate-100 text-slate-600"
+                  )}>
+                    {f.user_role || "User"}
+                  </span>
+                  <span className="text-[10px] text-slate-400 mt-1.5 font-bold">
+                    {timeAgo(f.created_at)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 mt-3">
+                <p className="text-[13.5px] text-slate-600 font-semibold leading-relaxed whitespace-pre-line">
+                  {f.message}
+                </p>
+              </div>
+
+              {f.image_url && (
+                <div className="mt-4 rounded-xl overflow-hidden border border-slate-100 max-h-48 flex justify-center bg-slate-50 cursor-pointer" onClick={() => setSelectedImage(f.image_url)}>
+                  <img src={f.image_url} alt="Attached feedback" className="object-cover w-full h-full max-h-48 hover:scale-102 transition-transform" />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center shrink-0">
+              <span className="text-[10px] text-slate-400 font-medium font-lato">
+                Received: {new Date(f.created_at).toLocaleString()}
+              </span>
+              <button 
+                onClick={() => handleDeleteFeedback(f.id)}
+                className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100"
+                title="Delete Feedback"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </Card>
+        ))}
+
+        {loading && (
+          <div className="col-span-full py-16 flex flex-col items-center justify-center text-slate-400 gap-2">
+            <RefreshCw className="w-6 h-6 animate-spin text-indigo-500" />
+            <span className="text-sm font-semibold">Loading platform feedback...</span>
+          </div>
+        )}
+
+        {!loading && feedback.length === 0 && (
+          <div className="col-span-full py-20 text-center border border-dashed border-slate-200 rounded-3xl bg-white flex flex-col items-center justify-center p-6">
+            <MessageCircle className="w-12 h-12 text-slate-300 mb-3" />
+            <h3 className="text-slate-700 font-semibold mb-1">No Feedback Received</h3>
+            <p className="text-slate-400 text-xs max-w-sm">
+              All feedback submitted through the student or mentor floating action buttons will show up here in real-time.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Image Zoom Modal */}
+      {selectedImage && (
+        <Dialog open={true} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-2xl p-0 overflow-hidden bg-black flex items-center justify-center border-none shadow-none rounded-2xl">
+            <div className="relative w-full max-h-[85vh] flex justify-center bg-black/95">
+              <button onClick={() => setSelectedImage(null)} className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+              <img src={selectedImage} alt="Zoomed view" className="object-contain max-h-[80vh] w-full" />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </PageShell>
+  );
+}
+
 function InspirationPage({ data, openModal }: { data: any; openModal: (m: ModalKey) => void }) {
   const { inspiration = [] } = data;
   return (
@@ -1591,7 +2342,7 @@ function GratitudeWallPage({ data }: { data: any }) {
             <Heart className="w-5 h-5 text-rose-400 mb-3 fill-rose-200" />
             <p className="text-[14px] text-slate-700 italic">"{p.message_content || "—"}"</p>
             {p.display_name && <p className="text-[12px] text-slate-400 mt-3">— {p.display_name}{p.is_anonymous?" (anon)":""}</p>}
-            {p.amount && <p className="text-[13px] font-bold text-emerald-600 mt-2">₹{Number(p.amount).toLocaleString()}</p>}
+            {p.amount && <p className="text-[13px] font-medium text-emerald-600 mt-2">₹{Number(p.amount).toLocaleString()}</p>}
           </Card>
         ))}
         {gratitude_messages.length === 0 && (
@@ -1612,17 +2363,17 @@ function CSRSponsorsPage({ data }: { data: any }) {
         {csr_sponsors.map((s: any) => (
           <Card key={s.id} className="p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-600">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-medium text-slate-600">
                 {s.avatar_initials || initials(s.name)}
               </div>
               <div>
-                <h3 className="text-[15px] font-bold text-slate-800">{s.name}</h3>
+                <h3 className="text-[15px] font-medium text-slate-800">{s.name}</h3>
                 <p className="text-[12px] text-slate-400">{s.industry || "—"}</p>
               </div>
             </div>
             <p className="text-[12px] text-slate-500 line-clamp-2">{s.description || "—"}</p>
             <div className="flex justify-between mt-3 pt-3 border-t border-slate-100">
-              {s.current_amount && <p className="text-[13px] font-bold text-emerald-600">₹{Number(s.current_amount).toLocaleString()}</p>}
+              {s.current_amount && <p className="text-[13px] font-medium text-emerald-600">₹{Number(s.current_amount).toLocaleString()}</p>}
               <Pill color={s.status==="active"?"green":"slate"}>{s.status||"active"}</Pill>
             </div>
           </Card>
@@ -1637,12 +2388,213 @@ function CSRSponsorsPage({ data }: { data: any }) {
   );
 }
 
+
+function FeaturesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
+  const supabase = createClient();
+  const flags = data.feature_flags || [];
+  const [isSaving, setIsSaving] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newFeature, setNewFeature] = useState({ key: '', title: '', category: 'student' });
+
+  const toggleFeature = async (id: string, currentStatus: boolean) => {
+    setIsSaving(true);
+    const { error } = await supabase.from('feature_flags').update({ is_enabled: !currentStatus }).eq('id', id);
+    if (error) alert("Error: " + error.message);
+    else {
+      fetchAll();
+      window.dispatchEvent(new Event('storage'));
+    }
+    setIsSaving(false);
+  };
+
+  const handleCreateFeature = async () => {
+    if (!newFeature.key || !newFeature.title) return alert("Key and Title are required.");
+    setIsSaving(true);
+    const { error } = await supabase.from('feature_flags').insert([{
+      key: newFeature.key,
+      title: newFeature.title,
+      category: newFeature.category,
+      is_enabled: true
+    }]);
+    setIsSaving(false);
+    if (error) alert("Error: " + error.message);
+    else {
+      setShowAddModal(false);
+      setNewFeature({ key: '', title: '', category: 'student' });
+      fetchAll();
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+
+  const studentFeatures = flags.filter((f: any) => f.category === 'student');
+  const mentorFeatures = flags.filter((f: any) => f.category === 'mentor');
+  const globalFeatures = flags.filter((f: any) => f.category !== 'student' && f.category !== 'mentor');
+
+  return (
+    <PageShell title="Feature Controls" subtitle="Dynamically enable or disable platform modules." action={<BtnPrimary onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4" /> Add Feature</BtnPrimary>}>
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 className="text-[16px] font-semibold text-slate-900">Add New Feature</h2>
+              <button onClick={() => setShowAddModal(false)} className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 shadow-sm"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Feature Key (Unique)</label>
+                <input value={newFeature.key} onChange={(e) => setNewFeature({...newFeature, key: e.target.value})} placeholder="e.g. student_portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Display Title</label>
+                <input value={newFeature.title} onChange={(e) => setNewFeature({...newFeature, title: e.target.value})} placeholder="e.g. My Portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Portal Category</label>
+                <select value={newFeature.category} onChange={(e) => setNewFeature({...newFeature, category: e.target.value})} className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-blue-500 cursor-pointer">
+                  <option value="student">Student Portal</option>
+                  <option value="mentor">Mentor Portal</option>
+                  <option value="global">Global Settings</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <BtnSecondary onClick={() => setShowAddModal(false)}>Cancel</BtnSecondary>
+              <BtnPrimary onClick={handleCreateFeature} disabled={isSaving}>{isSaving ? "Saving..." : "Create Feature"}</BtnPrimary>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="p-6">
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-5 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-blue-500" /> Student Portal Features</h3>
+          <div className="space-y-1">
+            {studentFeatures.map((f: any) => (
+              <div key={f.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">{f.title}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Key: {f.key}</p>
+                </div>
+                <button onClick={() => toggleFeature(f.id, f.is_enabled)} disabled={isSaving} className={`w-11 h-6 rounded-full relative transition-colors ${f.is_enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${f.is_enabled ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+            ))}
+            {studentFeatures.length === 0 && <p className="text-sm text-slate-400 italic">No features found. Run migration.</p>}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-5 flex items-center gap-2"><UserCheck className="w-5 h-5 text-violet-500" /> Mentor Portal Features</h3>
+          <div className="space-y-1">
+            {mentorFeatures.map((f: any) => (
+              <div key={f.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">{f.title}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Key: {f.key}</p>
+                </div>
+                <button onClick={() => toggleFeature(f.id, f.is_enabled)} disabled={isSaving} className={`w-11 h-6 rounded-full relative transition-colors ${f.is_enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${f.is_enabled ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+            ))}
+            {mentorFeatures.length === 0 && <p className="text-sm text-slate-400 italic">No features found. Run migration.</p>}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-5 flex items-center gap-2"><Settings className="w-5 h-5 text-slate-500" /> Global / Other Features</h3>
+          <div className="space-y-1">
+            {globalFeatures.map((f: any) => (
+              <div key={f.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">{f.title}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Key: {f.key}</p>
+                </div>
+                <button onClick={() => toggleFeature(f.id, f.is_enabled)} disabled={isSaving} className={`w-11 h-6 rounded-full relative transition-colors ${f.is_enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${f.is_enabled ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+            ))}
+            {globalFeatures.length === 0 && <p className="text-sm text-slate-400 italic">No global features added yet.</p>}
+          </div>
+        </Card>
+      </div>
+    </PageShell>
+  );
+}
+
 function SettingsPage() {
+  const supabase = createClient();
+  const [flags, setFlags] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const fetchFlags = async () => {
+    let dbFlags: any[] = [];
+    try {
+      const { data, error } = await supabase.from('feature_flags').select('*').order('category', { ascending: false });
+      if (!error && data) {
+        dbFlags = data;
+      }
+    } catch (e) {
+      console.warn("Supabase fetch error for settings toggles:", e);
+    }
+
+    const defaultFlags = [
+      { key: 'student_dashboard', title: 'Student Dashboard', category: 'student', is_enabled: true },
+      { key: 'student_courses', title: 'Student Learning Paths', category: 'student', is_enabled: true },
+      { key: 'student_games', title: 'Student Games & Quizzes', category: 'student', is_enabled: true },
+      { key: 'student_game_snakes', title: 'Game: Snake & Ladder', category: 'student', is_enabled: true },
+      { key: 'student_game_ludo', title: 'Game: Ludo Board', category: 'student', is_enabled: true },
+      { key: 'student_game_kbc', title: 'Game: KBC Quiz', category: 'student', is_enabled: true },
+      { key: 'student_notes', title: 'Student Personal Notes', category: 'student', is_enabled: true },
+      { key: 'student_wellness', title: 'Student Wellness Tracker', category: 'student', is_enabled: true },
+      { key: 'student_gratitude', title: 'Student Gratitude Wall', category: 'student', is_enabled: true },
+      { key: 'mentor_dashboard', title: 'Mentor Dashboard', category: 'mentor', is_enabled: true },
+      { key: 'mentor_students', title: 'Mentor Students List', category: 'mentor', is_enabled: true },
+      { key: 'mentor_courses', title: 'Mentor Course Architect', category: 'mentor', is_enabled: true },
+      { key: 'mentor_sessions', title: 'Mentor Sessions & Notes', category: 'mentor', is_enabled: true },
+    ];
+
+    const merged = defaultFlags.map(def => {
+      const match = dbFlags.find(db => db.key === def.key);
+      return match ? { ...def, is_enabled: match.is_enabled, id: match.id } : def;
+    });
+
+    setFlags(merged);
+    localStorage.setItem('mentorhub_feature_flags', JSON.stringify(merged));
+  };
+
+  useEffect(() => {
+    fetchFlags();
+  }, []);
+
+  const toggleFeature = async (flag: any) => {
+    const updatedStatus = !flag.is_enabled;
+    const updatedFlags = flags.map(f => f.key === flag.key ? { ...f, is_enabled: updatedStatus } : f);
+    setFlags(updatedFlags);
+    localStorage.setItem('mentorhub_feature_flags', JSON.stringify(updatedFlags));
+
+    try {
+      const { data: existing } = await supabase.from('feature_flags').select('key').eq('key', flag.key).maybeSingle();
+      if (existing) {
+        await supabase.from('feature_flags').update({ is_enabled: updatedStatus }).eq('key', flag.key);
+      } else {
+        await supabase.from('feature_flags').insert({ key: flag.key, title: flag.title, category: flag.category, is_enabled: updatedStatus });
+      }
+    } catch (e) {
+      console.warn("Supabase update error for settings toggle:", e);
+    }
+    setIsSaving(false);
+    
+    // Broadcast event to sync local tabs
+    window.dispatchEvent(new Event('storage'));
+  };
+
   return (
     <PageShell title="Settings" subtitle="Platform configuration">
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[
-          { label:"Platform Name",             key:"platform_name",             placeholder:"MentorHub" },
+          { label:"Platform Name",             key:"platform_name",             placeholder:"Kind Mentor" },
           { label:"Support Email",             key:"support_email",             placeholder:"support@kindmentor.in" },
           { label:"Max Students per Mentor",   key:"max_students",              placeholder:"10" },
           { label:"Default Session Duration",  key:"session_duration",          placeholder:"60 minutes" },
@@ -1651,23 +2603,60 @@ function SettingsPage() {
             <FieldRow label={f.label}><TInput value="" onChange={() => {}} placeholder={f.placeholder} /></FieldRow>
           </Card>
         ))}
-        <Card className="p-5">
-          <h3 className="text-[14px] font-bold text-slate-800 mb-4">Feature Toggles</h3>
-          {[
-            "Gratitude Wall","Games & Quizzes","CSR Sponsors","Circles","Inspiration Feed",
-          ].map((t) => (
-            <div key={t} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-              <span className="text-[13px] text-slate-700">{t}</span>
-              <div className="w-10 h-5 rounded-full bg-slate-800 relative cursor-pointer">
-                <div className="absolute top-0.5 left-5 w-4 h-4 rounded-full bg-white shadow" />
+        
+        <Card className="p-6 md:col-span-2">
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-4">Database Feature Toggles (Real-Time Sync)</h3>
+          <p className="text-[12px] text-slate-500 mb-6 font-medium">Toggling these items will immediately update the active modules on both mobile student and mentor views in real-time.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-[13px] font-semibold text-blue-600 mb-3 border-b border-blue-50 pb-2">Student Portal Features</h4>
+              <div className="space-y-1">
+                {flags.filter(f => f.category === 'student').map((f) => (
+                  <div key={f.key} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                    <span className="text-[13px] text-slate-700 font-medium">{f.title}</span>
+                    <button 
+                      onClick={() => toggleFeature(f)} 
+                      disabled={isSaving} 
+                      className={`w-10 h-5 rounded-full relative transition-colors duration-200 cursor-pointer ${f.is_enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                    >
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${f.is_enabled ? 'left-5.5' : 'left-0.5'}`} />
+                    </button>
+                  </div>
+                ))}
+                {flags.filter(f => f.category === 'student').length === 0 && (
+                  <p className="text-[12px] text-slate-400 italic">No student features available.</p>
+                )}
               </div>
             </div>
-          ))}
+
+            <div>
+              <h4 className="text-[13px] font-semibold text-violet-600 mb-3 border-b border-violet-50 pb-2">Mentor Portal Features</h4>
+              <div className="space-y-1">
+                {flags.filter(f => f.category === 'mentor').map((f) => (
+                  <div key={f.key} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                    <span className="text-[13px] text-slate-700 font-medium">{f.title}</span>
+                    <button 
+                      onClick={() => toggleFeature(f)} 
+                      disabled={isSaving} 
+                      className={`w-10 h-5 rounded-full relative transition-colors duration-200 cursor-pointer ${f.is_enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                    >
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${f.is_enabled ? 'left-5.5' : 'left-0.5'}`} />
+                    </button>
+                  </div>
+                ))}
+                {flags.filter(f => f.category === 'mentor').length === 0 && (
+                  <p className="text-[12px] text-slate-400 italic">No mentor features available.</p>
+                )}
+              </div>
+            </div>
+          </div>
         </Card>
-        <Card className="p-5">
-          <h3 className="text-[14px] font-bold text-slate-800 mb-3">Danger Zone</h3>
+
+        <Card className="p-5 md:col-span-2">
+          <h3 className="text-[14px] font-medium text-slate-800 mb-3">Danger Zone</h3>
           <p className="text-[12px] text-slate-500 mb-4">Irreversible actions. Proceed with caution.</p>
-          <div className="flex flex-col gap-2">
+          <div className="flex gap-4">
             <button className="h-9 px-4 border border-red-200 text-red-600 text-[13px] font-medium rounded-xl hover:bg-red-50 text-left">Export All Data (CSV)</button>
             <button className="h-9 px-4 border border-red-200 text-red-600 text-[13px] font-medium rounded-xl hover:bg-red-50 text-left">Clear Test Data</button>
           </div>
@@ -1685,11 +2674,14 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
     students: [], mentors: [], courses: [], sessions: [], enrollments: [],
     reviews: [], messages: [], mapping: [], circles: [], registrations: [],
     questionnaires: [], inspiration: [], gratitude_messages: [], csr_sponsors: [],
-    games: [], studentQuiz: [], mentorQuiz: [],
+    games: [], studentQuiz: [], mentorQuiz: [], feature_flags: [],
   });
 
   const [selectedCourse, setSelectedCourse] = useState<MentorCourse | null>(null);
   const [courseViewMode, setCourseViewMode] = useState<"list" | "detail" | "edit">("list");
+
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<any | null>(null);
+  const [qViewMode, setQViewMode] = useState<"list" | "detail" | "edit">("list");
 
   const supabase = createClient();
 
@@ -1700,7 +2692,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
     const [students, mentors, courses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
-      games, studentQuiz, mentorQuiz] = await Promise.all([
+      games, studentQuiz, mentorQuiz, feature_flags] = await Promise.all([
       q(() => supabase.from("profiles").select("*").eq("role", "STUDENT").limit(200)),
       q(() => supabase.from("profiles").select("*").eq("role", "MENTOR").limit(200)),
       q(() => supabase.from("courses").select("*").limit(200)),
@@ -1718,11 +2710,39 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       q(() => supabase.from("games_quizzes").select("*").limit(200)),
       q(() => supabase.from("student_quiz_responses").select("*").limit(200)),
       q(() => supabase.from("mentor_quiz_responses").select("*").limit(200)),
+      q(() => supabase.from("feature_flags").select("*").limit(200)),
     ]);
+ 
+    const mappedCourses = courses.map((c: any) => {
+      let mapped = { ...c };
+      try {
+        if (c.description && c.description.trim().startsWith('{')) {
+          const parsed = JSON.parse(c.description);
+          if (parsed && typeof parsed === 'object') {
+            mapped = {
+              ...mapped,
+              description: parsed.description || "",
+              difficulty: parsed.difficulty || "Beginner",
+              duration: parsed.duration || "10 hours",
+              category: parsed.category || "General",
+              modules: parsed.modules || parsed.content || [],
+              content: parsed.modules || parsed.content || []
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to parse course description JSON", e);
+      }
+      
+      return {
+        ...mapped,
+        modules: mapped.content || mapped.modules || []
+      };
+    });
 
-    setData({ students, mentors, courses, sessions, enrollments, reviews, messages, mapping,
+    setData({ students, mentors, courses: mappedCourses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
-      games, studentQuiz, mentorQuiz });
+      games, studentQuiz, mentorQuiz, feature_flags });
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -1742,6 +2762,10 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
           return <CourseDetailsScreen 
             course={selectedCourse as any} 
             onBack={() => setCourseViewMode("list")} 
+            adminData={data}
+            secondaryActionButtonText="Edit Course"
+            onSecondaryActionClick={() => setCourseViewMode("edit")}
+            hideMarkAsComplete={true}
           />;
         }
         if (courseViewMode === "edit") {
@@ -1765,10 +2789,31 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
               console.log("Saving course data:", updatedData); 
               
               const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(updatedData.id);
+              
+              const serializedDescription = JSON.stringify({
+                description: updatedData.description || "",
+                difficulty: updatedData.difficulty || "Beginner",
+                duration: updatedData.duration || "10 hours",
+                category: updatedData.category || "General",
+                modules: (updatedData.modules || []).map((m: any) => ({
+                  id: m.id,
+                  title: m.title,
+                  description: m.description || "",
+                  enabled: m.enabled !== false,
+                  lessons: (m.lessons || []).map((l: any) => ({
+                    id: l.id,
+                    title: l.title,
+                    duration: l.duration || "15 mins",
+                    type: l.type || "video",
+                    enabled: l.enabled !== false
+                  }))
+                }))
+              });
+
               const payload = {
                 title: updatedData.title,
-                description: updatedData.description,
-                status: 'Active',
+                description: serializedDescription,
+                status: 'Active'
               };
 
               let error;
@@ -1781,10 +2826,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
               } else {
                 const { error: err } = await supabase
                   .from('courses')
-                  .insert({
-                    ...payload,
-                    id: updatedData.id
-                  });
+                  .insert(payload);
                 error = err;
               }
 
@@ -1800,7 +2842,8 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
         }
         return <CoursesPage 
           data={data} 
-          onView={(c) => { setSelectedCourse(c); setCourseViewMode("detail"); }}
+          setSelectedCourse={setSelectedCourse}
+          setCourseViewMode={setCourseViewMode}
           onEdit={(c) => { setSelectedCourse(c); setCourseViewMode("edit"); }}
         />;
       case "mentors":        return <MentorsPage data={data} openModal={openModal} />;
@@ -1808,8 +2851,20 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "registrations":  return <RegistrationsPage data={data} />;
       case "mapping":        return <MappingPage data={data} openModal={openModal} />;
       case "enrollments":    return <EnrollmentsPage data={data} openModal={openModal} />;
-      case "games":          return <GamesPage data={data} />;
-      case "questionnaires": return <QuestionnairesPage data={data} />;
+      case "games":          return <GamesPage data={data} fetchAll={fetchAll} />;
+      case "questionnaires": 
+        if ((qViewMode === "detail" || qViewMode === "edit") && selectedQuestionnaire) {
+          return <QuestionnaireManager 
+            questionnaire={selectedQuestionnaire} 
+            onBack={() => setQViewMode("list")} 
+            onSave={fetchAll}
+          />;
+        }
+        return <QuestionnairesPage 
+          data={data} 
+          onView={(q) => { setSelectedQuestionnaire(q); setQViewMode("detail"); }}
+          onEdit={(q) => { setSelectedQuestionnaire(q); setQViewMode("edit"); }}
+        />;
       case "circles":        return <CirclesPage data={data} openModal={openModal} />;
       case "sessions":       return <SessionsPage data={data} openModal={openModal} />;
       case "reviews":        return <ReviewsPage data={data} />;
@@ -1817,7 +2872,9 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "messages":       return <MessagesPage data={data} />;
       case "gratitude-wall": return <GratitudeWallPage data={data} />;
       case "csr-sponsors":   return <CSRSponsorsPage data={data} />;
+      case "features":       return <FeaturesPage data={data} fetchAll={fetchAll} />;
       case "settings":       return <SettingsPage />;
+      case "feedback":       return <FeedbackPage data={data} fetchAll={fetchAll} />;
       default:               return null;
     }
   };

@@ -116,7 +116,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-sans overflow-hidden"
+      className="fixed inset-0 z-50 bg-slate-50 flex flex-col font-inter overflow-hidden"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
@@ -134,12 +134,12 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
             <ArrowLeft className="w-4.5 h-4.5 text-slate-600" />
           </Button>
           <div className="flex-1">
-            <p className="text-slate-900 text-[15px] font-bold">Daily Inspiration Builder</p>
+            <p className="text-slate-900 text-[15px] font-medium">Daily Inspiration Builder</p>
             <p className="text-slate-400 text-[11px] font-medium mt-0.5">Guide and inspire your students every single day</p>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-full border border-amber-100 shadow-3xs shrink-0">
             <Sun className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-amber-700 text-[10.5px] font-bold">5 Day Streak</span>
+            <span className="text-amber-700 text-[10.5px] font-medium">5 Day Streak</span>
           </div>
         </div>
 
@@ -147,7 +147,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
         <div className="flex gap-1.5 bg-slate-100 rounded-xl p-1 shrink-0">
           <button
             onClick={() => setActiveTab("morning")}
-            className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-all ${
               activeTab === "morning" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -155,7 +155,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
           </button>
           <button
             onClick={() => setActiveTab("evening")}
-            className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-all ${
               activeTab === "evening" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -163,7 +163,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2.5 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-all ${
               activeTab === "history" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -190,7 +190,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                   <Sun className="w-5.5 h-5.5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 text-[15px] font-bold">Good Morning, {mentorName}! ☀️</h3>
+                  <h3 className="text-slate-800 text-[15px] font-medium">Good Morning, {mentorName}! ☀️</h3>
                   <p className="text-slate-400 text-[11px] font-medium mt-0.5">Share a motivational thought that inspires your students today.</p>
                 </div>
               </div>
@@ -209,7 +209,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                   <Button
                     onClick={() => handleSendMessage("thought")}
                     disabled={!morningText.trim() || isSending === "thought"}
-                    className="flex-1 h-11 rounded-xl text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 flex items-center justify-center gap-2 transition-all"
+                    className="flex-1 h-11 rounded-xl text-xs font-medium bg-violet-600 text-white hover:bg-violet-700 flex items-center justify-center gap-2 transition-all"
                   >
                     {isSending === "thought" ? (
                       <Check className="w-4 h-4 animate-bounce" />
@@ -222,7 +222,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                   <Button
                     variant="outline"
                     onClick={loadSuggestion}
-                    className="h-11 rounded-xl text-xs font-bold border-violet-200 text-violet-600 hover:bg-violet-50 flex items-center gap-1.5"
+                    className="h-11 rounded-xl text-xs font-medium border-violet-200 text-violet-600 hover:bg-violet-50 flex items-center gap-1.5"
                   >
                     <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Suggest
                   </Button>
@@ -260,7 +260,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                       <p className="text-slate-700 text-xs italic font-semibold leading-relaxed">
                         "{morningText || "Your motivational message will appear here for your students..."}"
                       </p>
-                      <p className="text-violet-400 text-[10px] font-bold mt-2 not-italic">— {mentorName}</p>
+                      <p className="text-violet-400 text-[10px] font-medium mt-2 not-italic">— {mentorName}</p>
                     </div>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                   <Moon className="w-5.5 h-5.5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 text-[15px] font-bold">Good Evening, {mentorName}! 🌙</h3>
+                  <h3 className="text-slate-800 text-[15px] font-medium">Good Evening, {mentorName}! 🌙</h3>
                   <p className="text-slate-400 text-[11px] font-medium mt-0.5">Help your students reflect on and consolidates today's learning.</p>
                 </div>
               </div>
@@ -334,7 +334,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
               <Button
                 onClick={() => handleSendMessage("reflection")}
                 disabled={(selectedPromptIdx === null && !customReflectionText.trim()) || isSending === "reflection"}
-                className="w-full h-12 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] active:scale-100 transition-all"
+                className="w-full h-12 rounded-xl text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] active:scale-100 transition-all"
               >
                 {isSending === "reflection" ? (
                   <Check className="w-4 h-4 animate-bounce" />
@@ -353,14 +353,14 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                     {["RK", "SI", "AM"].map((item, idx) => (
                       <div
                         key={idx}
-                        className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center border-2 border-white text-[8px] font-bold text-slate-500 uppercase shrink-0"
+                        className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center border-2 border-white text-[8px] font-medium text-slate-500 uppercase shrink-0"
                         style={{ zIndex: 3 - idx }}
                       >
                         {item}
                       </div>
                     ))}
                   </div>
-                  <p className="text-slate-500 text-xs font-bold">11 Mentees responded in full</p>
+                  <p className="text-slate-500 text-xs font-medium">11 Mentees responded in full</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5">
@@ -392,18 +392,18 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
             >
               {/* Stats Overview */}
               <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 rounded-2xl p-5 text-white shadow-md">
-                <p className="text-white/80 text-[11px] font-bold uppercase tracking-widest mb-3">Your Inspiration Impact</p>
+                <p className="text-white/80 text-[11px] font-medium uppercase tracking-widest mb-3">Your Inspiration Impact</p>
                 <div className="grid grid-cols-3 gap-3.5 border-t border-white/10 pt-3.5">
                   <div className="text-center">
-                    <p className="text-2xl font-black font-volkhov leading-none">24</p>
+                    <p className="text-2xl font-black leading-none">24</p>
                     <p className="text-white/60 text-[9px] font-black uppercase tracking-wider mt-1.5">Reflections</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-black font-volkhov leading-none">8</p>
+                    <p className="text-2xl font-black leading-none">8</p>
                     <p className="text-white/60 text-[9px] font-black uppercase tracking-wider mt-1.5">Streak Restores</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-black font-volkhov leading-none">100%</p>
+                    <p className="text-2xl font-black leading-none">100%</p>
                     <p className="text-white/60 text-[9px] font-black uppercase tracking-wider mt-1.5">Success</p>
                   </div>
                 </div>
@@ -422,8 +422,8 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                       <div className={`w-11 h-11 rounded-full ${badge.color} flex items-center justify-center shadow-inner`}>
                         {badge.icon}
                       </div>
-                      <p className="text-slate-800 text-[10px] font-bold leading-tight mt-1">{badge.title}</p>
-                      <p className="text-slate-300 text-[9px] font-bold uppercase tracking-wider leading-none">{badge.duration}</p>
+                      <p className="text-slate-800 text-[10px] font-medium leading-tight mt-1">{badge.title}</p>
+                      <p className="text-slate-300 text-[9px] font-medium uppercase tracking-wider leading-none">{badge.duration}</p>
                     </div>
                   ))}
                 </div>
@@ -442,7 +442,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                           {item.type === "thought" ? "☀️" : "🌙"}
                         </div>
                         <div>
-                          <p className="text-slate-800 text-xs font-bold leading-relaxed">{item.text}</p>
+                          <p className="text-slate-800 text-xs font-medium leading-relaxed">{item.text}</p>
                           <p className="text-slate-400 text-[10px] font-medium mt-1 uppercase tracking-wider">{item.type} · {item.date}</p>
                         </div>
                       </div>
@@ -450,7 +450,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
                         <p className="text-slate-800 text-xs font-black flex items-center gap-1 justify-end">
                           <MessageSquare className="w-3.5 h-3.5 text-slate-300" /> {item.responses}
                         </p>
-                        <p className="text-slate-400 text-[9px] font-bold mt-1 uppercase">Mood: {item.mood}</p>
+                        <p className="text-slate-400 text-[9px] font-medium mt-1 uppercase">Mood: {item.mood}</p>
                       </div>
                     </div>
                   ))}

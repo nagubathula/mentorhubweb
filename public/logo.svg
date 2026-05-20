@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100" fill="none">
+  <!-- Refined Dual-Tone Mentorship Logo -->
+  <!-- Left Side: Cyan -->
+  <circle cx="34" cy="26" r="16" fill="#00ADEF"/>
+  <path d="M10 46 C 10 46, 10 76, 50 94 L 50 54 C 40 50, 20 50, 10 46 Z" fill="#00ADEF"/>
+  
+  <!-- Right Side: Navy -->
+  <circle cx="66" cy="26" r="16" fill="#0C1E36"/>
+  <path d="M90 46 C 90 46, 90 76, 50 94 L 50 54 C 60 50, 80 50, 90 46 Z" fill="#0C1E36"/>
+</svg>
