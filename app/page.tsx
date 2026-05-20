@@ -491,7 +491,7 @@ export default function OnboardingFlow() {
         }
       } else {
         // No profile? Send to role selection
-        if (["SIGNIN", "SIGNUP"].includes(state)) {
+        if (["WELCOME", "SIGNIN", "SIGNUP"].includes(state)) {
           setState("ROLE");
         }
       }
@@ -1327,7 +1327,7 @@ export default function OnboardingFlow() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}` : undefined,
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
         }
       });
       
@@ -1789,46 +1789,13 @@ export default function OnboardingFlow() {
 
                 {/* Bottom Section */}
                 <div className="flex-1 px-6 py-8 bg-white flex flex-col justify-center border-t border-slate-100/50">
-                  <p className="text-center text-slate-500 font-medium mb-6 text-[15px]">How would you like to begin?</p>
-                  
                   <div className="flex flex-col gap-4 max-w-sm mx-auto w-full">
-                    <button 
-                      onClick={() => { setRole("STUDENT"); setState("STUDENT_WELCOME"); }}
-                      className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left group bg-white"
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-[#ffedd5] flex items-center justify-center text-[#9a3412] shrink-0 group-hover:scale-105 transition-transform">
-                        <GraduationCap className="w-7 h-7" strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-[17px] font-medium text-slate-900 mb-0.5">I am a Student</h3>
-                        <p className="text-[13px] text-slate-500 leading-snug">Find a mentor and grow your skills.</p>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
-                    </button>
-
-                    <button 
-                      onClick={() => { setRole("MENTOR"); setState("MENTOR_WELCOME"); }}
-                      className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all text-left group bg-white"
-                    >
-                      <div className="w-14 h-14 rounded-2xl bg-[#e0e7ff] flex items-center justify-center text-[#3730a3] shrink-0 group-hover:scale-105 transition-transform">
-                        <Users className="w-7 h-7" strokeWidth={1.5} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-[17px] font-medium text-slate-900 mb-0.5">I am a Mentor</h3>
-                        <p className="text-[13px] text-slate-500 leading-snug">Share your expertise and guide others.</p>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
-                    </button>
-                    
-                    <p className="text-center text-[13px] text-slate-500 mt-2">
-                      Already have an account?{" "}
-                      <button 
-                        onClick={() => { setRole(null); setState("SIGNIN"); }}
-                        className="text-slate-900 font-semibold hover:underline"
-                      >
-                        Log in
-                      </button>
-                    </p>
+                    {authError && (
+                      <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
+                    )}
+                    <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
+                      <GoogleIcon /> Continue with Google
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -1995,30 +1962,12 @@ export default function OnboardingFlow() {
                   </h2>
                   <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Sign in to your learning vault</p>
                 </div>
-                <div className="flex flex-col gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Email Address</Label>
-                    <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Password</Label>
-                    <Input type="password" placeholder="••••••••" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignIn()} />
-                  </div>
+                <div className="flex flex-col gap-4 mt-4">
                   {authError && authError !== "confirm-email" && (
                     <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
                   )}
-                  <Button disabled={authLoading || !authEmail.includes("@") || !authPassword} className="h-[54px] rounded-2xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignIn}>
-                    {authLoading ? "Verifying Credentials…" : <>Sign In <ArrowRight className="w-4 h-4" /></>}
-                  </Button>
-                  
-                  <div className="relative flex items-center gap-3 py-2 mt-1">
-                    <div className="flex-1 h-px bg-slate-200" />
-                    <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">or continue with</span>
-                    <div className="flex-1 h-px bg-slate-200" />
-                  </div>
-                  
                   <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
-                    <GoogleIcon /> Google
+                    <GoogleIcon /> Continue with Google
                   </Button>
                   
                   <p className="text-[13px] text-slate-400 text-center mt-1">
@@ -2048,30 +1997,13 @@ export default function OnboardingFlow() {
                     <button className="text-[13px] text-slate-500 hover:text-slate-700 mt-2 font-semibold hover:underline" onClick={() => { setAuthError(""); setState("SIGNIN"); }}>Back to sign in</button>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Email Address</Label>
-                      <Input type="email" placeholder="you@example.com" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authEmail} onChange={(e) => { setAuthEmail(e.target.value); setAuthError(""); }} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider ml-1">Password <span className="text-slate-400 font-normal">(min. 6 characters)</span></Label>
-                      <Input type="password" placeholder="••••••••" className="h-[52px] rounded-2xl border-slate-200 placeholder:text-slate-400 text-[15px] px-4.5 bg-white/40 focus-visible:ring-slate-950" value={authPassword} onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSignUp()} />
-                    </div>
+                  <div className="flex flex-col gap-4 mt-4">
                     {authError && (
                       <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
                     )}
-                    <Button disabled={authLoading || !authEmail.includes("@") || authPassword.length < 6} className="h-[54px] rounded-2xl text-[15px] font-medium bg-[#0f172a] hover:bg-[#1e293b] disabled:bg-slate-100 disabled:text-slate-400 active:scale-98 transition-all mt-2 flex items-center justify-center gap-1.5 shadow-lg shadow-slate-950/10" onClick={handleSignUp}>
-                      {authLoading ? "Creating Account…" : <>Create Account <ArrowRight className="w-4 h-4" /></>}
-                    </Button>
-                    
-                    <div className="relative flex items-center gap-3 py-2 mt-1">
-                      <div className="flex-1 h-px bg-slate-200" />
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">or continue with</span>
-                      <div className="flex-1 h-px bg-slate-200" />
-                    </div>
                     
                     <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
-                      <GoogleIcon /> Google
+                      <GoogleIcon /> Continue with Google
                     </Button>
                     
                     <button onClick={() => setState("ROLE")} className="text-[12px] text-slate-400 font-medium hover:text-slate-600 hover:underline transition-all text-center mb-1">Skip to Test Questionnaire</button>
