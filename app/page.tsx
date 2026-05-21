@@ -144,6 +144,7 @@ export default function OnboardingFlow() {
   // Tracking
   const [quizIndex, setQuizIndex] = useState(0);
   const [selections, setSelections] = useState<Record<string, string | string[]>>({});
+  const [expandedQuestions, setExpandedQuestions] = useState<Record<string, boolean>>({});
   
   // Games state
   const [gamesList, setGamesList] = useState<any[]>([]);
@@ -675,7 +676,7 @@ export default function OnboardingFlow() {
 
   // Student Course Catalog State
   const [isCourseCatalogOpen, setIsCourseCatalogOpen] = useState(false);
-  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<any[]>(mentorCoursesCatalog);
   const [studentEnrollments, setStudentEnrollments] = useState<any[]>([]);
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
 
@@ -902,7 +903,24 @@ export default function OnboardingFlow() {
     if (state === "DASHBOARD_MAIN") {
       const fetchDashboardData = async () => {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!session) {
+          const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+          if (localEnrollmentsStr) {
+            try {
+              const localEnrs = JSON.parse(localEnrollmentsStr);
+              setStudentEnrollments(localEnrs);
+              const latestLocal = localEnrs[0];
+              if (latestLocal) {
+                setEnrollmentId(latestLocal.id);
+                setEnrolledCourse(latestLocal.course);
+                setCourseProgress(latestLocal.progress || []);
+              }
+            } catch (e) {
+              console.error("Failed to parse local enrollments in guest mode", e);
+            }
+          }
+          return;
+        }
         
         // 1. Fetch Mentor Mapping
         const { data: mapping } = await supabase.from('mapping')
@@ -1343,6 +1361,70 @@ export default function OnboardingFlow() {
     }
   };
 
+  const handleSkipLogin = async (selectedRole: "STUDENT" | "MENTOR") => {
+    setAuthLoading(true);
+    setAuthError("");
+    const guestEmail = selectedRole === "STUDENT" ? "guest.student@kindmentor.com" : "guest.mentor@kindmentor.com";
+    const guestPassword = "Password123";
+    const guestName = selectedRole === "STUDENT" ? "Guest Student" : "Guest Mentor";
+
+    try {
+      // 1. Try to sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: guestEmail,
+        password: guestPassword,
+      });
+
+      if (data?.user) {
+        setName(guestName);
+        setEmail(guestEmail);
+        setRole(selectedRole);
+        
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        if (profile) {
+          if (profile.name) setName(profile.name);
+          if (profile.role) setRole(profile.role as any);
+        }
+        
+        setState(selectedRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE");
+        return;
+      }
+
+      // 2. If sign in failed, try to sign up
+      if (error) {
+        const { data: signUpData } = await supabase.auth.signUp({
+          email: guestEmail,
+          password: guestPassword,
+          options: {
+            data: {
+              full_name: guestName,
+              role: selectedRole,
+            }
+          }
+        });
+
+        if (signUpData?.user) {
+          setName(guestName);
+          setEmail(guestEmail);
+          setRole(selectedRole);
+          
+          setState(selectedRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE");
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Guest sign in error, falling back to mock session", err);
+    } finally {
+      setAuthLoading(false);
+    }
+
+    // 3. Absolute Fallback: Bypassing auth and mocking state variables locally (useful for offline/mock-only setups)
+    setName(guestName);
+    setEmail(guestEmail);
+    setRole(selectedRole);
+    setState(selectedRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE");
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setState("WELCOME");
@@ -1463,15 +1545,12 @@ export default function OnboardingFlow() {
 
     setEnrollingCourseId(courseObj.id);
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      setEnrollingCourseId(null);
-      return;
-    }
+    const userId = session?.user?.id || "guest-student-id";
 
     let actualCourseId = courseObj.id;
     const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(actualCourseId);
 
-    if (!isUUID) {
+    if (!isUUID && userId !== "guest-student-id") {
       // Create course record in DB first if catalog mock course is being enrolled
       const serializedDescription = JSON.stringify({
         description: courseObj.description || "",
@@ -1506,6 +1585,8 @@ export default function OnboardingFlow() {
       } else {
         actualCourseId = newCourse.id;
       }
+    } else if (!isUUID) {
+      actualCourseId = `local-course-${Date.now()}`;
     }
 
     // Handle Override cleanup
@@ -1522,10 +1603,12 @@ export default function OnboardingFlow() {
       }
 
       // Delete from DB
-      await supabase.from('enrollments')
-        .delete()
-        .eq('student_id', session.user.id)
-        .eq('course_id', actualCourseId);
+      if (userId !== "guest-student-id") {
+        await supabase.from('enrollments')
+          .delete()
+          .eq('student_id', userId)
+          .eq('course_id', actualCourseId);
+      }
     } else {
       // Standard check if already enrolled
       const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
@@ -1538,38 +1621,49 @@ export default function OnboardingFlow() {
         return;
       }
 
-      const { data: existing } = await supabase.from('enrollments')
-        .select('*')
-        .eq('student_id', session.user.id)
-        .eq('course_id', actualCourseId)
-        .eq('status', 'Active');
+      if (userId !== "guest-student-id") {
+        const { data: existing } = await supabase.from('enrollments')
+          .select('*')
+          .eq('student_id', userId)
+          .eq('course_id', actualCourseId)
+          .eq('status', 'Active');
 
-      if (existing && existing.length > 0) {
-        setEnrollingCourseId(null);
-        alert("You are already enrolled in this course! Use the override option if you want to restart.");
-        return;
+        if (existing && existing.length > 0) {
+          setEnrollingCourseId(null);
+          alert("You are already enrolled in this course! Use the override option if you want to restart.");
+          return;
+        }
       }
     }
 
     const enrollmentPayload = {
-      student_id: session.user.id,
+      student_id: userId,
       course_id: actualCourseId,
       status: 'Active',
       progress: []
     };
 
     let enrollData: any = null;
-    const { data: dbEnrollData, error: enrollErr } = await supabase.from('enrollments')
-      .insert(enrollmentPayload)
-      .select('*, course:courses(*)')
-      .single();
+    let enrollErr: any = true;
+    let dbEnrollData: any = null;
+
+    if (userId !== "guest-student-id") {
+      const res = await supabase.from('enrollments')
+        .insert(enrollmentPayload)
+        .select('*, course:courses(*)')
+        .single();
+      dbEnrollData = res.data;
+      enrollErr = res.error;
+    }
 
     if (enrollErr) {
-      console.warn("DB Enrollment failed, completing locally:", enrollErr.message);
+      if (enrollErr !== true) {
+        console.warn("DB Enrollment failed, completing locally:", enrollErr.message);
+      }
       // Fallback: Create mock enrollment object
       enrollData = {
         id: `local-enr-${Date.now()}`,
-        student_id: session.user.id,
+        student_id: userId,
         course_id: actualCourseId,
         status: 'Active',
         progress: [],
@@ -1679,33 +1773,33 @@ export default function OnboardingFlow() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
-      if (!userId) return;
-
-      const profileData = {
-        id: userId,
-        name,
-        email,
-        role: userRole,
-        expertise: mentorExpertise,
-        preferences: Object.keys(selections).length > 0 ? selections : screeningSelections,
-        coins: 0,
-        streak: 1,
-        xp: 10
-      };
-      const { error } = await supabase.from('profiles').upsert(profileData);
-      if (error) console.error("Supabase Profile Save Error:", error);
-
-      // Save to onboarding_answers table for STUDENT
-      if (userRole === "STUDENT") {
-        const combinedAnswers = {
-          quiz: selections,
-          screening: screeningSelections
+      if (userId) {
+        const profileData = {
+          id: userId,
+          name,
+          email,
+          role: userRole,
+          expertise: mentorExpertise,
+          preferences: Object.keys(selections).length > 0 ? selections : screeningSelections,
+          coins: 0,
+          streak: 1,
+          xp: 10
         };
-        const { error: answersError } = await supabase.from('onboarding_answers').insert({
-          user_id: userId,
-          answers: combinedAnswers
-        });
-        if (answersError) console.error("Supabase onboarding_answers Save Error:", answersError);
+        const { error } = await supabase.from('profiles').upsert(profileData);
+        if (error) console.error("Supabase Profile Save Error:", error);
+
+        // Save to onboarding_answers table for STUDENT
+        if (userRole === "STUDENT") {
+          const combinedAnswers = {
+            quiz: selections,
+            screening: screeningSelections
+          };
+          const { error: answersError } = await supabase.from('onboarding_answers').insert({
+            user_id: userId,
+            answers: combinedAnswers
+          });
+          if (answersError) console.error("Supabase onboarding_answers Save Error:", answersError);
+        }
       }
     } catch (e) {
       console.error("Save profile caught error", e);
@@ -1753,9 +1847,9 @@ export default function OnboardingFlow() {
 
   return (
     <div className="min-h-screen mesh-bg flex items-center justify-center p-0 md:p-6 selection:bg-orange-200 font-inter">
-      <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-screen md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-screen md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
+      <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-[100dvh] md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
-        <div className={`flex-1 relative overflow-hidden ${isDashboard ? 'px-0 pt-0 pb-0' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#fdfdfc]' : 'px-8 py-8 flex flex-col justify-center'}`}>
+        <div className={`flex-1 relative ${isDashboard ? 'px-0 pt-0 pb-0 overflow-hidden' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white overflow-hidden' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#fdfdfc] overflow-y-auto hidden-scrollbar' : 'px-5 sm:px-8 py-6 sm:py-8 flex flex-col justify-start md:justify-center overflow-y-auto hidden-scrollbar pb-[calc(4rem+env(safe-area-inset-bottom))]'}`}>
           <AnimatePresence mode="wait">
             {state === "WELCOME" && (
               <motion.div key="welcome" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col">
@@ -1789,13 +1883,29 @@ export default function OnboardingFlow() {
 
                 {/* Bottom Section */}
                 <div className="flex-1 px-6 py-8 bg-white flex flex-col justify-center border-t border-slate-100/50">
-                  <div className="flex flex-col gap-4 max-w-sm mx-auto w-full">
+                  <div className="flex flex-col gap-3 max-w-sm mx-auto w-full">
                     {authError && (
                       <div className="bg-red-50 border border-red-100 rounded-2xl px-4.5 py-3.5 text-[13px] text-red-600 font-medium leading-relaxed">{authError}</div>
                     )}
                     <Button variant="outline" className="h-[54px] rounded-2xl text-[15px] font-medium border-slate-200 bg-white/60 backdrop-blur-sm text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md active:scale-98 transition-all flex items-center justify-center gap-2.5 mb-1" onClick={handleGoogleSignIn}>
                       <GoogleIcon /> Continue with Google
                     </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleSkipLogin("STUDENT")}
+                        className="flex-1 h-12 rounded-[12px] text-[13px] font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 transition-all animate-in fade-in duration-300"
+                      >
+                        Skip Login (Student)
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleSkipLogin("MENTOR")}
+                        className="flex-1 h-12 rounded-[12px] text-[13px] font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 transition-all animate-in fade-in duration-300"
+                      >
+                        Skip Login (Mentor)
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -2071,7 +2181,7 @@ export default function OnboardingFlow() {
                   <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" type="email" className="h-[50px] rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-slate-50/50" /></div>
                   <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">What do you want to learn?</Label><Textarea placeholder="e.g. UI Design, Frontend Development..." className="min-h-[110px] resize-none rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-slate-50/50" /></div>
                 </div>
-                <div className="mt-8 shrink-0">
+                <div className="mt-8 shrink-0 flex flex-col">
                   <Button onClick={() => setState("STUDENT_QUIZ")} className="w-full h-[52px] rounded-xl text-[15px] font-medium bg-[#0f172a] text-white hover:bg-[#1e293b]">Continue <ArrowRight className="w-[18px] h-[18px] ml-1.5" /></Button>
                 </div>
               </motion.div>
@@ -2109,15 +2219,39 @@ export default function OnboardingFlow() {
                                 className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                               />
                             ) : (
-                              <div className="flex flex-wrap gap-2 pt-1">
-                                {q.options?.map((opt: string) => (
-                                  <SelectionChip
-                                    key={opt}
-                                    label={opt}
-                                    active={selections[q.id] === opt}
-                                    onClick={() => setSelections({ ...selections, [q.id]: opt })}
-                                  />
-                                ))}
+                              <div className="space-y-1.5 pt-1">
+                                <div className="flex flex-wrap gap-2">
+                                  {(() => {
+                                    const optionsList = q.options || [];
+                                    const isExpanded = !!expandedQuestions[q.id];
+                                    const displayedOpts = (() => {
+                                      if (optionsList.length <= 5 || isExpanded) return optionsList;
+                                      const base = optionsList.slice(0, 4);
+                                      const other = optionsList.find((opt: string) => opt.toLowerCase() === 'other');
+                                      if (other && !base.includes(other)) {
+                                        return [...base, other];
+                                      }
+                                      return base;
+                                    })();
+                                    return displayedOpts.map((opt: string) => (
+                                      <SelectionChip
+                                        key={opt}
+                                        label={opt}
+                                        active={selections[q.id] === opt}
+                                        onClick={() => setSelections({ ...selections, [q.id]: opt })}
+                                      />
+                                    ));
+                                  })()}
+                                </div>
+                                {q.options && q.options.length > 5 && (
+                                  <button 
+                                    type="button"
+                                    onClick={() => setExpandedQuestions(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                    className="text-[12px] text-blue-600 font-semibold hover:text-blue-700 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                  >
+                                    {expandedQuestions[q.id] ? "Show Less" : `+ ${q.options.length - (q.options.slice(0, 4).includes(q.options.find((opt: string) => opt.toLowerCase() === 'other') || '') ? 4 : 5)} More`}
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -2127,18 +2261,13 @@ export default function OnboardingFlow() {
                   );
                 })()}
 
-                <div className="mt-12 flex items-center gap-4">
+                <div className="mt-12 flex flex-col">
                   <Button 
                     onClick={nextQuizStep} 
-                    className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-medium text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                    className="w-full h-14 rounded-2xl bg-slate-900 text-white font-medium text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
                   >
                     {quizIndex === studentQuizSteps.length - 1 ? "Complete Journey" : "Continue"} <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
-                  {quizIndex !== studentQuizSteps.length - 1 && (
-                    <Button variant="ghost" onClick={nextQuizStep} className="h-14 px-6 text-slate-400 font-medium text-[15px] hover:text-slate-600">
-                      Skip
-                    </Button>
-                  )}
                 </div>
               </div>
             )}
@@ -2156,18 +2285,18 @@ export default function OnboardingFlow() {
                     <div className="space-y-10">
                       <div className="flex items-center gap-4 mb-2">
                         <div 
-                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-200"
-                          style={{ backgroundColor: currentPhase.color || '#0f172a' }}
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-100"
+                          style={{ backgroundColor: currentPhase.color || '#3b82f6' }}
                         >
                           <Icon className="w-7 h-7" />
                         </div>
                         <div>
-                          <p className="text-slate-400 text-[11px] font-medium uppercase tracking-widest mb-1">Behavioral Screening • {screeningIndex + 1} of {studentScreeningSteps.length}</p>
+                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {screeningIndex + 1} of {studentScreeningSteps.length}</p>
                           <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentPhase.title}</h2>
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-100 rounded-3xl p-8 space-y-6">
+                      <div className="space-y-6">
                         <p className="text-lg font-medium text-slate-800 leading-snug">{q.text}</p>
                         <div className="grid grid-cols-1 gap-3">
                           {q.options?.map((opt: string) => (
@@ -2195,13 +2324,15 @@ export default function OnboardingFlow() {
                         </div>
                       </div>
 
-                      <Button 
-                        onClick={handleNextScreening} 
-                        disabled={!screeningSelections[q.id || currentPhase.title]}
-                        className="w-full h-14 rounded-2xl bg-blue-600 text-white font-medium text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
-                      >
-                        {screeningIndex === studentScreeningSteps.length - 1 ? "Go to Dashboard" : "Next Question"} <ArrowRight className="w-5 h-5 ml-2" />
-                      </Button>
+                      <div className="flex flex-col">
+                        <Button 
+                          onClick={handleNextScreening} 
+                          disabled={!screeningSelections[q.id || currentPhase.title]}
+                          className="w-full h-14 rounded-2xl bg-slate-900 text-white font-medium text-[15px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
+                        >
+                          {screeningIndex === studentScreeningSteps.length - 1 ? "Go to Dashboard" : "Next Question"} <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })()}
@@ -2209,144 +2340,158 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-slate-50 px-6 md:px-8 -mt-2 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))]">
-                {/* Header */}
-                <div className="pt-8 pb-4 flex items-center justify-between z-10 w-full mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 p-3 rounded-full text-white shadow-sm ring-4 ring-blue-600/20">
-                      <GraduationCap className="w-6 h-6" />
+              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-6 md:px-8 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))] items-center">
+                <div className="w-full max-w-2xl flex flex-col gap-5 pt-8">
+                  {/* Header */}
+                  <div className="w-full relative flex items-center justify-between gap-4 shrink-0 border-b border-slate-100 pb-5 mb-1">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome, {name || 'Guest Student'}! 👋</h2>
+                      <p className="text-[13px] font-medium text-slate-400">Application submitted successfully.</p>
                     </div>
-                    <div>
-                      <h2 className="text-[18px] md:text-2xl font-semibold text-slate-900 leading-tight">Welcome, {name || "Satya"}!</h2>
-                      <p className="text-[14px] text-slate-500 font-medium">Application submitted successfully.</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="icon" className="rounded-full">
-                    <Bell className="w-5 h-5" />
-                  </Button>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-6 w-full">
-                  {/* Left Column */}
-                  <div className="flex-1 space-y-6">
-                    {/* Profile Card */}
-                    <Card>
-                      <CardHeader className="pb-3 border-b border-slate-100">
-                         <div className="flex justify-between items-center">
-                            <CardTitle className="text-lg flex items-center gap-2"><User className="w-5 h-5"/> Your Profile</CardTitle>
-                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none"><CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Complete</Badge>
-                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pt-4">
-                        <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-xl">
-                          <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl"><User className="w-5 h-5" /></div>
-                          <div>
-                            <p className="text-[12px] text-slate-500 uppercase font-semibold tracking-wider">Full Name</p>
-                            <p className="text-[15px] text-slate-900 font-medium">{name || "Satya"}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-xl">
-                          <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl"><Mail className="w-5 h-5" /></div>
-                          <div>
-                            <p className="text-[12px] text-slate-500 uppercase font-semibold tracking-wider">Email</p>
-                            <p className="text-[15px] text-slate-900 font-medium">{email || "satyasai2108@gmail.com"}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Preferences Card */}
-                    <Card>
-                       <CardHeader className="pb-3 border-b border-slate-100">
-                         <CardTitle className="text-lg flex items-center gap-2"><Sparkles className="w-5 h-5"/> Your Preferences</CardTitle>
-                       </CardHeader>
-                       <CardContent className="pt-4">
-                          <div className="flex flex-wrap gap-2">
-                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Computer Science / IT</Badge>
-                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Hindi</Badge>
-                             <Badge variant="secondary" className="px-3 py-1.5 text-sm font-medium">Yes, regularly</Badge>
-                          </div>
-                       </CardContent>
-                    </Card>
-
-                    {/* Assignment Progress */}
-                    <Card>
-                      <CardHeader className="pb-4 border-b border-slate-100">
-                        <CardTitle className="text-lg flex items-center gap-2"><Clock className="w-5 h-5"/> Assignment Progress</CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-6">
-                         <div className="relative border-l-2 border-slate-100 ml-3 space-y-6">
-                            <div className="relative pl-6">
-                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-emerald-500 text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div></div>
-                              <div><p className="text-[15px] text-slate-900 font-medium leading-none">Profile Created</p><p className="text-[13px] text-slate-500 mt-1">Your details are saved</p></div>
-                              <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-emerald-500 ml-[11px]"></div>
-                            </div>
-                            <div className="relative pl-6">
-                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-emerald-500 text-white rounded-full p-0.5"><CheckCircle2 className="w-4 h-4" /></div></div>
-                              <div><p className="text-[15px] text-slate-900 font-medium leading-none">Questionnaire Completed</p><p className="text-[13px] text-slate-500 mt-1">Preferences recorded</p></div>
-                              <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-emerald-500 ml-[11px]"></div>
-                            </div>
-                            <div className="relative pl-6">
-                              <div className="absolute -left-[13px] bg-white p-1"><div className="bg-amber-500 text-white rounded-full p-1 shadow-sm"><Search className="w-3.5 h-3.5" strokeWidth={3} /></div></div>
-                              <div><p className="text-[15px] text-amber-600 font-medium leading-none">Finding Best Mentor...</p><p className="text-[13px] text-slate-500 mt-1">Matching based on your goals</p></div>
-                            </div>
-                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Right Column / Sticky Sidebar */}
-                  <div className="w-full md:w-[380px] space-y-6 shrink-0">
-                    {/* Yellow Banner */}
-                    <div className="bg-gradient-to-b from-[#fff7ed] to-[#fffbed] border border-[#ffedd5] rounded-xl p-8 relative overflow-hidden flex flex-col items-center text-center shadow-sm">
-                      <div className="absolute top-0 right-0 w-48 h-48 bg-[#ffedd5]/50 rounded-full translate-x-20 -translate-y-20 blur-3xl"></div>
-                      <div className="bg-gradient-to-br from-amber-500 to-orange-500 w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg mb-5 z-10">
-                        <Search className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-slate-900 z-10 mb-2">Awaiting Assignment</h3>
-                      <div className="flex gap-1.5 mb-5 z-10">
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-60"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-30"></div>
-                      </div>
-                      <p className="text-[15px] text-amber-800 z-10 mb-6 font-medium">Analyzing learning preferences...</p>
-                      <div className="w-full bg-white/80 rounded-xl py-3 px-5 flex justify-between items-center z-10">
-                        <span className="text-sm text-slate-600 font-medium">Estimated wait time</span>
-                        <span className="text-sm font-semibold text-orange-600 flex items-center gap-1.5"><Clock className="w-4 h-4" /> 24-48 hrs</span>
-                      </div>
-                    </div>
-
-                    {/* Explore Actions */}
-                    <Card>
-                      <CardHeader className="pb-3 border-b border-slate-100">
-                        <CardTitle className="text-lg text-blue-700 flex items-center gap-2"><Sparkles className="w-5 h-5"/> While You Wait</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pt-4">
-                        <Button variant="outline" className="w-full justify-start h-auto p-4 flex gap-4 hover:bg-blue-50/50 group">
-                           <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform"><BookText className="w-5 h-5" /></div>
-                           <div className="text-left flex-1"><p className="text-[15px] text-slate-900 font-semibold mb-0.5">Explore Courses</p><p className="text-[13px] text-slate-500 font-normal whitespace-normal">Browse the Python curriculum while you wait</p></div>
-                        </Button>
-                        <Button variant="outline" className="w-full justify-start h-auto p-4 flex gap-4 hover:bg-blue-50/50 group">
-                           <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform"><MessageSquare className="w-5 h-5" /></div>
-                           <div className="text-left flex-1"><p className="text-[15px] text-slate-900 font-semibold mb-0.5">Community</p><p className="text-[13px] text-slate-500 font-normal whitespace-normal">Join the student community to connect with peers</p></div>
-                        </Button>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-emerald-50 border-emerald-200">
-                      <CardContent className="p-5 flex gap-4 items-start">
-                         <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
-                         <div>
-                           <p className="text-emerald-800 font-semibold mb-1">You're in good hands</p>
-                           <p className="text-sm text-emerald-700">Our mentors are verified professionals. We carefully match based on your goals.</p>
-                         </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Button onClick={() => setState("DASHBOARD_MAIN")} className="w-full h-[52px] rounded-xl text-[15px] font-medium flex gap-2 items-center justify-center transition-all bg-[#0f172a] text-white hover:bg-[#1e293b] mt-4 shadow-xl shadow-slate-900/10">
-                      Explore Dashboard Preview <ArrowRight className="w-[18px] h-[18px]" />
+                    <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-slate-200 shrink-0">
+                      <Bell className="w-5 h-5 text-slate-500" />
                     </Button>
                   </div>
+
+                  {/* 1. Onboarding Status Card */}
+                  <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
+                    <CardHeader className="pb-3 border-b border-slate-100">
+                      <div className="flex justify-between items-center">
+                        <CardTitle className="text-[15px] font-semibold text-slate-900 flex items-center gap-2">
+                          <Clock className="w-4.5 h-4.5 text-slate-400"/> Onboarding Status
+                        </CardTitle>
+                        <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-50 border border-amber-200/50 rounded-full px-2.5 py-0.5 text-xs font-semibold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> In Progress
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6 pb-6">
+                      <div className="relative border-l-2 border-slate-100 ml-3 space-y-6">
+                        <div className="relative pl-6">
+                          <div className="absolute -left-[13px] bg-white p-1">
+                            <div className="bg-emerald-500 text-white rounded-full p-0.5">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[14px] text-slate-900 font-semibold leading-none">Profile Created</p>
+                            <p className="text-[12px] text-slate-400 mt-1 font-medium">Your details are saved</p>
+                          </div>
+                          <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-slate-100 ml-[11px]"></div>
+                        </div>
+
+                        <div className="relative pl-6">
+                          <div className="absolute -left-[13px] bg-white p-1">
+                            <div className="bg-emerald-500 text-white rounded-full p-0.5">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[14px] text-slate-900 font-semibold leading-none">Questionnaire Completed</p>
+                            <p className="text-[12px] text-slate-400 mt-1 font-medium">Preferences recorded</p>
+                          </div>
+                          <div className="absolute top-6 -left-[13px] w-0.5 h-6 bg-slate-100 ml-[11px]"></div>
+                        </div>
+
+                        <div className="relative pl-6">
+                          <div className="absolute -left-[13px] bg-white p-1">
+                            <div className="bg-amber-500 text-white rounded-full p-0.5 shadow-sm animate-pulse">
+                              <Search className="w-3.5 h-3.5" strokeWidth={3} />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[14px] text-amber-600 font-semibold leading-none">Finding Best Mentor...</p>
+                            <p className="text-[12px] text-slate-400 mt-1 font-medium">Matching based on your goals (Est: 24-48 hrs)</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 2. Profile Overview Card (Combined, Clean, No Nested Boxes) */}
+                  <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
+                    <CardHeader className="pb-3 border-b border-slate-100">
+                      <div className="flex justify-between items-center">
+                        <CardTitle className="text-[15px] font-semibold text-slate-900 flex items-center gap-2">
+                          <User className="w-4.5 h-4.5 text-slate-400"/> Profile Overview
+                        </CardTitle>
+                        <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border border-emerald-200/50 rounded-full px-2.5 py-0.5 text-xs font-semibold">
+                          Complete
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-5 pb-5 space-y-4">
+                      {/* Name Row */}
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-slate-50 text-slate-600 rounded-xl shrink-0">
+                          <User className="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Full Name</p>
+                          <p className="text-[14px] text-slate-800 font-semibold">{name || "Guest Student"}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="h-px bg-slate-100 w-full" />
+
+                      {/* Email Row */}
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-slate-50 text-slate-600 rounded-xl shrink-0">
+                          <Mail className="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Email</p>
+                          <p className="text-[14px] text-slate-800 font-semibold">{email || "guest.student@kindmentor.com"}</p>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-slate-100 w-full" />
+
+                      {/* Preferences */}
+                      <div className="space-y-2.5 pt-1">
+                        <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Your Preferences</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-3 py-1.5 rounded-full border border-slate-100 bg-slate-50 text-slate-600 text-[12px] font-semibold">Computer Science / IT</span>
+                          <span className="px-3 py-1.5 rounded-full border border-slate-100 bg-slate-50 text-slate-600 text-[12px] font-semibold">Hindi</span>
+                          <span className="px-3 py-1.5 rounded-full border border-slate-100 bg-slate-50 text-slate-600 text-[12px] font-semibold">Yes, regularly</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 3. While You Wait Actions Card */}
+                  <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
+                    <CardHeader className="pb-3 border-b border-slate-100">
+                      <CardTitle className="text-[15px] font-semibold text-slate-900 flex items-center gap-2">
+                        <Sparkles className="w-4.5 h-4.5 text-slate-400"/> While You Wait
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-4 pb-4">
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className="w-full text-left p-3.5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-slate-100/50 hover:border-slate-200 active:scale-99 transition-all flex items-start gap-4 group">
+                        <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform border border-indigo-100">
+                          <BookText className="w-4.5 h-4.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] text-slate-900 font-semibold mb-0.5">Explore Courses</p>
+                          <p className="text-[12px] text-slate-400 font-medium leading-relaxed">Browse the Python curriculum while you wait</p>
+                        </div>
+                      </button>
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className="w-full text-left p-3.5 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-slate-100/50 hover:border-slate-200 active:scale-99 transition-all flex items-start gap-4 group">
+                        <div className="p-2.5 bg-violet-50 text-violet-600 rounded-xl shrink-0 group-hover:scale-105 transition-transform border border-violet-100">
+                          <MessageSquare className="w-4.5 h-4.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[14px] text-slate-900 font-semibold mb-0.5">Community Circle</p>
+                          <p className="text-[12px] text-slate-400 font-medium leading-relaxed">Join the student community to connect with peers</p>
+                        </div>
+                      </button>
+                    </CardContent>
+                  </Card>
+
+                  {/* 4. Action Button */}
+                  <Button onClick={() => setState("DASHBOARD_MAIN")} className="w-full h-14 rounded-2xl text-[15px] font-semibold flex gap-2 items-center justify-center transition-all bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200 mt-2">
+                    Explore Dashboard Preview <ArrowRight className="w-5 h-5" />
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -2738,16 +2883,14 @@ export default function OnboardingFlow() {
                     </div>
                   );
                 })() : (
-                  <div className="flex flex-col items-center justify-center py-16 text-center px-4 bg-white rounded-3xl border border-dashed border-slate-200 mt-4">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 mb-5">
-                      <GraduationCap className="w-7 h-7" />
-                    </div>
-                    <h2 className="text-[17px] font-medium text-slate-900 tracking-tight mb-2">No Courses Enrolled</h2>
-                    <p className="text-[13px] text-slate-500 font-medium max-w-xs leading-relaxed mb-6">
-                      Select a learning path to start your educational journey.
+                  <div className="flex flex-col items-center justify-center py-4 text-center px-4 bg-white rounded-[1.25rem] border border-dashed border-slate-200 mt-3">
+                    <GraduationCap className="w-5 h-5 text-slate-400 mb-1.5" />
+                    <h2 className="text-[13.5px] font-semibold text-slate-800 mb-0.5">No Courses Enrolled</h2>
+                    <p className="text-[11px] text-slate-400 font-medium leading-normal mb-2.5">
+                      Select a learning path to start your journey.
                     </p>
-                    <Button onClick={() => setIsCourseCatalogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-6 font-medium shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2">
-                      <Plus className="w-4 h-4" /> Browse Catalog
+                    <Button onClick={() => setIsCourseCatalogOpen(true)} variant="outline" className="border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 rounded-lg h-8 px-3 font-semibold text-[11.5px] shadow-none flex items-center gap-1 transition-all">
+                      <Plus className="w-3 h-3" /> Browse Catalog
                     </Button>
                   </div>
                 )}
@@ -3593,12 +3736,38 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 flex justify-between px-10 sm:px-16 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
-                  {featureFlags.student_dashboard !== false && <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 w-12 ${state === "DASHBOARD_MAIN" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/><span className="text-[10px] font-semibold">Home</span></button>}
-                  {featureFlags.student_courses !== false && <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 w-12 ${state === "COURSE_DETAILS" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/><span className="text-[10px] font-medium">Courses</span></button>}
-                  {featureFlags.student_games !== false && <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 w-12 ${state === "GAMES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"} relative`}><Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>{state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}<span className="text-[10px] font-medium">Games</span></button>}
-                  {featureFlags.student_notes !== false && <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 w-12 ${state === "NOTES" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/><span className="text-[10px] font-medium">Notes</span></button>}
-                  <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 w-12 ${state === "PROFILE" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"}`}><User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/><span className="text-[10px] font-medium">Profile</span></button>
+                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                  <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                    {featureFlags.student_dashboard !== false && (
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "DASHBOARD_MAIN" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                        <Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/>
+                        <span className="text-[10px]">Home</span>
+                      </button>
+                    )}
+                    {featureFlags.student_courses !== false && (
+                      <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "COURSE_DETAILS" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                        <BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/>
+                        <span className="text-[10px]">Courses</span>
+                      </button>
+                    )}
+                    {featureFlags.student_games !== false && (
+                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 relative ${state === "GAMES" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                        <Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>
+                        {state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}
+                        <span className="text-[10px]">Games</span>
+                      </button>
+                    )}
+                    {featureFlags.student_notes !== false && (
+                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "NOTES" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                        <NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/>
+                        <span className="text-[10px]">Notes</span>
+                      </button>
+                    )}
+                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "PROFILE" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                      <User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/>
+                      <span className="text-[10px]">Profile</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Scheduling Bottom Sheet */}
@@ -3914,7 +4083,7 @@ export default function OnboardingFlow() {
                   <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">Your expertise</Label><Textarea value={mentorExpertise} onChange={e => setMentorExpertise(e.target.value)} placeholder="e.g. UX Design, Product Strategy..." className="min-h-[110px] resize-none rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-white" /></div>
                 </div>
 
-                <div className="mt-8 shrink-0 mb-4">
+                <div className="mt-8 shrink-0 mb-4 flex flex-col">
                   <Button disabled={!name || !email} onClick={() => setState("MENTOR_QUIZ")} className={`w-full h-[52px] rounded-xl text-[15px] font-medium transition-all ${name && email ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
                     Continue <ArrowRight className="w-[18px] h-[18px] ml-1.5" />
                   </Button>
@@ -3949,27 +4118,51 @@ export default function OnboardingFlow() {
                                 className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                               />
                             ) : (
-                              <div className="flex flex-wrap gap-2 pt-1">
-                                {q.options?.map((opt: string) => (
-                                  <SelectionChip
-                                    key={opt}
-                                    label={opt}
-                                    active={selections[q.id] === opt}
-                                    onClick={() => setSelections({ ...selections, [q.id]: opt })}
-                                  />
-                                ))}
+                              <div className="space-y-1.5 pt-1">
+                                <div className="flex flex-wrap gap-2">
+                                  {(() => {
+                                    const optionsList = q.options || [];
+                                    const isExpanded = !!expandedQuestions[q.id];
+                                    const displayedOpts = (() => {
+                                      if (optionsList.length <= 5 || isExpanded) return optionsList;
+                                      const base = optionsList.slice(0, 4);
+                                      const other = optionsList.find((opt: string) => opt.toLowerCase() === 'other');
+                                      if (other && !base.includes(other)) {
+                                        return [...base, other];
+                                      }
+                                      return base;
+                                    })();
+                                    return displayedOpts.map((opt: string) => (
+                                      <SelectionChip
+                                        key={opt}
+                                        label={opt}
+                                        active={selections[q.id] === opt}
+                                        onClick={() => setSelections({ ...selections, [q.id]: opt })}
+                                      />
+                                    ));
+                                  })()}
+                                </div>
+                                {q.options && q.options.length > 5 && (
+                                  <button 
+                                    type="button"
+                                    onClick={() => setExpandedQuestions(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
+                                    className="text-[12px] text-blue-600 font-semibold hover:text-blue-700 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                  >
+                                    {expandedQuestions[q.id] ? "Show Less" : `+ ${q.options.length - (q.options.slice(0, 4).includes(q.options.find((opt: string) => opt.toLowerCase() === 'other') || '') ? 4 : 5)} More`}
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
                         ))}
                       </div>
 
-                      <div className="mt-12 flex gap-4">
+                      <div className="mt-12 flex flex-col">
                         <Button 
                           onClick={() => mentorQuizIndex < mentorQuizSteps.length - 1 ? setMentorQuizIndex(mentorQuizIndex + 1) : saveProfileData("MENTOR")} 
                           className={cn(
-                            "flex-1 h-14 rounded-2xl font-medium text-[15px] transition-all",
-                            (selections['q101'] || selections['q102'] || selections['q103'] || selections['q104']) 
+                            "w-full h-14 rounded-2xl font-medium text-[15px] transition-all",
+                            (selections['q101'] || selections['q102'] || selections['q103'] || selections['q104'] || mentorQuizIndex >= 0) 
                               ? "bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200" 
                               : "bg-slate-200 text-slate-400 pointer-events-none"
                           )}
@@ -4198,31 +4391,33 @@ export default function OnboardingFlow() {
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
-                  <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 flex justify-between px-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
-                    {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-medium" : "font-semibold"}`}>Home</span>
-                    </button>}
-                    {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-medium" : "font-semibold"}`}>Students</span>
-                    </button>}
-                    {featureFlags.mentor_courses !== false && <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <GraduationCap className={`w-5 h-5 ${state === "MENTOR_COURSES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-medium" : "font-semibold"}`}>Courses</span>
-                    </button>}
-                    {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-medium" : "font-semibold"}`}>Notes</span>
-                    </button>}
-                    {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <Users className={`w-5 h-5 ${state === "MENTOR_CIRCLE" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-medium" : "font-semibold"}`}>Circle</span>
-                    </button>}
-                    {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                      <User className={`w-5 h-5 ${state === "MENTOR_ACCOUNT" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
-                      <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-medium" : "font-semibold"}`}>Profile</span>
-                    </button>}
+                  <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                    <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-semibold" : "font-medium"}`}>Home</span>
+                      </button>}
+                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-semibold" : "font-medium"}`}>Students</span>
+                      </button>}
+                      {featureFlags.mentor_courses !== false && <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <GraduationCap className={`w-5 h-5 ${state === "MENTOR_COURSES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-semibold" : "font-medium"}`}>Courses</span>
+                      </button>}
+                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-semibold" : "font-medium"}`}>Notes</span>
+                      </button>}
+                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <Users className={`w-5 h-5 ${state === "MENTOR_CIRCLE" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-semibold" : "font-medium"}`}>Circle</span>
+                      </button>}
+                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
+                        <User className={`w-5 h-5 ${state === "MENTOR_ACCOUNT" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-semibold" : "font-medium"}`}>Profile</span>
+                      </button>}
+                    </div>
                   </div>
               </motion.div>
             )}
