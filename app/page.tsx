@@ -2194,17 +2194,31 @@ export default function OnboardingFlow() {
                   const Icon = getIcon(currentData.icon as any);
                   return (
                     <>
-                      <div className="flex items-center gap-4 mb-10">
-                        <div 
-                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100"
-                          style={{ backgroundColor: currentData.color || '#3b82f6' }}
+                      <div className="flex items-center justify-between gap-4 mb-10">
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100"
+                            style={{ backgroundColor: currentData.color || '#3b82f6' }}
+                          >
+                            <Icon className="w-7 h-7" />
+                          </div>
+                          <div>
+                            <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
+                            <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            if (quizIndex > 0) {
+                              setQuizIndex(quizIndex - 1);
+                            } else {
+                              setState("STUDENT_PROFILE");
+                            }
+                          }} 
+                          className="p-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors shadow-2xs shrink-0 flex items-center justify-center gap-1 text-[13px] font-medium px-4"
                         >
-                          <Icon className="w-7 h-7" />
-                        </div>
-                        <div>
-                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
-                          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
-                        </div>
+                          <ArrowLeft className="w-4 h-4" /> Back
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -2283,17 +2297,32 @@ export default function OnboardingFlow() {
 
                   return (
                     <div className="space-y-10">
-                      <div className="flex items-center gap-4 mb-2">
-                        <div 
-                          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-100"
-                          style={{ backgroundColor: currentPhase.color || '#3b82f6' }}
+                      <div className="flex items-center justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-100"
+                            style={{ backgroundColor: currentPhase.color || '#3b82f6' }}
+                          >
+                            <Icon className="w-7 h-7" />
+                          </div>
+                          <div>
+                            <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {screeningIndex + 1} of {studentScreeningSteps.length}</p>
+                            <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentPhase.title}</h2>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            if (screeningIndex > 0) {
+                              setScreeningIndex(screeningIndex - 1);
+                            } else {
+                              setState("STUDENT_QUIZ");
+                              setQuizIndex(studentQuizSteps.length - 1);
+                            }
+                          }} 
+                          className="p-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors shadow-2xs shrink-0 flex items-center justify-center gap-1 text-[13px] font-medium px-4"
                         >
-                          <Icon className="w-7 h-7" />
-                        </div>
-                        <div>
-                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {screeningIndex + 1} of {studentScreeningSteps.length}</p>
-                          <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentPhase.title}</h2>
-                        </div>
+                          <ArrowLeft className="w-4 h-4" /> Back
+                        </button>
                       </div>
 
                       <div className="space-y-6">
@@ -4066,24 +4095,52 @@ export default function OnboardingFlow() {
             )}
 
             {state === "MENTOR_PROFILE" && (
-              <motion.div key="mentor_profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-4 overflow-y-auto hidden-scrollbar relative bg-white">
-                <div className="flex gap-1.5 justify-center mb-6 mt-2 shrink-0">
-                   {[1,2,3,4,5,6,7,8].map(i => <div key={i} className={`h-1 flex-1 rounded-full ${i <= 2 ? 'bg-[#0f172a]' : 'bg-slate-100'}`} />)}
+              <motion.div key="mentor_profile" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-4 overflow-y-auto hidden-scrollbar">
+                <div className="mb-2 shrink-0">
+                  <button onClick={() => setState("ROLE")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500">
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
                 </div>
-                <div className="mb-8 shrink-0"><button onClick={() => setState("ROLE")} className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500"><ArrowLeft className="w-5 h-5" /></button></div>
-                
-                <div className="mb-8 space-y-1.5 shrink-0">
-                  <h2 className="text-[18px] font-medium text-[#0f172a]">Your profile</h2>
+
+                <div className="flex flex-col items-center mb-6 mt-2 shrink-0">
+                  <div className="relative">
+                    {avatarUrl ? (
+                      <div 
+                        className="w-[104px] h-[104px] rounded-full border border-slate-200 bg-cover bg-center shadow-sm"
+                        style={{ backgroundImage: `url(${avatarUrl})` }}
+                      ></div>
+                    ) : (
+                      <div className="w-[104px] h-[104px] rounded-full border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-300 shadow-sm">
+                        <User className="w-12 h-12 stroke-[1.5]" />
+                      </div>
+                    )}
+                    <button className="absolute bottom-0 right-0 w-[34px] h-[34px] bg-[#0f172a] rounded-full flex items-center justify-center text-white ring-[3px] ring-white shadow-sm hover:scale-105 transition-transform">
+                      <Camera className="w-[15px] h-[15px]" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-6 space-y-1.5 shrink-0">
+                  <h2 className="text-lg font-medium text-slate-900">Your profile</h2>
                   <p className="text-[14px] text-slate-500">Tell us a little about yourself.</p>
                 </div>
 
-                <div className="space-y-5 flex-1">
-                  <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" className="h-[50px] rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-white" /></div>
-                  <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" type="email" className="h-[50px] rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-white" /></div>
-                  <div className="space-y-2"><Label className="text-[13px] text-slate-600 font-medium ml-1">Your expertise</Label><Textarea value={mentorExpertise} onChange={e => setMentorExpertise(e.target.value)} placeholder="e.g. UX Design, Product Strategy..." className="min-h-[110px] resize-none rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-white" /></div>
+                <div className="space-y-4 flex-1">
+                  <div className="space-y-2">
+                    <Label className="text-[13px] text-slate-600 font-medium ml-1">Name</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" className="h-[50px] rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-slate-50/50" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[13px] text-slate-600 font-medium ml-1">Email</Label>
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" type="email" className="h-[50px] rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-slate-50/50" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[13px] text-slate-600 font-medium ml-1">Your expertise</Label>
+                    <Textarea value={mentorExpertise} onChange={e => setMentorExpertise(e.target.value)} placeholder="e.g. UX Design, Product Strategy..." className="min-h-[110px] resize-none rounded-xl border-slate-200 text-[15px] placeholder:text-slate-400 bg-slate-50/50" />
+                  </div>
                 </div>
 
-                <div className="mt-8 shrink-0 mb-4 flex flex-col">
+                <div className="mt-8 shrink-0 flex flex-col">
                   <Button disabled={!name || !email} onClick={() => setState("MENTOR_QUIZ")} className={`w-full h-[52px] rounded-xl text-[15px] font-medium transition-all ${name && email ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-200/60 text-slate-400"}`}>
                     Continue <ArrowRight className="w-[18px] h-[18px] ml-1.5" />
                   </Button>
@@ -4098,12 +4155,23 @@ export default function OnboardingFlow() {
                   const Icon = getIcon(currentData.icon as any);
                   return (
                     <>
-                      <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center justify-between gap-4 mb-8">
                         <div>
-                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Mentor Application</p>
+                          <p className="text-blue-600 text-[11px] font-medium uppercase tracking-widest mb-1">Mentor Application ({currentData.step} of {mentorQuizSteps.length})</p>
                           <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
                         </div>
-                        <span className="text-sm font-medium text-slate-500">{currentData.step} of {mentorQuizSteps.length}</span>
+                        <button 
+                          onClick={() => {
+                            if (mentorQuizIndex > 0) {
+                              setMentorQuizIndex(mentorQuizIndex - 1);
+                            } else {
+                              setState("MENTOR_PROFILE");
+                            }
+                          }} 
+                          className="p-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors shadow-2xs shrink-0 flex items-center justify-center gap-1 text-[13px] font-medium px-4"
+                        >
+                          <ArrowLeft className="w-4 h-4" /> Back
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -4177,171 +4245,176 @@ export default function OnboardingFlow() {
             )}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative font-inter overflow-y-auto hidden-scrollbar pb-[calc(10rem+env(safe-area-inset-bottom))] px-6 md:px-8">
-                
-                {/* Header */}
-                <div className="w-full flex flex-col pt-6 pb-2 gap-4">
-                  <div className="w-full flex justify-between items-center">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-white overflow-y-auto hidden-scrollbar pb-[calc(12rem+env(safe-area-inset-bottom))] px-6 md:px-8 items-center">
+                <div className="w-full max-w-2xl flex flex-col gap-5 pt-8">
+                  
+                  {/* Header */}
+                  <div className="w-full relative flex items-center justify-between gap-4 shrink-0 border-b border-slate-100 pb-5 mb-1">
                     <div className="space-y-1">
-                      <h2 className="text-xl font-medium tracking-tight text-slate-900 leading-tight">Welcome, {name ? name.split(' ')[0] : 'Satya'}! 👋</h2>
+                      <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome, {name ? name.split(' ')[0] : 'Satya'}! 👋</h2>
                       <p className="text-[13px] font-medium text-slate-400">Review & select your first students to mentor.</p>
                     </div>
+                    <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-slate-200 shrink-0">
+                      <Bell className="w-5 h-5 text-slate-500" />
+                    </Button>
                   </div>
-                </div>
 
-                {/* Banner */}
-                <Card className="bg-indigo-50/60 border border-indigo-100/40 p-5 mt-4 rounded-[1.25rem] flex items-start gap-3.5 relative overflow-hidden shadow-3xs">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
-                  <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-                  <div className="relative z-10">
-                     <p className="text-[13px] font-semibold text-slate-800 mb-1 leading-tight">{realStudents.length} student{realStudents.length !== 1 ? 's' : ''} {realStudents.length === 1 ? 'is' : 'are'} waiting for a mentor</p>
-                     <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you&apos;d like to mentor. You can review their profiles and questionnaire responses below.</p>
+                  {/* Banner */}
+                  <Card className="bg-indigo-50/60 border border-indigo-100/40 p-5 rounded-[1.25rem] flex items-start gap-3.5 relative overflow-hidden shadow-3xs">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
+                    <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                    <div className="relative z-10">
+                       <p className="text-[13px] font-semibold text-slate-800 mb-1 leading-tight">{realStudents.length} student{realStudents.length !== 1 ? 's' : ''} {realStudents.length === 1 ? 'is' : 'are'} waiting for a mentor</p>
+                       <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you&apos;d like to mentor. You can review their profiles and questionnaire responses below.</p>
+                    </div>
+                  </Card>
+
+                  {/* Sort Bar */}
+                  <div className="flex items-center gap-3 mt-1 mb-1 px-1">
+                     <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
+                     <button className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[12px] font-semibold shadow-sm transition-all hover:bg-slate-800">Best Match</button>
+                     <button className="bg-white text-slate-600 hover:bg-slate-50 px-4 py-1.5 rounded-full text-[12px] font-semibold border border-slate-100 shadow-3xs transition-all">Recent</button>
                   </div>
-                </Card>
 
-                {/* Sort Bar */}
-                <div className="flex items-center gap-3 mt-6 mb-4 px-1">
-                   <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
-                   <button className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[12px] font-semibold shadow-sm transition-all hover:bg-slate-800">Best Match</button>
-                   <button className="bg-white text-slate-600 hover:bg-slate-50 px-4 py-1.5 rounded-full text-[12px] font-semibold border border-slate-100 shadow-3xs transition-all">Recent</button>
-                </div>
+                  {/* Student List */}
+                  <div className="space-y-4">
+                    {realStudents.map(student => {
+                      const isExpanded = expandedStudents.includes(student.id);
+                      const isSelected = selectedStudents.includes(student.id);
+                      return (
+                      <Card key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-xs ring-1 ring-slate-900' : 'border-slate-100'} p-5.5 transition-all relative flex flex-col hover:border-slate-200`}>
+                        
+                        {isExpanded ? (
+                          <div className="flex flex-col">
+                            {/* Expanded Header info */}
+                            <div className="flex gap-4 mb-4">
+                              <div className="relative shrink-0">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                  {student.avatar_url ? (
+                                    <img 
+                                      className="w-full h-full object-cover" 
+                                      src={student.avatar_url} 
+                                      alt={student.name}
+                                    />
+                                  ) : (
+                                    <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                      {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start mb-0.5">
+                                  <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
+                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                                </div>
+                                <p className="text-[12px] text-slate-500 leading-relaxed font-medium line-clamp-1">{student.desc}</p>
+                              </div>
+                            </div>
 
-                {/* Student List */}
-                <div className="space-y-4">
-                  {realStudents.map(student => {
-                    const isExpanded = expandedStudents.includes(student.id);
-                    const isSelected = selectedStudents.includes(student.id);
-                    return (
-                    <Card key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-xs ring-1 ring-slate-900' : 'border-slate-100'} p-5.5 transition-all relative flex flex-col hover:border-slate-200`}>
-                      
-                      {isExpanded ? (
-                        <div className="flex flex-col">
-                          {/* Expanded Header info */}
-                          <div className="flex gap-4 mb-4">
-                            <div className="relative shrink-0">
-                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
-                                {student.avatar_url ? (
-                                  <img 
-                                    className="w-full h-full object-cover" 
-                                    src={student.avatar_url} 
-                                    alt={student.name}
-                                  />
-                                ) : (
-                                  <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
-                                    {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
-                                  </div>
-                                )}
+                            <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[13px] text-slate-600 w-full border border-slate-100/50">
+                              <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-semibold">{student.email || "student@example.com"}</span>
+                            </div>
+                            
+                            <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-indigo-50/50">
+                              <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
+                                <Target className="w-4 h-4 shrink-0" />
+                                <span className="text-[13px] font-semibold">Learning Goal</span>
+                              </div>
+                              <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+                                {student.desc}
+                              </p>
+                            </div>
+                            
+                            <div className="mb-6 px-1">
+                              <div className="flex items-center gap-2 text-slate-500 mb-4">
+                                <BookOpen className="w-[18px] h-[18px] shrink-0" />
+                                <span className="text-[13px] font-semibold text-slate-700">Questionnaire Responses</span>
+                              </div>
+                              <div className="space-y-3.5">
+                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
+                                   <span className="text-slate-400">Inspiration</span>
+                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
+                                 </div>
+                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
+                                   <span className="text-slate-400">Movie Preference</span>
+                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
+                                 </div>
+                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
+                                   <span className="text-slate-400">Learning Style</span>
+                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.style || "Hands-on projects"}</span>
+                                 </div>
+                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 pb-1">
+                                   <span className="text-slate-400">Location</span>
+                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
+                                 </div>
                               </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start mb-0.5">
-                                <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
-                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                            
+                            <div className="flex gap-3">
+                              <Button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`flex-1 py-5 rounded-[12px] text-[13.5px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'}`}>
+                                {isSelected ? "Deselect Student" : <><Check className="w-4 h-4" /> Select Student</>}
+                              </Button>
+                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="text-[13px] text-slate-400 font-medium hover:text-slate-600 hover:bg-slate-100/50 rounded-[12px]">
+                                Collapse
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div onClick={() => setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id])} className="cursor-pointer">
+                            <div className="flex gap-4">
+                              <div className="relative shrink-0">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                  {student.avatar_url ? (
+                                    <img 
+                                      className="w-full h-full object-cover" 
+                                      src={student.avatar_url} 
+                                      alt={student.name}
+                                    />
+                                  ) : (
+                                    <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                      {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <p className="text-[12px] text-slate-500 leading-relaxed font-medium line-clamp-1">{student.desc}</p>
-                            </div>
-                          </div>
-
-                          <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[13px] text-slate-600 w-full border border-slate-100/50">
-                            <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-semibold">{student.email || "student@example.com"}</span>
-                          </div>
-                          
-                          <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-indigo-50/50">
-                            <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
-                              <Target className="w-4 h-4 shrink-0" />
-                              <span className="text-[13px] font-semibold">Learning Goal</span>
-                            </div>
-                            <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
-                              {student.desc}
-                            </p>
-                          </div>
-                          
-                          <div className="mb-6 px-1">
-                            <div className="flex items-center gap-2 text-slate-500 mb-4">
-                              <BookOpen className="w-[18px] h-[18px] shrink-0" />
-                              <span className="text-[13px] font-semibold text-slate-700">Questionnaire Responses</span>
-                            </div>
-                            <div className="space-y-3.5">
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                 <span className="text-slate-400">Inspiration</span>
-                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
-                               </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                 <span className="text-slate-400">Movie Preference</span>
-                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
-                               </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                 <span className="text-slate-400">Learning Style</span>
-                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.style || "Hands-on projects"}</span>
-                               </div>
-                               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 pb-1">
-                                 <span className="text-slate-400">Location</span>
-                                 <span className="text-slate-800 font-medium text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
-                               </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-3">
-                            <Button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`flex-1 py-5 rounded-[12px] text-[13.5px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'}`}>
-                              {isSelected ? "Deselect Student" : <><Check className="w-4 h-4" /> Select Student</>}
-                            </Button>
-                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="text-[13px] text-slate-400 font-medium hover:text-slate-600 hover:bg-slate-100/50 rounded-[12px]">
-                              Collapse
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div onClick={() => setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id])} className="cursor-pointer">
-                          <div className="flex gap-4">
-                            <div className="relative shrink-0">
-                              <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
-                                {student.avatar_url ? (
-                                  <img 
-                                    className="w-full h-full object-cover" 
-                                    src={student.avatar_url} 
-                                    alt={student.name}
-                                  />
-                                ) : (
-                                  <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
-                                    {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
-                                  </div>
-                                )}
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-0.5">
+                                  <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
+                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                                </div>
+                                <p className="text-[12px] text-slate-500 mb-2 leading-relaxed line-clamp-1">{student.desc}</p>
+                                <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium mb-3">
+                                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {student.time}</span>
+                                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {student.tags.map((tag: string) => (
+                                    <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2.5 py-1 rounded-md font-medium">{tag}</span>
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-0.5">
-                                <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
-                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
-                              </div>
-                              <p className="text-[12px] text-slate-500 mb-2 leading-relaxed line-clamp-1">{student.desc}</p>
-                              <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium mb-3">
-                                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {student.time}</span>
-                                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {student.tags.map((tag: string) => (
-                                  <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2.5 py-1 rounded-md font-medium">{tag}</span>
-                                ))}
-                              </div>
+                            <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-center text-[12px] text-slate-400 font-semibold items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
+                              View Full Profile <ChevronDown className="w-3.5 h-3.5" />
                             </div>
                           </div>
-                          <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-center text-[12px] text-slate-400 font-semibold items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
-                            View Full Profile <ChevronDown className="w-3.5 h-3.5" />
-                          </div>
-                        </div>
-                      )}
-                    </Card>
-                  )})}
+                        )}
+                      </Card>
+                    )})}
+                  </div>
                 </div>
 
                 {/* Fixed Bottom Action Container */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-5 sm:rounded-b-2xl z-50">
-                   <Button onClick={async () => { if(selectedStudents.length > 0) { await markMatchingAsSeen(); } }} className={`w-full h-[52px] rounded-xl text-[14px] font-semibold flex gap-2 items-center justify-center transition-all shadow-md ${selectedStudents.length > 0 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10 active:scale-[0.98]" : "bg-slate-200/60 text-slate-400 pointer-events-none"}`}>
-                     {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
-                   </Button>
-                   <button onClick={markMatchingAsSeen} className="text-[12px] text-slate-400 font-semibold hover:text-slate-600 mt-4 text-center transition-colors">
-                     Skip for now — I&apos;ll review students later
-                   </button>
+                   <div className="w-full max-w-2xl mx-auto flex flex-col">
+                     <Button onClick={async () => { if(selectedStudents.length > 0) { await markMatchingAsSeen(); } }} className={`w-full h-[52px] rounded-xl text-[14px] font-semibold flex gap-2 items-center justify-center transition-all shadow-md ${selectedStudents.length > 0 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10 active:scale-[0.98]" : "bg-slate-200/60 text-slate-400 pointer-events-none"}`}>
+                       {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
+                     </Button>
+                     <button onClick={markMatchingAsSeen} className="text-[12px] text-slate-400 font-semibold hover:text-slate-600 mt-4 text-center transition-colors">
+                       Skip for now — I&apos;ll review students later
+                     </button>
+                   </div>
                 </div>
 
               </motion.div>
