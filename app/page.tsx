@@ -311,6 +311,39 @@ export default function OnboardingFlow() {
     fetchQuestionnaires();
   }, []);
 
+  const checkAndRedirectToDashboard = (
+    currentRole: "STUDENT" | "MENTOR" | null,
+    currentSelections: Record<string, any>,
+    currentScreeningSelections: Record<string, any>
+  ) => {
+    if (!currentRole) return false;
+
+    let totalQuestions = 0;
+    let filledQuestions = 0;
+
+    if (currentRole === "STUDENT") {
+      totalQuestions = studentQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0) + 
+                       (studentScreeningSteps?.length || 0);
+      filledQuestions = Object.keys(currentSelections || {}).length + Object.keys(currentScreeningSelections || {}).length;
+    } else if (currentRole === "MENTOR") {
+      totalQuestions = mentorQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0);
+      filledQuestions = Object.keys(currentSelections || {}).length;
+    }
+
+    if (totalQuestions === 0) totalQuestions = 15;
+
+    const percentFilled = (filledQuestions / totalQuestions) * 100;
+    if (percentFilled >= 20) {
+      if (currentRole === "STUDENT") {
+        setState("DASHBOARD_MAIN");
+      } else if (currentRole === "MENTOR") {
+        setState("MENTOR_DASHBOARD");
+      }
+      return true;
+    }
+    return false;
+  };
+
   const hasLoadedFromCookies = useRef(false);
 
   // 1. Load state from cookies on mount
@@ -320,7 +353,11 @@ export default function OnboardingFlow() {
       if (stateVal) setState(stateVal as FlowState);
 
       const roleVal = getCookie('mentorhub_role');
-      if (roleVal) setRole(roleVal as "STUDENT" | "MENTOR");
+      let finalRole = role;
+      if (roleVal) {
+        setRole(roleVal as "STUDENT" | "MENTOR");
+        finalRole = roleVal as "STUDENT" | "MENTOR";
+      }
 
       const nameVal = getCookie('mentorhub_name');
       if (nameVal) setName(nameVal);
@@ -331,14 +368,24 @@ export default function OnboardingFlow() {
       const avatarVal = getCookie('mentorhub_avatarUrl');
       if (avatarVal) setAvatarUrl(avatarVal);
 
+      let finalSelections = selections;
       const selectionsVal = getCookie('mentorhub_selections');
       if (selectionsVal) {
-        try { setSelections(JSON.parse(selectionsVal)); } catch(e) {}
+        try {
+          const parsed = JSON.parse(selectionsVal);
+          setSelections(parsed);
+          finalSelections = parsed;
+        } catch(e) {}
       }
 
+      let finalScreeningSelections = screeningSelections;
       const screeningSelectionsVal = getCookie('mentorhub_screeningSelections');
       if (screeningSelectionsVal) {
-        try { setScreeningSelections(JSON.parse(screeningSelectionsVal)); } catch(e) {}
+        try {
+          const parsed = JSON.parse(screeningSelectionsVal);
+          setScreeningSelections(parsed);
+          finalScreeningSelections = parsed;
+        } catch(e) {}
       }
 
       const quizIndexVal = getCookie('mentorhub_quizIndex');
@@ -358,6 +405,11 @@ export default function OnboardingFlow() {
 
       const streakVal = getCookie('mentorhub_streakCount');
       if (streakVal) setStreakCount(Number(streakVal));
+
+      // Trigger automatic dashboard landing if they completed onboarding or filled 20% of questions
+      if (finalRole) {
+        checkAndRedirectToDashboard(finalRole, finalSelections, finalScreeningSelections);
+      }
     } catch (e) {
       console.error("Error reading cookies", e);
     } finally {
@@ -573,9 +625,17 @@ export default function OnboardingFlow() {
         setCoinsCount(profile.coins || 0);
         setStreakCount(profile.streak || 0);
         
-        // Restore last known state if available
-        if (profile.last_state) {
-          const prefs = (profile.preferences as any) || {};
+        // Check database profile preferences / answers for 20% questionnaire completion
+        const prefs = (profile.preferences as any) || {};
+        const screeningPrefs = (profile.screening_answers as any) || {};
+        
+        let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
+        let screeningSelectionsToUse = Object.keys(screeningSelections).length > 0 ? screeningSelections : screeningPrefs;
+        
+        const didRedirect = checkAndRedirectToDashboard(profile.role, selectionsToUse, screeningSelectionsToUse);
+        
+        // Restore last known state if available and didn't redirect via 20% rule
+        if (!didRedirect && profile.last_state) {
           if (profile.last_state === "MENTOR_MATCHING" && prefs.has_seen_matching) {
             setState("MENTOR_DASHBOARD");
           } else {
@@ -636,7 +696,7 @@ export default function OnboardingFlow() {
         }
 
         // Auto-redirect based on role if still in auth screens and no saved state
-        if (["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
+        if (!didRedirect && ["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
           const prefs = (profile.preferences as any) || {};
           if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
             setState('MENTOR_DASHBOARD');
