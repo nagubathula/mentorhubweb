@@ -311,177 +311,7 @@ export default function OnboardingFlow() {
     fetchQuestionnaires();
   }, []);
 
-  const checkAndRedirectToDashboard = (
-    currentRole: "STUDENT" | "MENTOR" | null,
-    currentSelections: Record<string, any>,
-    currentScreeningSelections: Record<string, any>
-  ) => {
-    if (!currentRole) return false;
 
-    let totalQuestions = 0;
-    let filledQuestions = 0;
-
-    if (currentRole === "STUDENT") {
-      totalQuestions = studentQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0) + 
-                       (studentScreeningSteps?.length || 0);
-      filledQuestions = Object.keys(currentSelections || {}).length + Object.keys(currentScreeningSelections || {}).length;
-    } else if (currentRole === "MENTOR") {
-      totalQuestions = mentorQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0);
-      filledQuestions = Object.keys(currentSelections || {}).length;
-    }
-
-    if (totalQuestions === 0) totalQuestions = 15;
-
-    const percentFilled = (filledQuestions / totalQuestions) * 100;
-    if (percentFilled >= 20) {
-      if (currentRole === "STUDENT") {
-        setState("DASHBOARD_MAIN");
-      } else if (currentRole === "MENTOR") {
-        setState("MENTOR_DASHBOARD");
-      }
-      return true;
-    }
-    return false;
-  };
-
-  const hasLoadedFromCookies = useRef(false);
-
-  // 1. Load state from cookies on mount
-  useEffect(() => {
-    try {
-      const stateVal = getCookie('mentorhub_state');
-      if (stateVal) setState(stateVal as FlowState);
-
-      const roleVal = getCookie('mentorhub_role');
-      let finalRole = role;
-      if (roleVal) {
-        setRole(roleVal as "STUDENT" | "MENTOR");
-        finalRole = roleVal as "STUDENT" | "MENTOR";
-      }
-
-      const nameVal = getCookie('mentorhub_name');
-      if (nameVal) setName(nameVal);
-
-      const emailVal = getCookie('mentorhub_email');
-      if (emailVal) setEmail(emailVal);
-
-      const avatarVal = getCookie('mentorhub_avatarUrl');
-      if (avatarVal) setAvatarUrl(avatarVal);
-
-      let finalSelections = selections;
-      const selectionsVal = getCookie('mentorhub_selections');
-      if (selectionsVal) {
-        try {
-          const parsed = JSON.parse(selectionsVal);
-          setSelections(parsed);
-          finalSelections = parsed;
-        } catch(e) {}
-      }
-
-      let finalScreeningSelections = screeningSelections;
-      const screeningSelectionsVal = getCookie('mentorhub_screeningSelections');
-      if (screeningSelectionsVal) {
-        try {
-          const parsed = JSON.parse(screeningSelectionsVal);
-          setScreeningSelections(parsed);
-          finalScreeningSelections = parsed;
-        } catch(e) {}
-      }
-
-      const quizIndexVal = getCookie('mentorhub_quizIndex');
-      if (quizIndexVal) setQuizIndex(Number(quizIndexVal));
-
-      const screeningIndexVal = getCookie('mentorhub_screeningIndex');
-      if (screeningIndexVal) setScreeningIndex(Number(screeningIndexVal));
-
-      const mentorQuizIndexVal = getCookie('mentorhub_mentorQuizIndex');
-      if (mentorQuizIndexVal) setMentorQuizIndex(Number(mentorQuizIndexVal));
-
-      const mentorExpertiseVal = getCookie('mentorhub_mentorExpertise');
-      if (mentorExpertiseVal) setMentorExpertise(mentorExpertiseVal);
-
-      const coinsVal = getCookie('mentorhub_coinsCount');
-      if (coinsVal) setCoinsCount(Number(coinsVal));
-
-      const streakVal = getCookie('mentorhub_streakCount');
-      if (streakVal) setStreakCount(Number(streakVal));
-
-      // Trigger automatic dashboard landing if they completed onboarding or filled 20% of questions
-      if (finalRole) {
-        checkAndRedirectToDashboard(finalRole, finalSelections, finalScreeningSelections);
-      }
-    } catch (e) {
-      console.error("Error reading cookies", e);
-    } finally {
-      hasLoadedFromCookies.current = true;
-    }
-  }, []);
-
-  // 2. Sync state to cookies whenever it changes
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_state', state);
-  }, [state]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    if (role) setCookie('mentorhub_role', role);
-  }, [role]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_name', name);
-  }, [name]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_email', email);
-  }, [email]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    if (avatarUrl) setCookie('mentorhub_avatarUrl', avatarUrl);
-  }, [avatarUrl]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_selections', JSON.stringify(selections));
-  }, [selections]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_screeningSelections', JSON.stringify(screeningSelections));
-  }, [screeningSelections]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_quizIndex', String(quizIndex));
-  }, [quizIndex]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_screeningIndex', String(screeningIndex));
-  }, [screeningIndex]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_mentorQuizIndex', String(mentorQuizIndex));
-  }, [mentorQuizIndex]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_mentorExpertise', mentorExpertise);
-  }, [mentorExpertise]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_coinsCount', String(coinsCount));
-  }, [coinsCount]);
-
-  useEffect(() => {
-    if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_streakCount', String(streakCount));
-  }, [streakCount]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -915,6 +745,178 @@ export default function OnboardingFlow() {
   const [isTodoSheetOpen, setIsTodoSheetOpen] = useState(false);
   const [todoTitleInput, setTodoTitleInput] = useState("");
   const [todoNotesInput, setTodoNotesInput] = useState("");
+
+  const checkAndRedirectToDashboard = (
+    currentRole: "STUDENT" | "MENTOR" | null,
+    currentSelections: Record<string, any>,
+    currentScreeningSelections: Record<string, any>
+  ) => {
+    if (!currentRole) return false;
+
+    let totalQuestions = 0;
+    let filledQuestions = 0;
+
+    if (currentRole === "STUDENT") {
+      totalQuestions = studentQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0) + 
+                       (studentScreeningSteps?.length || 0);
+      filledQuestions = Object.keys(currentSelections || {}).length + Object.keys(currentScreeningSelections || {}).length;
+    } else if (currentRole === "MENTOR") {
+      totalQuestions = mentorQuizSteps.reduce((acc, step) => acc + (step.questions?.length || 0), 0);
+      filledQuestions = Object.keys(currentSelections || {}).length;
+    }
+
+    if (totalQuestions === 0) totalQuestions = 15;
+
+    const percentFilled = (filledQuestions / totalQuestions) * 100;
+    if (percentFilled >= 20) {
+      if (currentRole === "STUDENT") {
+        setState("DASHBOARD_MAIN");
+      } else if (currentRole === "MENTOR") {
+        setState("MENTOR_DASHBOARD");
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const hasLoadedFromCookies = useRef(false);
+
+  // 1. Load state from cookies on mount
+  useEffect(() => {
+    try {
+      const stateVal = getCookie('mentorhub_state');
+      if (stateVal) setState(stateVal as FlowState);
+
+      const roleVal = getCookie('mentorhub_role');
+      let finalRole = role;
+      if (roleVal) {
+        setRole(roleVal as "STUDENT" | "MENTOR");
+        finalRole = roleVal as "STUDENT" | "MENTOR";
+      }
+
+      const nameVal = getCookie('mentorhub_name');
+      if (nameVal) setName(nameVal);
+
+      const emailVal = getCookie('mentorhub_email');
+      if (emailVal) setEmail(emailVal);
+
+      const avatarVal = getCookie('mentorhub_avatarUrl');
+      if (avatarVal) setAvatarUrl(avatarVal);
+
+      let finalSelections = selections;
+      const selectionsVal = getCookie('mentorhub_selections');
+      if (selectionsVal) {
+        try {
+          const parsed = JSON.parse(selectionsVal);
+          setSelections(parsed);
+          finalSelections = parsed;
+        } catch(e) {}
+      }
+
+      let finalScreeningSelections = screeningSelections;
+      const screeningSelectionsVal = getCookie('mentorhub_screeningSelections');
+      if (screeningSelectionsVal) {
+        try {
+          const parsed = JSON.parse(screeningSelectionsVal);
+          setScreeningSelections(parsed);
+          finalScreeningSelections = parsed;
+        } catch(e) {}
+      }
+
+      const quizIndexVal = getCookie('mentorhub_quizIndex');
+      if (quizIndexVal) setQuizIndex(Number(quizIndexVal));
+
+      const screeningIndexVal = getCookie('mentorhub_screeningIndex');
+      if (screeningIndexVal) setScreeningIndex(Number(screeningIndexVal));
+
+      const mentorQuizIndexVal = getCookie('mentorhub_mentorQuizIndex');
+      if (mentorQuizIndexVal) setMentorQuizIndex(Number(mentorQuizIndexVal));
+
+      const mentorExpertiseVal = getCookie('mentorhub_mentorExpertise');
+      if (mentorExpertiseVal) setMentorExpertise(mentorExpertiseVal);
+
+      const coinsVal = getCookie('mentorhub_coinsCount');
+      if (coinsVal) setCoinsCount(Number(coinsVal));
+
+      const streakVal = getCookie('mentorhub_streakCount');
+      if (streakVal) setStreakCount(Number(streakVal));
+
+      // Trigger automatic dashboard landing if they completed onboarding or filled 20% of questions
+      if (finalRole) {
+        checkAndRedirectToDashboard(finalRole, finalSelections, finalScreeningSelections);
+      }
+    } catch (e) {
+      console.error("Error reading cookies", e);
+    } finally {
+      hasLoadedFromCookies.current = true;
+    }
+  }, []);
+
+  // 2. Sync state to cookies whenever it changes
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_state', state);
+  }, [state]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    if (role) setCookie('mentorhub_role', role);
+  }, [role]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_name', name);
+  }, [name]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_email', email);
+  }, [email]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    if (avatarUrl) setCookie('mentorhub_avatarUrl', avatarUrl);
+  }, [avatarUrl]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_selections', JSON.stringify(selections));
+  }, [selections]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_screeningSelections', JSON.stringify(screeningSelections));
+  }, [screeningSelections]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_quizIndex', String(quizIndex));
+  }, [quizIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_screeningIndex', String(screeningIndex));
+  }, [screeningIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_mentorQuizIndex', String(mentorQuizIndex));
+  }, [mentorQuizIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_mentorExpertise', mentorExpertise);
+  }, [mentorExpertise]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_coinsCount', String(coinsCount));
+  }, [coinsCount]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_streakCount', String(streakCount));
+  }, [streakCount]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
