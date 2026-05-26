@@ -80,6 +80,26 @@ const IconMap: Record<string, any> = {
 
 const getIcon = (iconName: string) => IconMap[iconName] || HelpCircle;
 
+const setCookie = (name: string, value: string, days = 7) => {
+  if (typeof window === "undefined") return;
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = "; expires=" + date.toUTCString();
+  document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
+};
+
+const getCookie = (name: string): string | null => {
+  if (typeof window === "undefined") return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+  }
+  return null;
+};
+
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
 
 const AESTHETIC_GRADIENTS = [
@@ -291,6 +311,126 @@ export default function OnboardingFlow() {
     fetchQuestionnaires();
   }, []);
 
+  const hasLoadedFromCookies = useRef(false);
+
+  // 1. Load state from cookies on mount
+  useEffect(() => {
+    try {
+      const stateVal = getCookie('mentorhub_state');
+      if (stateVal) setState(stateVal as FlowState);
+
+      const roleVal = getCookie('mentorhub_role');
+      if (roleVal) setRole(roleVal as "STUDENT" | "MENTOR");
+
+      const nameVal = getCookie('mentorhub_name');
+      if (nameVal) setName(nameVal);
+
+      const emailVal = getCookie('mentorhub_email');
+      if (emailVal) setEmail(emailVal);
+
+      const avatarVal = getCookie('mentorhub_avatarUrl');
+      if (avatarVal) setAvatarUrl(avatarVal);
+
+      const selectionsVal = getCookie('mentorhub_selections');
+      if (selectionsVal) {
+        try { setSelections(JSON.parse(selectionsVal)); } catch(e) {}
+      }
+
+      const screeningSelectionsVal = getCookie('mentorhub_screeningSelections');
+      if (screeningSelectionsVal) {
+        try { setScreeningSelections(JSON.parse(screeningSelectionsVal)); } catch(e) {}
+      }
+
+      const quizIndexVal = getCookie('mentorhub_quizIndex');
+      if (quizIndexVal) setQuizIndex(Number(quizIndexVal));
+
+      const screeningIndexVal = getCookie('mentorhub_screeningIndex');
+      if (screeningIndexVal) setScreeningIndex(Number(screeningIndexVal));
+
+      const mentorQuizIndexVal = getCookie('mentorhub_mentorQuizIndex');
+      if (mentorQuizIndexVal) setMentorQuizIndex(Number(mentorQuizIndexVal));
+
+      const mentorExpertiseVal = getCookie('mentorhub_mentorExpertise');
+      if (mentorExpertiseVal) setMentorExpertise(mentorExpertiseVal);
+
+      const coinsVal = getCookie('mentorhub_coinsCount');
+      if (coinsVal) setCoinsCount(Number(coinsVal));
+
+      const streakVal = getCookie('mentorhub_streakCount');
+      if (streakVal) setStreakCount(Number(streakVal));
+    } catch (e) {
+      console.error("Error reading cookies", e);
+    } finally {
+      hasLoadedFromCookies.current = true;
+    }
+  }, []);
+
+  // 2. Sync state to cookies whenever it changes
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_state', state);
+  }, [state]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    if (role) setCookie('mentorhub_role', role);
+  }, [role]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_name', name);
+  }, [name]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_email', email);
+  }, [email]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    if (avatarUrl) setCookie('mentorhub_avatarUrl', avatarUrl);
+  }, [avatarUrl]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_selections', JSON.stringify(selections));
+  }, [selections]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_screeningSelections', JSON.stringify(screeningSelections));
+  }, [screeningSelections]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_quizIndex', String(quizIndex));
+  }, [quizIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_screeningIndex', String(screeningIndex));
+  }, [screeningIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_mentorQuizIndex', String(mentorQuizIndex));
+  }, [mentorQuizIndex]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_mentorExpertise', mentorExpertise);
+  }, [mentorExpertise]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_coinsCount', String(coinsCount));
+  }, [coinsCount]);
+
+  useEffect(() => {
+    if (!hasLoadedFromCookies.current) return;
+    setCookie('mentorhub_streakCount', String(streakCount));
+  }, [streakCount]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -320,6 +460,20 @@ export default function OnboardingFlow() {
         setRole(null);
         setName("");
         setEmail("");
+        // Clear all cookies
+        setCookie('mentorhub_state', '', -1);
+        setCookie('mentorhub_role', '', -1);
+        setCookie('mentorhub_name', '', -1);
+        setCookie('mentorhub_email', '', -1);
+        setCookie('mentorhub_avatarUrl', '', -1);
+        setCookie('mentorhub_selections', '', -1);
+        setCookie('mentorhub_screeningSelections', '', -1);
+        setCookie('mentorhub_quizIndex', '', -1);
+        setCookie('mentorhub_screeningIndex', '', -1);
+        setCookie('mentorhub_mentorQuizIndex', '', -1);
+        setCookie('mentorhub_mentorExpertise', '', -1);
+        setCookie('mentorhub_coinsCount', '', -1);
+        setCookie('mentorhub_streakCount', '', -1);
       }
     });
 
