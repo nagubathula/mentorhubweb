@@ -457,12 +457,12 @@ export default function OnboardingFlow() {
         
         // Check database profile preferences / answers for 20% questionnaire completion
         const prefs = (profile.preferences as any) || {};
-        const screeningPrefs = (profile.screening_answers as any) || {};
+        const screeningPrefs: Record<string, any> = {};
         
         let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
         let screeningSelectionsToUse = Object.keys(screeningSelections).length > 0 ? screeningSelections : screeningPrefs;
         
-        const didRedirect = checkAndRedirectToDashboard(profile.role, selectionsToUse, screeningSelectionsToUse);
+        const didRedirect = checkAndRedirectToDashboard(profile.role as "STUDENT" | "MENTOR" | null, selectionsToUse, screeningSelectionsToUse);
         
         // Restore last known state if available and didn't redirect via 20% rule
         if (!didRedirect && profile.last_state) {
