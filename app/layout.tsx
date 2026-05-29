@@ -68,9 +68,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${poppins.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-inter">
+      <body suppressHydrationWarning className="min-h-full flex flex-col font-inter">
         <TooltipProvider>
           {children}
         </TooltipProvider>
