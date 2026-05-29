@@ -10,7 +10,10 @@
       "Bash(grep -n \"^      [a-z_]*: {$\\\\|^      [a-z_]*:\" \"C:/Users/satya/Documents/GitHub/mentorhubweb/lib/database.types.ts\")",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "PowerShell(npm run build 2>&1)",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }

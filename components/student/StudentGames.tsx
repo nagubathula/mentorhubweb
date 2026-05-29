@@ -1026,7 +1026,11 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                   return (
                     <button
                       key={idx}
-                      onClick={() => handleAnswerSubmit(idx)}
+                      onClick={() => {
+                        if (!answerStatus) {
+                          setSelectedOption(idx);
+                        }
+                      }}
                       disabled={!!answerStatus}
                       className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
                     >
@@ -1040,6 +1044,16 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                   );
                 })}
               </div>
+
+              {/* Confirm Button if an option is selected but not yet submitted */}
+              {selectedOption !== null && !answerStatus && (
+                <Button
+                  onClick={() => handleAnswerSubmit(selectedOption)}
+                  className="w-full mt-4 h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
+                >
+                  Confirm Answer
+                </Button>
+              )}
 
               {/* Dice Roll section if correct */}
               <AnimatePresence>
@@ -1591,7 +1605,11 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
                   return (
                     <button
                       key={idx}
-                      onClick={() => handleAnswerOptionClick(idx)}
+                      onClick={() => {
+                        if (!answerStatus) {
+                          setSelectedOption(idx);
+                        }
+                      }}
                       disabled={!!answerStatus}
                       className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
                     >
@@ -1605,6 +1623,16 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
                   );
                 })}
               </div>
+
+              {/* Confirm Button if an option is selected but not yet submitted */}
+              {selectedOption !== null && !answerStatus && (
+                <Button
+                  onClick={() => handleAnswerOptionClick(selectedOption)}
+                  className="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
+                >
+                  Confirm Answer
+                </Button>
+              )}
 
               {/* Rolling Controls */}
               <AnimatePresence>
