@@ -22,7 +22,8 @@ import {
   Heart,
   Handshake,
   Settings,
-  ChevronLeft
+  ChevronLeft,
+  StickyNote
 } from "lucide-react";
 
 const mainNavItems = [
@@ -44,6 +45,7 @@ const othersNavItems = [
   { name: "Inspiration", href: "/admin/inspiration", icon: Sparkles },
   { name: "Messages", href: "/admin/messages", icon: MessageCircle },
   { name: "Gratitude Wall", href: "/admin/gratitude-wall", icon: Heart },
+  { name: "Running Notes", href: "/admin/notes", icon: StickyNote },
   { name: "User Feedback", href: "/admin/feedback", icon: MessageSquare },
   { name: "CSR Sponsors", href: "/admin/csr-sponsors", icon: Handshake },
   { name: "Feature Controls", href: "/admin/features", icon: Settings },

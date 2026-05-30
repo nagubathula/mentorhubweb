@@ -68,9 +68,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased`}
+      className={`${poppins.variable} ${geistMono.variable} ${volkhov.variable} ${mulish.variable} ${lato.variable} ${openSans.variable} ${inter.variable} h-full antialiased mesh-bg`}
     >
-      <body className="min-h-full flex flex-col font-inter">
+      <body className="min-h-full flex flex-col font-inter mesh-bg">
         <TooltipProvider>
           {children}
         </TooltipProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   LayoutDashboard, GraduationCap, UserCheck, Users, FileText,
   ArrowRightLeft, BookOpen, Gamepad2, HelpCircle, Circle as CircleIcon,
@@ -11,6 +11,7 @@ import {
   UserPlus, Shield, RefreshCw, Download, Upload,
   MapPin, BookMarked, Layers, BarChart2, Activity, ChevronRight,
   ChevronLeft, Cpu, Lightbulb, Save, Trash2, Edit3, MessageSquare, Image as ImageIcon,
+  StickyNote, Pin, CheckSquare, Square, Paintbrush
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
@@ -24,7 +25,7 @@ type AdminPage =
   | "dashboard" | "courses" | "mentors" | "mentees" | "registrations"
   | "mapping" | "enrollments" | "games" | "questionnaires" | "circles"
   | "sessions" | "reviews" | "inspiration" | "messages" | "gratitude-wall"
-  | "csr-sponsors" | "settings" | "features" | "feedback";
+  | "csr-sponsors" | "settings" | "features" | "feedback" | "notes";
 
 type ModalKey =
   | "add-student" | "add-mentor" | "schedule-session"
@@ -51,6 +52,7 @@ const NAV_OTHERS = [
   { key: "inspiration",    label: "Inspiration",      icon: Sparkles },
   { key: "messages",       label: "Messages",         icon: MessageCircle },
   { key: "gratitude-wall", label: "Gratitude Wall",   icon: Heart },
+  { key: "notes",          label: "Running Notes",    icon: StickyNote },
   { key: "feedback",       label: "User Feedback",    icon: MessageSquare },
   { key: "csr-sponsors",   label: "CSR Sponsors",     icon: Handshake },
   { key: "features",       label: "Feature Controls", icon: Settings },
@@ -464,12 +466,68 @@ function CreateCircleModal({ onClose, mentors }: { onClose: () => void; mentors:
   );
 }
 
-function CreateMappingModal({ onClose, students, mentors, circles }: { onClose: () => void; students: any[]; mentors: any[]; circles: any[] }) {
+function CreateMappingModal({ onClose, students, mentors, circles, studentQuiz = [], mentorQuiz = [] }: { 
+  onClose: () => void; students: any[]; mentors: any[]; circles: any[]; studentQuiz?: any[]; mentorQuiz?: any[] 
+}) {
   const [student, setStudent] = useState(""); 
   const [mentor, setMentor] = useState("");
   const [circle, setCircle] = useState(""); 
   const [status, setStatus] = useState("Active");
   const supabase = createClient();
+
+  const getCompatibility = (studentId: string) => {
+    if (!studentId) return [];
+    
+    // Find the selected student's responses
+    const sResp = (studentQuiz || []).find((q: any) => q.user_id === studentId);
+    if (!sResp) return [];
+
+    const list = mentors.map((m: any) => {
+      // Find this mentor's responses
+      const mResp = (mentorQuiz || []).find((q: any) => q.user_id === m.id);
+      
+      let score = 0;
+      const matches: string[] = [];
+
+      if (mResp) {
+        // 1. Branch Match (40 pts)
+        if (sResp.branch && mResp.branch && sResp.branch.trim().toLowerCase() === mResp.branch.trim().toLowerCase()) {
+          score += 40;
+          matches.push("Branch");
+        }
+        
+        // 2. College Match (30 pts)
+        if (sResp.college && mResp.college && sResp.college.trim().toLowerCase() === mResp.college.trim().toLowerCase()) {
+          score += 30;
+          matches.push("College");
+        }
+
+        // 3. Mother Tongue Match (30 pts)
+        if (sResp.mother_tongue && mResp.mother_tongue && sResp.mother_tongue.trim().toLowerCase() === mResp.mother_tongue.trim().toLowerCase()) {
+          score += 30;
+          matches.push("Tongue");
+        }
+      }
+
+      return {
+        mentorId: m.id,
+        name: m.name || m.email || "Unknown Mentor",
+        score,
+        matches,
+        details: mResp ? {
+          college: mResp.college,
+          branch: mResp.branch,
+          company: mResp.current_company
+        } : null
+      };
+    });
+
+    // Sort by score descending
+    return list.sort((a: any, b: any) => b.score - a.score);
+  };
+
+  const recommendations = useMemo(() => getCompatibility(student), [student, studentQuiz, mentorQuiz]);
+
   const save = async () => {
     if (!student || !mentor) return;
     const { error } = await supabase.from("mapping").insert({ student_id: student, mentor_id: mentor, circle_id: circle||null, status });
@@ -480,10 +538,67 @@ function CreateMappingModal({ onClose, students, mentors, circles }: { onClose: 
       onClose();
     }
   };
+
   return (
     <ModalWrap title="Assign Mentor to Student" onClose={onClose} onSave={save}>
       <FieldRow label="Student"><SInput value={student} onChange={setStudent} options={students.map((s) => ({ value: s.id, label: s.name||s.email }))} /></FieldRow>
       <FieldRow label="Mentor"><SInput value={mentor} onChange={setMentor} options={mentors.map((m) => ({ value: m.id, label: m.name||m.email }))} /></FieldRow>
+
+      {student && recommendations.length > 0 && (
+        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-3">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Suggested Compatible Mentors</p>
+          <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1 hidden-scrollbar">
+            {recommendations.slice(0, 4).map((rec: any) => (
+              <div 
+                key={rec.mentorId}
+                onClick={() => setMentor(rec.mentorId)}
+                className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                  mentor === rec.mentorId 
+                    ? "bg-indigo-50/70 border-indigo-200 shadow-sm" 
+                    : "bg-white border-slate-100 hover:border-slate-200 hover:shadow-xs"
+                }`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-semibold text-slate-800 flex items-center gap-1.5">
+                    {rec.name}
+                    {rec.score >= 70 && (
+                      <span className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                        ★ Best Compatibility
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-0.5">
+                    {rec.details?.company ? `${rec.details.company} • ` : ""}
+                    {rec.details?.branch || "No profile details"}
+                  </span>
+                </div>
+                
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`text-[12px] font-bold ${rec.score >= 70 ? "text-indigo-600" : rec.score >= 30 ? "text-amber-600" : "text-slate-400"}`}>
+                    {rec.score}% Match
+                  </span>
+                  {rec.matches.length > 0 && (
+                    <div className="flex gap-1">
+                      {rec.matches.map((m: string) => (
+                        <span key={m} className="bg-slate-100 text-slate-600 text-[9px] font-medium px-1.5 py-0.5 rounded">
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {student && recommendations.length === 0 && (
+        <div className="mt-4 p-3 bg-amber-50/60 rounded-xl border border-amber-100/50 text-[12px] text-amber-700 font-medium">
+          No onboarding quiz responses recorded for this student yet. Showing standard mentor listing.
+        </div>
+      )}
+
       <FieldRow label="Circle (optional)"><SInput value={circle} onChange={setCircle} options={circles.map((c) => ({ value: c.id, label: c.name||c.id }))} /></FieldRow>
       <FieldRow label="Status"><SInput value={status} onChange={setStatus} options={[{ value:"Active",label:"Active"},{ value:"Inactive",label:"Inactive"}]} /></FieldRow>
     </ModalWrap>
@@ -1046,8 +1161,8 @@ function RegistrationsPage({ data }: { data: any }) {
 
   const enriched = allProfiles.map((p: any) => {
     const quiz = p._role === "Student"
-      ? studentQuiz.find((q: any) => q.student_id === p.id)
-      : mentorQuiz.find((q: any) => q.mentor_id === p.id);
+      ? studentQuiz.find((q: any) => q.user_id === p.id)
+      : mentorQuiz.find((q: any) => q.user_id === p.id);
     const college = quiz?.college || "—";
     const branch = quiz?.branch || "—";
     const lang = quiz?.mother_tongue || "—";
@@ -2666,6 +2781,667 @@ function SettingsPage() {
   );
 }
 
+// Google Keep-Style Running Notes Screen Component
+function NotesPage() {
+  const [notes, setNotes] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // New note creator state
+  const [newNote, setNewNote] = useState({
+    title: "",
+    content: "",
+    color: "white",
+    isPinned: false,
+    isChecklist: false,
+    checklist: [] as { id: string; text: string; completed: boolean }[],
+  });
+  
+  const [newItemText, setNewItemText] = useState("");
+  
+  // Editing note state
+  const [editingNote, setEditingNote] = useState<any | null>(null);
+  const [editItemText, setEditItemText] = useState("");
+
+  const colors = [
+    { key: "white", bg: "bg-white border-slate-200", border: "border-slate-200 text-slate-800 shadow-xs", dot: "bg-white border border-slate-200", label: "Default" },
+    { key: "rose", bg: "bg-rose-50/80 border-rose-200/60", border: "border-rose-200 text-rose-900 shadow-xs shadow-rose-100/40", dot: "bg-rose-100 border border-rose-300", label: "Coral" },
+    { key: "orange", bg: "bg-orange-50/80 border-orange-200/60", border: "border-orange-200 text-orange-800 shadow-xs shadow-orange-100/40", dot: "bg-orange-100 border border-orange-300", label: "Peach" },
+    { key: "yellow", bg: "bg-amber-50/60 border-amber-200/60", border: "border-amber-200 text-amber-900 shadow-xs shadow-amber-100/40", dot: "bg-amber-100 border border-amber-300", label: "Yellow" },
+    { key: "emerald", bg: "bg-emerald-50/60 border-emerald-200/60", border: "border-emerald-200 text-emerald-900 shadow-xs shadow-emerald-100/40", dot: "bg-emerald-100 border border-emerald-300", label: "Mint" },
+    { key: "teal", bg: "bg-teal-50/80 border-teal-200/60", border: "border-teal-200 text-teal-900 shadow-xs shadow-teal-100/40", dot: "bg-teal-100 border border-teal-300", label: "Teal" },
+    { key: "blue", bg: "bg-blue-50/80 border-blue-200/60", border: "border-blue-200 text-blue-900 shadow-xs shadow-blue-100/40", dot: "bg-blue-100 border border-blue-300", label: "Blue" },
+    { key: "purple", bg: "bg-purple-50/80 border-purple-200/60", border: "border-purple-200 text-purple-900 shadow-xs shadow-purple-100/40", dot: "bg-purple-100 border border-purple-300", label: "Purple" },
+    { key: "pink", bg: "bg-pink-50/80 border-pink-200/60", border: "border-pink-200 text-pink-900 shadow-xs shadow-pink-100/40", dot: "bg-pink-100 border border-pink-300", label: "Pink" },
+    { key: "charcoal", bg: "bg-slate-50 border-slate-200", border: "border-slate-300 text-slate-900 shadow-xs shadow-slate-200/40", dot: "bg-slate-200 border border-slate-400", label: "Charcoal" },
+  ];
+
+  const getColor = (key: string) => {
+    return colors.find(c => c.key === key) || colors[0];
+  };
+  
+  // Load notes on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("mentorhub_admin_notes");
+    if (saved) {
+      try {
+        setNotes(JSON.parse(saved));
+      } catch (e) {
+        console.error("Error loading notes", e);
+      }
+    } else {
+      // Default placeholder notes to make the page look amazing on first visit
+      const defaults = [
+        {
+          id: "1",
+          title: "💡 MentorHub Admin Guidelines",
+          content: "Welcome to your Running Notes dashboard! This screen is designed to help you quickly jot down ideas, map out to-do lists, and pin critical notes. It works exactly like Google Keep, utilizing localStorage to save everything securely and instantly.",
+          color: "blue",
+          isPinned: true,
+          isChecklist: false,
+          checklist: [],
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: "2",
+          title: "📋 Weekly Administration Tasks",
+          content: "",
+          color: "yellow",
+          isPinned: true,
+          isChecklist: true,
+          checklist: [
+            { id: "c1", text: "Approve pending mentor registrations", completed: true },
+            { id: "c2", text: "Match new students with compatible mentors", completed: false },
+            { id: "c3", text: "Audit system feedback from questionnaires", completed: false },
+            { id: "c4", text: "Publish weekly inspiration quotes", completed: false }
+          ],
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: "3",
+          title: "🚀 Feature Ideas for Q3",
+          content: "• Gamified quizzes leaderboard enhancements\n• One-on-one session video call integrations\n• Dynamic course path completion awards",
+          color: "emerald",
+          isPinned: false,
+          isChecklist: false,
+          checklist: [],
+          updatedAt: new Date().toISOString()
+        }
+      ];
+      setNotes(defaults);
+      localStorage.setItem("mentorhub_admin_notes", JSON.stringify(defaults));
+    }
+  }, []);
+  
+  // Save notes helper
+  const saveNotes = (updated: any[]) => {
+    setNotes(updated);
+    localStorage.setItem("mentorhub_admin_notes", JSON.stringify(updated));
+  };
+  
+  // Add note
+  const handleAddNote = () => {
+    if (!newNote.title.trim() && !newNote.content.trim() && newNote.checklist.length === 0) {
+      setIsExpanded(false);
+      return;
+    }
+    
+    const added = {
+      id: crypto.randomUUID(),
+      title: newNote.title.trim(),
+      content: newNote.isChecklist ? "" : newNote.content.trim(),
+      color: newNote.color,
+      isPinned: newNote.isPinned,
+      isChecklist: newNote.isChecklist,
+      checklist: newNote.isChecklist ? newNote.checklist : [],
+      updatedAt: new Date().toISOString()
+    };
+    
+    const updated = [added, ...notes];
+    saveNotes(updated);
+    
+    // Reset state
+    setNewNote({
+      title: "",
+      content: "",
+      color: "white",
+      isPinned: false,
+      isChecklist: false,
+      checklist: []
+    });
+    setNewItemText("");
+    setIsExpanded(false);
+  };
+  
+  // Toggle checkbox inline on card
+  const handleToggleCheckItem = (noteId: string, itemId: string) => {
+    const updated = notes.map(n => {
+      if (n.id === noteId) {
+        return {
+          ...n,
+          checklist: n.checklist.map((item: any) => 
+            item.id === itemId ? { ...item, completed: !item.completed } : item
+          ),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return n;
+    });
+    saveNotes(updated);
+  };
+  
+  // Delete note
+  const handleDeleteNote = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const updated = notes.filter(n => n.id !== id);
+    saveNotes(updated);
+    if (editingNote && editingNote.id === id) {
+      setEditingNote(null);
+    }
+  };
+  
+  // Toggle pin
+  const handleTogglePin = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const updated = notes.map(n => 
+      n.id === id ? { ...n, isPinned: !n.isPinned, updatedAt: new Date().toISOString() } : n
+    );
+    saveNotes(updated);
+  };
+  
+  // Change note color
+  const handleChangeColor = (id: string, color: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const updated = notes.map(n => 
+      n.id === id ? { ...n, color, updatedAt: new Date().toISOString() } : n
+    );
+    saveNotes(updated);
+  };
+  
+  // Add checklist item in creator
+  const addCreatorCheckItem = () => {
+    if (!newItemText.trim()) return;
+    setNewNote(prev => ({
+      ...prev,
+      checklist: [...prev.checklist, { id: crypto.randomUUID(), text: newItemText.trim(), completed: false }]
+    }));
+    setNewItemText("");
+  };
+  
+  // Remove checklist item in creator
+  const removeCreatorCheckItem = (itemId: string) => {
+    setNewNote(prev => ({
+      ...prev,
+      checklist: prev.checklist.filter(item => item.id !== itemId)
+    }));
+  };
+  
+  // Save edited note from modal
+  const handleSaveEdit = () => {
+    if (!editingNote) return;
+    const updated = notes.map(n => 
+      n.id === editingNote.id ? { ...editingNote, updatedAt: new Date().toISOString() } : n
+    );
+    saveNotes(updated);
+    setEditingNote(null);
+  };
+  
+  // Add checklist item in modal
+  const addModalCheckItem = () => {
+    if (!editItemText.trim() || !editingNote) return;
+    setEditingNote({
+      ...editingNote,
+      checklist: [...editingNote.checklist, { id: crypto.randomUUID(), text: editItemText.trim(), completed: false }]
+    });
+    setEditItemText("");
+  };
+  
+  // Remove checklist item in modal
+  const removeModalCheckItem = (itemId: string) => {
+    if (!editingNote) return;
+    setEditingNote({
+      ...editingNote,
+      checklist: editingNote.checklist.filter((item: any) => item.id !== itemId)
+    });
+  };
+  
+  // Filtered notes
+  const filteredNotes = notes.filter(n => {
+    const q = searchQuery.toLowerCase();
+    const matchesTitle = (n.title || "").toLowerCase().includes(q);
+    const matchesContent = (n.content || "").toLowerCase().includes(q);
+    const matchesChecklist = (n.checklist || []).some((item: any) => item.text.toLowerCase().includes(q));
+    return matchesTitle || matchesContent || matchesChecklist;
+  });
+  
+  const pinnedNotes = filteredNotes.filter(n => n.isPinned);
+  const otherNotes = filteredNotes.filter(n => !n.isPinned);
+
+  return (
+    <PageShell 
+      title="Running Notes" 
+      subtitle={`${notes.length} notes saved`}
+      action={
+        <div className="w-64">
+          <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search notes..." />
+        </div>
+      }
+    >
+      {/* Note Creator */}
+      <div className="max-w-xl mx-auto w-full mb-8 relative">
+        {isExpanded ? (
+          <div className={cn("bg-white border rounded-2xl shadow-lg p-4 transition-all flex flex-col gap-3", getColor(newNote.color).bg, getColor(newNote.color).border)}>
+            {/* Title + Pin */}
+            <div className="flex items-center justify-between">
+              <input 
+                type="text" 
+                value={newNote.title} 
+                onChange={(e) => setNewNote({ ...newNote, title: e.target.value })} 
+                placeholder="Title" 
+                className="w-full bg-transparent border-0 font-medium text-slate-800 focus:outline-none placeholder-slate-400 text-[15px]" 
+              />
+              <button 
+                onClick={() => setNewNote({ ...newNote, isPinned: !newNote.isPinned })} 
+                className={cn("p-1.5 rounded-lg hover:bg-slate-900/5 transition-colors", newNote.isPinned ? "text-indigo-600" : "text-slate-400")}
+              >
+                <Pin className={cn("w-4 h-4", newNote.isPinned && "fill-indigo-600 text-indigo-600")} />
+              </button>
+            </div>
+
+            {/* Note body or checklist */}
+            {newNote.isChecklist ? (
+              <div className="flex flex-col gap-2 max-h-60 overflow-y-auto hidden-scrollbar py-1">
+                {newNote.checklist.map((item) => (
+                  <div key={item.id} className="flex items-center gap-2">
+                    <input 
+                      type="checkbox" 
+                      checked={item.completed} 
+                      onChange={() => {
+                        setNewNote({
+                          ...newNote,
+                          checklist: newNote.checklist.map(x => x.id === item.id ? { ...x, completed: !x.completed } : x)
+                        });
+                      }}
+                      className="w-3.5 h-3.5 accent-indigo-600 cursor-pointer"
+                    />
+                    <span className="text-[13px] text-slate-700 flex-1">{item.text}</span>
+                    <button 
+                      onClick={() => removeCreatorCheckItem(item.id)} 
+                      className="text-slate-400 hover:text-red-500 p-0.5 rounded"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 mt-1">
+                  <Plus className="w-4 h-4 text-slate-400 shrink-0" />
+                  <input 
+                    type="text" 
+                    value={newItemText} 
+                    onChange={(e) => setNewItemText(e.target.value)} 
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCreatorCheckItem();
+                      }
+                    }}
+                    placeholder="List item" 
+                    className="w-full bg-transparent border-0 text-[13px] text-slate-700 focus:outline-none placeholder-slate-400" 
+                  />
+                  {newItemText.trim() && (
+                    <button onClick={addCreatorCheckItem} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-800">
+                      Add
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <textarea 
+                value={newNote.content} 
+                onChange={(e) => setNewNote({ ...newNote, content: e.target.value })} 
+                placeholder="Take a note..." 
+                rows={3} 
+                className="w-full bg-transparent border-0 text-[13.5px] text-slate-700 focus:outline-none placeholder-slate-400 resize-none min-h-16" 
+              />
+            )}
+
+            {/* Toolbar */}
+            <div className="flex items-center justify-between border-t border-slate-100/50 pt-3 mt-1">
+              <div className="flex items-center gap-2">
+                {/* Plain/Checklist toggle */}
+                <button 
+                  onClick={() => setNewNote({ ...newNote, isChecklist: !newNote.isChecklist })} 
+                  className="p-1.5 rounded-lg hover:bg-slate-900/5 transition-colors text-slate-400 hover:text-slate-600"
+                  title={newNote.isChecklist ? "Switch to plain text" : "Switch to checklist"}
+                >
+                  {newNote.isChecklist ? <Edit3 className="w-4 h-4" /> : <CheckSquare className="w-4 h-4" />}
+                </button>
+
+                {/* Color palette selector */}
+                <div className="flex items-center gap-1.5 ml-2">
+                  {colors.map((c) => (
+                    <button 
+                      key={c.key} 
+                      onClick={() => setNewNote({ ...newNote, color: c.key })} 
+                      className={cn("w-4.5 h-4.5 rounded-full transition-all hover:scale-110", c.dot, newNote.color === c.key ? "ring-2 ring-indigo-500 ring-offset-1" : "")} 
+                      title={c.label} 
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button 
+                onClick={handleAddNote} 
+                className="h-8 px-4 bg-[#0f172a] hover:bg-[#1e293b] text-white text-[12px] font-semibold rounded-lg shadow-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div 
+            onClick={() => setIsExpanded(true)} 
+            className="bg-white border border-slate-200 rounded-2xl shadow-xs px-4 py-3 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-colors"
+          >
+            <span className="text-slate-400 text-[14px]">Take a note...</span>
+            <div className="flex items-center gap-2 text-slate-400">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setNewNote({ ...newNote, isChecklist: true }); setIsExpanded(true); }} 
+                className="p-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-600 transition-colors"
+                title="New checklist"
+              >
+                <CheckSquare className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Grid of Notes */}
+      {filteredNotes.length > 0 ? (
+        <div className="space-y-8">
+          {/* Pinned section */}
+          {pinnedNotes.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pinned</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {pinnedNotes.map((n) => (
+                  <div 
+                    key={n.id}
+                    onClick={() => setEditingNote(n)}
+                    className={cn("p-5 border transition-all duration-200 relative group flex flex-col justify-between min-h-[140px] rounded-2xl cursor-pointer hover:shadow-md hover:-translate-y-0.5", getColor(n.color).bg, getColor(n.color).border)}
+                  >
+                    <div>
+                      {n.title && <h4 className="text-[14px] font-semibold text-slate-800 mb-2 truncate">{n.title}</h4>}
+                      {n.isChecklist ? (
+                        <div className="flex flex-col gap-1.5">
+                          {(n.checklist || []).slice(0, 5).map((item: any) => (
+                            <div key={item.id} className="flex items-start gap-2 min-w-0">
+                              <input 
+                                type="checkbox" 
+                                checked={item.completed} 
+                                onChange={(e) => { e.stopPropagation(); handleToggleCheckItem(n.id, item.id); }}
+                                className="w-3.5 h-3.5 accent-indigo-600 cursor-pointer mt-0.5"
+                              />
+                              <span className={cn("text-[12.5px] text-slate-600 truncate flex-1", item.completed && "line-through opacity-50")}>
+                                {item.text}
+                              </span>
+                            </div>
+                          ))}
+                          {(n.checklist || []).length > 5 && (
+                            <span className="text-[11px] text-slate-400 font-semibold mt-1">
+                              + {(n.checklist || []).length - 5} more items
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[13px] text-slate-600 line-clamp-6 whitespace-pre-wrap leading-relaxed">
+                          {n.content}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between pt-3 mt-4 border-t border-slate-100/40">
+                      <div className="flex gap-1">
+                        {["white", "yellow", "blue", "emerald"].map((col) => (
+                          <button 
+                            key={col} 
+                            onClick={(e) => handleChangeColor(n.id, col, e)} 
+                            className={cn("w-3.5 h-3.5 rounded-full transition-transform hover:scale-110", colors.find(c => c.key === col)?.dot, n.color === col ? "ring-1 ring-slate-400" : "")} 
+                            title={colors.find(c => c.key === col)?.label}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={(e) => handleTogglePin(n.id, e)} 
+                          className="p-1 rounded hover:bg-slate-900/5 text-slate-400 hover:text-indigo-600 transition-colors"
+                          title="Unpin note"
+                        >
+                          <Pin className="w-3.5 h-3.5 fill-indigo-600 text-indigo-600" />
+                        </button>
+                        <button 
+                          onClick={(e) => handleDeleteNote(n.id, e)} 
+                          className="p-1 rounded hover:bg-slate-900/5 text-slate-400 hover:text-red-500 transition-colors"
+                          title="Delete note"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Others section */}
+          <div className="space-y-3">
+            {pinnedNotes.length > 0 && <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Others</h3>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {otherNotes.map((n) => (
+                <div 
+                  key={n.id}
+                  onClick={() => setEditingNote(n)}
+                  className={cn("p-5 border transition-all duration-200 relative group flex flex-col justify-between min-h-[140px] rounded-2xl cursor-pointer hover:shadow-md hover:-translate-y-0.5", getColor(n.color).bg, getColor(n.color).border)}
+                >
+                  <div>
+                    {n.title && <h4 className="text-[14px] font-semibold text-slate-800 mb-2 truncate">{n.title}</h4>}
+                    {n.isChecklist ? (
+                      <div className="flex flex-col gap-1.5">
+                        {(n.checklist || []).slice(0, 5).map((item: any) => (
+                          <div key={item.id} className="flex items-start gap-2 min-w-0">
+                            <input 
+                              type="checkbox" 
+                              checked={item.completed} 
+                              onChange={(e) => { e.stopPropagation(); handleToggleCheckItem(n.id, item.id); }}
+                              className="w-3.5 h-3.5 accent-indigo-600 cursor-pointer mt-0.5"
+                            />
+                            <span className={cn("text-[12.5px] text-slate-600 truncate flex-1", item.completed && "line-through opacity-50")}>
+                              {item.text}
+                            </span>
+                          </div>
+                        ))}
+                        {(n.checklist || []).length > 5 && (
+                          <span className="text-[11px] text-slate-400 font-semibold mt-1">
+                            + {(n.checklist || []).length - 5} more items
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-[13px] text-slate-600 line-clamp-6 whitespace-pre-wrap leading-relaxed">
+                        {n.content}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between pt-3 mt-4 border-t border-slate-100/40">
+                    <div className="flex gap-1">
+                      {["white", "yellow", "blue", "emerald"].map((col) => (
+                        <button 
+                          key={col} 
+                          onClick={(e) => handleChangeColor(n.id, col, e)} 
+                          className={cn("w-3.5 h-3.5 rounded-full transition-transform hover:scale-110", colors.find(c => c.key === col)?.dot, n.color === col ? "ring-1 ring-slate-400" : "")} 
+                          title={colors.find(c => c.key === col)?.label}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={(e) => handleTogglePin(n.id, e)} 
+                        className="p-1 rounded hover:bg-slate-900/5 text-slate-400 hover:text-indigo-600 transition-colors"
+                        title="Pin note"
+                      >
+                        <Pin className="w-3.5 h-3.5 text-slate-400 hover:text-indigo-600" />
+                      </button>
+                      <button 
+                        onClick={(e) => handleDeleteNote(n.id, e)} 
+                        className="p-1 rounded hover:bg-slate-900/5 text-slate-400 hover:text-red-500 transition-colors"
+                        title="Delete note"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+          <StickyNote className="w-16 h-16 opacity-20 mb-3" />
+          <p className="text-[14px] font-medium">No notes found</p>
+          {searchQuery && <p className="text-[12px] text-slate-400 mt-1">Try clearing your search query.</p>}
+        </div>
+      )}
+
+      {/* Edit Dialog Modal */}
+      {editingNote && (
+        <Dialog open={true} onOpenChange={(open) => { if (!open) setEditingNote(null); }}>
+          <DialogContent className={cn("max-w-md p-0 overflow-hidden border rounded-2xl shadow-2xl transition-colors", getColor(editingNote.color).bg, getColor(editingNote.color).border)}>
+            <DialogHeader className="px-5 py-4 border-b border-slate-100/30 flex flex-row items-center justify-between">
+              <input 
+                type="text" 
+                value={editingNote.title} 
+                onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })} 
+                placeholder="Title" 
+                className="w-full bg-transparent border-0 font-medium text-slate-800 focus:outline-none placeholder-slate-400 text-[16px]" 
+              />
+              <button 
+                onClick={() => setEditingNote({ ...editingNote, isPinned: !editingNote.isPinned })} 
+                className={cn("p-1.5 rounded-lg hover:bg-slate-900/5 transition-colors", editingNote.isPinned ? "text-indigo-600" : "text-slate-400")}
+              >
+                <Pin className={cn("w-4 h-4", editingNote.isPinned && "fill-indigo-600 text-indigo-600")} />
+              </button>
+            </DialogHeader>
+
+            <div className="px-5 py-4 flex flex-col gap-4 text-slate-700">
+              {editingNote.isChecklist ? (
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto hidden-scrollbar py-1">
+                  {(editingNote.checklist || []).map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        checked={item.completed} 
+                        onChange={() => {
+                          setEditingNote({
+                            ...editingNote,
+                            checklist: editingNote.checklist.map((x: any) => x.id === item.id ? { ...x, completed: !x.completed } : x)
+                          });
+                        }}
+                        className="w-4 h-4 accent-indigo-600 cursor-pointer shrink-0"
+                      />
+                      <input 
+                        type="text" 
+                        value={item.text} 
+                        onChange={(e) => {
+                          setEditingNote({
+                            ...editingNote,
+                            checklist: editingNote.checklist.map((x: any) => x.id === item.id ? { ...x, text: e.target.value } : x)
+                          });
+                        }}
+                        className={cn("w-full bg-transparent border-0 text-[13px] text-slate-700 focus:outline-none", item.completed && "line-through opacity-50")}
+                      />
+                      <button 
+                        onClick={() => removeModalCheckItem(item.id)} 
+                        className="text-slate-400 hover:text-red-500 p-0.5 rounded"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2 mt-1">
+                    <Plus className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input 
+                      type="text" 
+                      value={editItemText} 
+                      onChange={(e) => setEditItemText(e.target.value)} 
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addModalCheckItem();
+                        }
+                      }}
+                      placeholder="List item" 
+                      className="w-full bg-transparent border-0 text-[13px] text-slate-700 focus:outline-none placeholder-slate-400" 
+                    />
+                    {editItemText.trim() && (
+                      <button onClick={addModalCheckItem} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-800">
+                        Add
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <textarea 
+                  value={editingNote.content} 
+                  onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })} 
+                  placeholder="Note" 
+                  rows={5} 
+                  className="w-full bg-transparent border-0 text-[13.5px] text-slate-700 focus:outline-none placeholder-slate-400 resize-none min-h-32" 
+                />
+              )}
+            </div>
+
+            <DialogFooter className="flex items-center justify-between gap-2 px-5 pb-5 pt-3 border-t border-slate-100/30 bg-slate-50/50">
+              <div className="flex items-center gap-1.5">
+                {colors.map((c) => (
+                  <button 
+                    key={c.key} 
+                    onClick={() => setEditingNote({ ...editingNote, color: c.key })} 
+                    className={cn("w-4.5 h-4.5 rounded-full transition-all hover:scale-110", c.dot, editingNote.color === c.key ? "ring-2 ring-indigo-500 ring-offset-1" : "")} 
+                    title={c.label} 
+                  />
+                ))}
+              </div>
+              
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleDeleteNote(editingNote.id)} 
+                  className="h-9 px-4 border border-red-200 text-red-600 text-[13px] font-medium rounded-xl hover:bg-red-50 bg-white"
+                >
+                  Delete
+                </button>
+                <button 
+                  onClick={handleSaveEdit} 
+                  className="h-9 px-4 bg-[#0f172a] text-white text-[13px] font-medium rounded-xl hover:bg-[#1e293b] transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </PageShell>
+  );
+}
+
 // Main AdminPanel component rendered within a layout
 export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminPage }) {
   const [page, setPage] = useState<AdminPage>(initialPage);
@@ -2875,6 +3651,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "features":       return <FeaturesPage data={data} fetchAll={fetchAll} />;
       case "settings":       return <SettingsPage />;
       case "feedback":       return <FeedbackPage data={data} fetchAll={fetchAll} />;
+      case "notes":          return <NotesPage />;
       default:               return null;
     }
   };
@@ -2889,7 +3666,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       {modal === "send-inspiration"  && <SendInspirationModal onClose={closeModal} students={data.students} mentors={data.mentors} />}
       {modal === "create-enrollment" && <CreateEnrollmentModal onClose={closeModal} students={data.students} courses={data.courses} circles={data.circles} />}
       {modal === "create-circle"     && <CreateCircleModal onClose={closeModal} mentors={data.mentors} />}
-      {modal === "create-mapping"    && <CreateMappingModal onClose={closeModal} students={data.students} mentors={data.mentors} circles={data.circles} />}
+      {modal === "create-mapping"    && <CreateMappingModal onClose={closeModal} students={data.students} mentors={data.mentors} circles={data.circles} studentQuiz={data.studentQuiz} mentorQuiz={data.mentorQuiz} />}
     </div>
   );
 }
