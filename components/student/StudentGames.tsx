@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Clock, Dices, Trophy, Award, Lock, Sparkles, Coins, Gamepad2, Play, ChevronRight, X, Heart, ShieldAlert, BadgeHelp, CheckCircle2, User, Flame, Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -109,21 +110,21 @@ const KBC_QUESTIONS = [
 ];
 
 const KBC_LADDER = [
-  { level: 1, amount: "1,000 Coins", safe: false },
-  { level: 2, amount: "2,000 Coins", safe: false },
-  { level: 3, amount: "3,000 Coins", safe: false },
-  { level: 4, amount: "5,000 Coins", safe: false },
-  { level: 5, amount: "10K Coins", safe: true },
-  { level: 6, amount: "20K Coins", safe: false },
-  { level: 7, amount: "40K Coins", safe: false },
-  { level: 8, amount: "80K Coins", safe: false },
-  { level: 9, amount: "1.6L Coins", safe: false },
-  { level: 10, amount: "3.2L Coins", safe: true },
-  { level: 11, amount: "6.4L Coins", safe: false },
-  { level: 12, amount: "12.5L Coins", safe: false },
-  { level: 13, amount: "25L Coins", safe: false },
-  { level: 14, amount: "50L Coins", safe: false },
-  { level: 15, amount: "1 Crore Coins", safe: true }
+  { level: 1, amount: "2 Coins", value: 2, safe: false },
+  { level: 2, amount: "4 Coins", value: 4, safe: false },
+  { level: 3, amount: "6 Coins", value: 6, safe: true },
+  { level: 4, amount: "10 Coins", value: 10, safe: false },
+  { level: 5, amount: "20 Coins", value: 20, safe: true },
+  { level: 6, amount: "30 Coins", value: 30, safe: false },
+  { level: 7, amount: "40 Coins", value: 40, safe: false },
+  { level: 8, amount: "50 Coins", value: 50, safe: false },
+  { level: 9, amount: "60 Coins", value: 60, safe: false },
+  { level: 10, amount: "80 Coins", value: 80, safe: true },
+  { level: 11, amount: "100 Coins", value: 100, safe: false },
+  { level: 12, amount: "120 Coins", value: 120, safe: true },
+  { level: 13, amount: "140 Coins", value: 140, safe: false },
+  { level: 14, amount: "160 Coins", value: 160, safe: false },
+  { level: 15, amount: "200 Coins", value: 200, safe: true }
 ];
 
 // --- Static Leaderboard List matching APK ---
@@ -324,8 +325,8 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
   return (
     <div className="flex flex-col h-full bg-slate-50 relative">
       {/* Header Panel */}
-      <div className="bg-white px-5 pt-4 pb-4 border-b border-slate-100 shadow-sm sticky top-0 z-30">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="bg-white px-5 pt-3 pb-2.5 border-b border-slate-100/80 sticky top-0 z-30">
+        <div className="flex items-center gap-3 mb-2.5">
           <button
             onClick={onBack}
             className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all text-slate-600"
@@ -344,7 +345,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
 
 
         {/* Game Tabs */}
-        <div className="flex bg-slate-100 rounded-xl p-1 gap-1.5 mt-3">
+        <div className="flex bg-slate-100/60 rounded-xl p-1 gap-1 mt-2">
           {(["snakes", "ludo", "kbc", "leaderboard"] as const).filter((tab) => {
             if (tab === "snakes") return isSnakesEnabled;
             if (tab === "ludo") return isLudoEnabled;
@@ -388,7 +389,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
       </div>
 
       {/* Main Game Screen Render */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto px-5 pt-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <AnimatePresence mode="wait">
           {activeTab === "snakes" && (
             <motion.div key="snakes-tab" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
@@ -467,6 +468,11 @@ interface SubGameProps {
 }
 
 function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter, dbGames }: SubGameProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerPosition, setPlayerPosition] = useState(0);
   const [aiPosition, setAiPosition] = useState(0);
@@ -538,6 +544,36 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
     return { finalPos: pos, event: "", type: null };
   }, []);
 
+  const animatePlayerMovement = (startPos: number, steps: number, onComplete: (finalPos: number) => void) => {
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      currentStep++;
+      const nextPos = Math.min(startPos + currentStep, MAX_BOARD_POSITION);
+      setPlayerPosition(nextPos);
+      if (currentStep >= steps || nextPos >= MAX_BOARD_POSITION) {
+        clearInterval(interval);
+        setTimeout(() => {
+          onComplete(nextPos);
+        }, 300);
+      }
+    }, 350);
+  };
+
+  const animateAiMovement = (startPos: number, steps: number, onComplete: (finalPos: number) => void) => {
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      currentStep++;
+      const nextPos = Math.min(startPos + currentStep, MAX_BOARD_POSITION);
+      setAiPosition(nextPos);
+      if (currentStep >= steps || nextPos >= MAX_BOARD_POSITION) {
+        clearInterval(interval);
+        setTimeout(() => {
+          onComplete(nextPos);
+        }, 300);
+      }
+    }, 350);
+  };
+
   const triggerOpponentTurn = () => {
     setIsMoving(true);
     setStatusText(`${opponent.name} is thinking...`);
@@ -548,41 +584,68 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
 
     setTimeout(() => {
       if (correct) {
-        setAiPosition((prev) => {
-          let next = Math.min(prev + roll, MAX_BOARD_POSITION);
-          const effects = checkGridEffects(next);
-          next = effects.finalPos;
+        setStatusText(`${opponent.name} answered correctly & is moving...`);
+        setStatusType("info");
 
-          if (next >= MAX_BOARD_POSITION) {
-            setIsGameOver(true);
-            setWinner("opponent");
-            setStatusText(`${opponent.name} reached the finish line! Opponent wins.`);
-            setStatusType("lose");
-            setIsMoving(false);
-            onPlayComplete(0, coinsEarned);
-            return MAX_BOARD_POSITION;
+        animateAiMovement(aiPosition, roll, (landingPos) => {
+          const effects = checkGridEffects(landingPos);
+
+          if (effects.type) {
+            setTimeout(() => {
+              setSlideAnimation({ type: effects.type!, from: landingPos, to: effects.finalPos });
+              setTimeout(() => {
+                setAiPosition(effects.finalPos);
+                setSlideAnimation(null);
+
+                if (effects.finalPos >= MAX_BOARD_POSITION) {
+                  setIsGameOver(true);
+                  setWinner("opponent");
+                  setStatusText(`${opponent.name} reached the finish line! Opponent wins.`);
+                  setStatusType("lose");
+                  setIsMoving(false);
+                  onPlayComplete(0, coinsEarned);
+                } else {
+                  setStatusText(`${opponent.name}: ${effects.event}`);
+                  setStatusType(effects.type!);
+                  setTimeout(() => {
+                    setIsMoving(false);
+                    setActiveTurn("player");
+                    setStatusText("Your turn! Answer the question to move.");
+                    setStatusType("info");
+                  }, 1200);
+                }
+              }, 1200);
+            }, 600);
+          } else {
+            if (landingPos >= MAX_BOARD_POSITION) {
+              setIsGameOver(true);
+              setWinner("opponent");
+              setStatusText(`${opponent.name} reached the finish line! Opponent wins.`);
+              setStatusType("lose");
+              setIsMoving(false);
+              onPlayComplete(0, coinsEarned);
+            } else {
+              setStatusText(`${opponent.name} answered correctly & moved ${roll} step${roll > 1 ? "s" : ""} to position ${landingPos}`);
+              setStatusType("info");
+              setTimeout(() => {
+                setIsMoving(false);
+                setActiveTurn("player");
+                setStatusText("Your turn! Answer the question to move.");
+                setStatusType("info");
+              }, 1200);
+            }
           }
-
-          setStatusText(
-            effects.type
-              ? `${opponent.name}: ${effects.event}`
-              : `${opponent.name} answered correctly & moved ${roll} step${roll > 1 ? "s" : ""} to position ${next}`
-          );
-          setStatusType(effects.type || "info");
-          return next;
         });
       } else {
         setStatusText(`${opponent.name} answered wrong! Staying at position ${aiPosition}.`);
         setStatusType("info");
+        setTimeout(() => {
+          setIsMoving(false);
+          setActiveTurn("player");
+          setStatusText("Your turn! Answer the question to move.");
+          setStatusType("info");
+        }, 1500);
       }
-
-      // Switch turn back to player
-      setTimeout(() => {
-        setIsMoving(false);
-        setActiveTurn("player");
-        setStatusText("Your turn! Answer the question to move.");
-        setStatusType("info");
-      }, 1500);
     }, 1500);
   };
 
@@ -638,62 +701,61 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
         setIsDiceRolling(false);
         setCanRoll(false);
 
-        // Advance player on grid
+        // Advance player on grid step-by-step
         setTimeout(() => {
           setShowQuestion(false);
           setIsMoving(true);
           setTurnCount((prev) => prev + 1);
 
-          const next = Math.min(playerPosition + finalRoll, MAX_BOARD_POSITION);
-          const effects = checkGridEffects(next);
+          animatePlayerMovement(playerPosition, finalRoll, (landingPos) => {
+            const effects = checkGridEffects(landingPos);
 
-          setPlayerPosition(next);
-
-          if (effects.type) {
-            setTimeout(() => {
-              setSlideAnimation({ type: effects.type!, from: next, to: effects.finalPos });
+            if (effects.type) {
               setTimeout(() => {
-                setPlayerPosition(effects.finalPos);
-                setSlideAnimation(null);
+                setSlideAnimation({ type: effects.type!, from: landingPos, to: effects.finalPos });
+                setTimeout(() => {
+                  setPlayerPosition(effects.finalPos);
+                  setSlideAnimation(null);
 
-                if (effects.finalPos >= MAX_BOARD_POSITION) {
-                  setIsGameOver(true);
-                  setWinner("player");
-                  onCoinsEarned(50);
-                  setCoinsEarned((prev) => prev + 50);
-                  setStatusText("You reached the finish! You Win 🏆");
-                  setStatusType("win");
-                  setIsMoving(false);
-                  onPlayComplete(Math.max(10, 100 - turnCount), coinsEarned + 50);
-                } else {
-                  setStatusText(effects.event);
-                  setStatusType(effects.type!);
-                  setTimeout(() => {
-                    setActiveTurn("opponent");
-                    triggerOpponentTurn();
-                  }, 1200);
-                }
-              }, 1100);
-            }, 500);
-          } else {
-            if (next >= MAX_BOARD_POSITION) {
-              setIsGameOver(true);
-              setWinner("player");
-              onCoinsEarned(50);
-              setCoinsEarned((prev) => prev + 50);
-              setStatusText("You reached the finish! You Win 🏆");
-              setStatusType("win");
-              setIsMoving(false);
-              onPlayComplete(Math.max(10, 100 - turnCount), coinsEarned + 50);
+                  if (effects.finalPos >= MAX_BOARD_POSITION) {
+                    setIsGameOver(true);
+                    setWinner("player");
+                    onCoinsEarned(50);
+                    setCoinsEarned((prev) => prev + 50);
+                    setStatusText("You reached the finish! You Win 🏆");
+                    setStatusType("win");
+                    setIsMoving(false);
+                    onPlayComplete(Math.max(10, 100 - turnCount), coinsEarned + 50);
+                  } else {
+                    setStatusText(effects.event);
+                    setStatusType(effects.type!);
+                    setTimeout(() => {
+                      setActiveTurn("opponent");
+                      triggerOpponentTurn();
+                    }, 1200);
+                  }
+                }, 1200);
+              }, 600);
             } else {
-              setStatusText(`Rolled ${finalRoll}! Moved to position ${next}.`);
-              setStatusType("info");
-              setTimeout(() => {
-                setActiveTurn("opponent");
-                triggerOpponentTurn();
-              }, 1200);
+              if (landingPos >= MAX_BOARD_POSITION) {
+                setIsGameOver(true);
+                setWinner("player");
+                onCoinsEarned(50);
+                setCoinsEarned((prev) => prev + 50);
+                setStatusText("You reached the finish! You Win 🏆");
+                setStatusType("win");
+                setIsMoving(false);
+                onPlayComplete(Math.max(10, 100 - turnCount), coinsEarned + 50);
+              } else {
+                setStatusText(`Rolled ${finalRoll}! Moved to position ${landingPos}.`);
+                setStatusType("info");
+                setTimeout(() => {
+                  setActiveTurn("opponent");
+                  triggerOpponentTurn();
+                }, 1200);
+              }
             }
-          }
+          });
         }, 800);
       }
     }, 80);
@@ -789,47 +851,28 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
   const isPlayerTurnActive = activeTurn === "player" && !isMoving && !isGameOver;
 
   return (
-    <div className="flex flex-col gap-3 font-sans pb-10">
+    <div className="flex flex-col gap-1.5 font-sans pb-2">
       {/* Race Progress Bar */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-3">
-          {/* Player Progress */}
-          <div className={`flex-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all ${activeTurn === "player" && !isGameOver ? "bg-blue-50/50 ring-1 ring-blue-100" : ""}`}>
-            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-medium shrink-0">{firstLetter}</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-slate-800 text-[10px] font-medium">You</p>
-              <div className="flex items-center gap-1.5">
-                <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
-                  <motion.div className="h-full bg-blue-500 rounded-full" animate={{ width: `${pPercent}%` }} transition={{ type: "spring", damping: 15 }} />
-                </div>
-                <span className="text-blue-500 text-[9px] font-medium">{playerPosition}</span>
-              </div>
-            </div>
-          </div>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-transparent">
+        {/* Player Info */}
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
+          <span className="text-[10px] font-semibold text-slate-600">You (Pos {playerPosition})</span>
+        </div>
 
-          <span className="text-slate-300 text-[10px] font-medium">VS</span>
+        <span className="text-[8px] font-black text-slate-300">VS</span>
 
-          {/* AI Progress */}
-          <div className={`flex-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all flex-row-reverse ${activeTurn === "opponent" && !isGameOver ? "bg-rose-50/50 ring-1 ring-rose-100" : ""}`}>
-            <img src={opponent.avatar} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 border border-rose-100" />
-            <div className="flex-1 min-w-0">
-              <p className="text-slate-800 text-[10px] font-medium text-right">{opponent.name.split(" ")[0]}</p>
-              <div className="flex items-center gap-1.5 flex-row-reverse">
-                <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden rotate-180">
-                  <motion.div className="h-full bg-rose-500 rounded-full" animate={{ width: `${aiPercent}%` }} transition={{ type: "spring", damping: 15 }} />
-                </div>
-                <span className="text-rose-500 text-[9px] font-medium">{aiPosition}</span>
-              </div>
-            </div>
-          </div>
+        {/* AI Info */}
+        <div className="flex items-center gap-1.5 flex-row-reverse">
+          <img src={opponent.avatar} alt="" className="w-5 h-5 rounded-full object-cover shrink-0 border border-slate-200" />
+          <span className="text-[10px] font-semibold text-slate-600">{opponent.name.split(" ")[0]} (Pos {aiPosition})</span>
         </div>
       </div>
 
       {/* Board Layout */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm relative overflow-hidden">
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${BOARD_COLS}, 1fr)` }}>
+      <div className="bg-white rounded-xl p-1.5 border border-slate-100 shadow-sm relative overflow-hidden max-w-md mx-auto w-full">
+        <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${BOARD_COLS}, 1fr)` }}>
           {Object.keys(rowCells)
-            .reverse()
             .map((rKey: any) =>
               rowCells[rKey].map(({ num }) => {
                 const isPlayerHere = num === playerPosition;
@@ -847,10 +890,10 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                 else if (isStart) cellBg = "bg-blue-50 border-blue-200 text-blue-500";
 
                 return (
-                  <div key={num} className={`relative aspect-square rounded-xl border flex flex-col items-center justify-center transition-all ${cellBg}`}>
-                    <span className="absolute top-1 left-1.5 text-[8px] font-extrabold text-slate-300 leading-none">{num}</span>
+                  <div key={num} className={`relative aspect-square rounded-lg border flex flex-col items-center justify-center transition-all ${cellBg}`}>
+                    <span className="absolute top-0.5 left-1 text-[8px] font-extrabold text-slate-300 leading-none">{num}</span>
                     {!isPlayerHere && !isAiHere && (
-                      <span className="text-sm">
+                      <span className="text-[13px]">
                         {isFinish ? "🏆" : hasSnake ? "🐍" : hasLadder ? "🪜" : ""}
                       </span>
                     )}
@@ -858,22 +901,24 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                     {/* Render Tokens */}
                     {isBothHere ? (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="flex -space-x-2">
-                          <motion.div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px] font-extrabold ring-2 ring-white shadow-md z-10" layoutId="player-token">
+                        <div className="flex -space-x-2 scale-90">
+                          <motion.div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="player-token">
                             {firstLetter}
                           </motion.div>
-                          <motion.div className="w-5 h-5 rounded-full overflow-hidden ring-2 ring-white shadow-md z-10" layoutId="opponent-token">
+                          <motion.div className="w-5 h-5 rounded-full overflow-hidden ring-1 ring-white shadow-sm z-10" layoutId="opponent-token">
                             <img src={opponent.avatar} alt="" className="w-full h-full object-cover" />
                           </motion.div>
                         </div>
                       </div>
                     ) : isPlayerHere ? (
                       <motion.div className="absolute inset-0 flex items-center justify-center z-10" layoutId="player-token">
-                        <motion.div className="w-6.5 h-6.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[9px] font-extrabold ring-2 ring-white shadow-md" />
+                        <motion.div className="w-6.5 h-6.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-extrabold ring-1 ring-white shadow-sm">
+                          {firstLetter}
+                        </motion.div>
                       </motion.div>
                     ) : isAiHere ? (
                       <motion.div className="absolute inset-0 flex items-center justify-center z-10" layoutId="opponent-token">
-                        <div className="w-6.5 h-6.5 rounded-full overflow-hidden ring-2 ring-white shadow-md">
+                        <div className="w-6.5 h-6.5 rounded-full overflow-hidden ring-1 ring-white shadow-sm">
                           <img src={opponent.avatar} alt="" className="w-full h-full object-cover" />
                         </div>
                       </motion.div>
@@ -887,16 +932,16 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
         {/* Board Slide Actions Overlay */}
         <AnimatePresence>
           {slideAnimation && (
-            <motion.div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[0.5px] rounded-2xl flex items-center justify-center pointer-events-none z-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[0.5px] rounded-xl flex items-center justify-center pointer-events-none z-20" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <motion.div
-                className={`flex flex-col items-center gap-1.5 px-5 py-4 rounded-3xl shadow-xl border ${slideAnimation.type === "snake" ? "bg-rose-500 border-rose-400 text-white" : "bg-emerald-500 border-emerald-400 text-white"}`}
+                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl shadow-lg border ${slideAnimation.type === "snake" ? "bg-rose-500 border-rose-400 text-white" : "bg-emerald-500 border-emerald-400 text-white"}`}
                 initial={{ scale: 0, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 exit={{ scale: 0 }}
               >
-                <span className="text-3xl">{slideAnimation.type === "snake" ? "🐍" : "🪜"}</span>
-                <p className="text-xs font-medium">{slideAnimation.type === "snake" ? "Snake Attack!" : "Ladder Climb!"}</p>
-                <p className="text-[10px] font-medium opacity-90">
+                <span className="text-2xl">{slideAnimation.type === "snake" ? "🐍" : "🪜"}</span>
+                <p className="text-[10px] font-bold">{slideAnimation.type === "snake" ? "Snake Attack!" : "Ladder Climb!"}</p>
+                <p className="text-[9px] font-medium opacity-90">
                   {slideAnimation.from} ➔ {slideAnimation.to}
                 </p>
               </motion.div>
@@ -905,8 +950,23 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
         </AnimatePresence>
       </div>
 
+      {/* Gameplay Trigger Button */}
+      {!isGameOver && (
+        <Button
+          onClick={handleOpenQuestionDialog}
+          disabled={!isPlayerTurnActive}
+          className={`w-full py-2.5 h-10 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all ${
+            isPlayerTurnActive
+              ? "bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98]"
+              : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+          }`}
+        >
+          {isPlayerTurnActive ? "🎲 Answer & Roll" : activeTurn === "opponent" ? `${opponent.name}'s turn...` : "Moving token..."}
+        </Button>
+      )}
+
       {/* Game Status Log Box */}
-      <div className={`rounded-xl px-3.5 py-3 text-xs font-semibold flex items-center gap-2 justify-center shadow-sm border ${
+      <div className={`rounded-xl px-2.5 py-1.5 text-[10px] font-semibold flex items-center gap-1.5 justify-center shadow-sm border ${
         isGameOver
           ? winner === "player"
             ? "bg-emerald-50 text-emerald-700 border-emerald-100"
@@ -919,24 +979,9 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
           ? "bg-slate-50 text-slate-400 border-slate-100"
           : "bg-blue-50 text-blue-600 border-blue-100"
       }`}>
-        <span className="text-sm shrink-0">{isGameOver ? (winner === "player" ? "🎉" : "😔") : statusType === "wait" ? "⏳" : "💡"}</span>
+        <span className="text-xs shrink-0">{isGameOver ? (winner === "player" ? "🎉" : "😔") : statusType === "wait" ? "⏳" : "💡"}</span>
         <span>{statusText}</span>
       </div>
-
-      {/* Gameplay Trigger Button */}
-      {!isGameOver && (
-        <Button
-          onClick={handleOpenQuestionDialog}
-          disabled={!isPlayerTurnActive}
-          className={`w-full py-4 h-12 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all ${
-            isPlayerTurnActive
-              ? "bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98]"
-              : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-          }`}
-        >
-          {isPlayerTurnActive ? "🎲 Answer & Roll" : activeTurn === "opponent" ? `${opponent.name}'s turn...` : "Moving token..."}
-        </Button>
-      )}
 
       {/* End Session Stats */}
       {isGameOver && (
@@ -972,130 +1017,143 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
       )}
 
       {/* QUESTION DIALOG DRAWER */}
-      <AnimatePresence>
-        {showQuestion && currentQuestion && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center">
-            <motion.div className="absolute inset-0 bg-slate-900/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !answerStatus && setShowQuestion(false)} />
-            <motion.div
-              className="relative w-full max-w-md bg-white rounded-t-3xl p-5 pb-8 shadow-2xl z-10 max-h-[85%] overflow-y-auto"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-            >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-4" />
+      {mounted && createPortal(
+        <AnimatePresence>
+          {showQuestion && currentQuestion && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => !answerStatus && setShowQuestion(false)}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] p-5 shadow-2xl z-[1000] max-h-[85vh] flex flex-col pb-[calc(1.5rem+env(safe-area-inset-bottom))] overflow-hidden w-full"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              >
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5 shrink-0" />
 
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🎲</span>
-                  <p className="text-slate-800 text-xs font-extrabold">Answer correctly to roll!</p>
+                <div className="flex items-center justify-between mb-3 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">🎲</span>
+                    <p className="text-slate-800 text-[11px] font-black tracking-widest uppercase">Answer correctly to roll!</p>
+                  </div>
+                  <div className="flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-blue-600 text-[9px] font-bold shrink-0">
+                    <span>Pos {playerPosition}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-600 text-[10px] font-medium">
-                  <span>Pos {playerPosition}</span>
+
+                {/* Module Banner */}
+                <div className="flex items-center gap-2 mb-3 bg-slate-50 border border-slate-100 p-2 rounded-xl shrink-0">
+                  <div className="w-5 h-5 rounded bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">P</div>
+                  <p className="text-slate-500 text-[10px] font-semibold truncate flex-1">Python Basics Practice</p>
+                  <span className={`ml-auto px-2 py-0.5 rounded-md text-[9px] font-extrabold shrink-0 ${
+                    currentQuestion.difficulty === "easy" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                  }`}>
+                    +{currentQuestion.coins} coins
+                  </span>
                 </div>
-              </div>
 
-              {/* Module Banner */}
-              <div className="flex items-center gap-2 mb-3 bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
-                <div className="w-6 h-6 rounded bg-emerald-500 text-white flex items-center justify-center text-xs font-medium">P</div>
-                <p className="text-slate-500 text-xs font-medium">Python Basics Practice</p>
-                <span className={`ml-auto px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
-                  currentQuestion.difficulty === "easy" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-                }`}>
-                  +{currentQuestion.coins} coins
-                </span>
-              </div>
+                {/* Scrollable Question Content */}
+                <div className="overflow-y-auto pr-1 hidden-scrollbar flex-1 mb-4 flex flex-col">
+                  <p className="text-slate-800 text-[13.5px] font-semibold leading-relaxed mb-3 shrink-0">{currentQuestion.question}</p>
 
-              <p className="text-slate-800 text-[14px] font-medium leading-relaxed mb-4">{currentQuestion.question}</p>
+                  {/* Options List */}
+                  <div className="space-y-2">
+                    {currentQuestion.options.map((opt: string, idx: number) => {
+                      const isSelected = selectedOption === idx;
+                      const isCorrectAnswer = idx === currentQuestion.correctIndex;
 
-              {/* Options Grid */}
-              <div className="space-y-2">
-                {currentQuestion.options.map((opt: string, idx: number) => {
-                  const isSelected = selectedOption === idx;
-                  const isCorrectAnswer = idx === currentQuestion.correctIndex;
+                      let optStyle = "bg-slate-50 border-slate-100 text-slate-700 hover:bg-slate-100";
+                      if (answerStatus) {
+                        if (isSelected && answerStatus === "correct") optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
+                        else if (isSelected && answerStatus === "wrong") optStyle = "bg-rose-50 border-rose-500 text-rose-700 font-semibold";
+                        else if (isCorrectAnswer) optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
+                      } else if (isSelected) {
+                        optStyle = "bg-slate-900 border-slate-900 text-white";
+                      }
 
-                  let optStyle = "bg-slate-50 border-slate-100 text-slate-700";
-                  if (answerStatus) {
-                    if (isSelected && answerStatus === "correct") optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
-                    else if (isSelected && answerStatus === "wrong") optStyle = "bg-rose-50 border-rose-500 text-rose-700 font-semibold";
-                    else if (isCorrectAnswer) optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
-                  } else if (isSelected) {
-                    optStyle = "bg-slate-900 border-slate-900 text-white";
-                  }
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (!answerStatus) {
+                              setSelectedOption(idx);
+                            }
+                          }}
+                          disabled={!!answerStatus}
+                          className={`w-full px-4 py-3 rounded-2xl border text-left text-[11px] font-medium transition-all ${optStyle}`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className={`w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium shrink-0 ${isSelected && !answerStatus ? 'text-slate-900' : 'text-slate-400'}`}>
+                              {String.fromCharCode(65 + idx)}
+                            </span>
+                            <span className="flex-1 leading-snug">{opt}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        if (!answerStatus) {
-                          setSelectedOption(idx);
-                        }
-                      }}
-                      disabled={!!answerStatus}
-                      className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium text-slate-400 shrink-0">
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        <span className="flex-1">{opt}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Confirm Button if an option is selected but not yet submitted */}
-              {selectedOption !== null && !answerStatus && (
-                <Button
-                  onClick={() => handleAnswerSubmit(selectedOption)}
-                  className="w-full mt-4 h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
-                >
-                  Confirm Answer
-                </Button>
-              )}
-
-              {/* Dice Roll section if correct */}
-              <AnimatePresence>
-                {answerStatus === "wrong" && (
-                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
-                    <span>😔</span> Wrong — no dice roll this turn!
-                  </motion.div>
+                {/* Confirm Button always shown at the bottom until submitted */}
+                {!answerStatus && (
+                  <Button
+                    disabled={selectedOption === null}
+                    onClick={() => selectedOption !== null && handleAnswerSubmit(selectedOption)}
+                    className="w-full h-11 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-2xl text-[11px] font-bold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all shrink-0"
+                  >
+                    Confirm Answer
+                  </Button>
                 )}
 
-                {answerStatus === "correct" && !isMoving && (
-                  <motion.div className="mt-5 space-y-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                    <p className="text-center text-emerald-600 text-xs font-extrabold">✅ Correct Answer! Lock in your dice roll below.</p>
-                    <Button
-                      onClick={rollDiceAndMove}
-                      disabled={isDiceRolling}
-                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md"
-                    >
-                      <motion.span className="text-lg" animate={isDiceRolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}>🎲</motion.span>
-                      {isDiceRolling ? "Rolling..." : "Roll Dice"}
-                    </Button>
+                {/* Dice Roll section if correct */}
+                <AnimatePresence>
+                  {answerStatus === "wrong" && (
+                    <motion.div className="flex items-center justify-center gap-2 py-2.5 rounded-2xl text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-100 shrink-0" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+                      <span>😔</span> Wrong — no dice roll this turn!
+                    </motion.div>
+                  )}
 
-                    {isDiceRolling && tempDiceRoll > 0 && (
-                      <motion.div className="text-center mt-2" initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
-                        <span className="text-4xl">
-                          {["⚀", "⚁", "⚂"][tempDiceRoll - 1]}
-                        </span>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
+                  {answerStatus === "correct" && !isMoving && (
+                    <motion.div className="space-y-3 shrink-0" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                      <p className="text-center text-emerald-600 text-[11px] font-extrabold leading-none mb-1">✅ Correct Answer! Lock in your dice roll below.</p>
+                      <Button
+                        onClick={rollDiceAndMove}
+                        disabled={isDiceRolling}
+                        className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[11px] font-bold flex items-center justify-center gap-2 shadow-md shrink-0"
+                      >
+                        <motion.span className="text-lg" animate={isDiceRolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}>🎲</motion.span>
+                        {isDiceRolling ? "Rolling..." : "Roll Dice"}
+                      </Button>
 
-                {answerStatus === "correct" && selectedRoll > 0 && !isDiceRolling && (
-                  <motion.div className="mt-4 flex flex-col items-center gap-1.5 py-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                    <span className="text-4xl">➔ {["⚀", "⚁", "⚂"][selectedRoll - 1]}</span>
-                    <p className="text-xs font-medium">You rolled {selectedRoll}! Moving forward {selectedRoll} step{selectedRoll > 1 ? "s" : ""}.</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                      {isDiceRolling && tempDiceRoll > 0 && (
+                        <motion.div className="text-center mt-1 shrink-0" initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
+                          <span className="text-3xl leading-none">
+                            {["⚀", "⚁", "⚂"][tempDiceRoll - 1]}
+                          </span>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {answerStatus === "correct" && selectedRoll > 0 && !isDiceRolling && (
+                    <motion.div className="flex flex-col items-center gap-1 py-2.5 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                      <span className="text-3xl leading-none">➔ {["⚀", "⚁", "⚂"][selectedRoll - 1]}</span>
+                      <p className="text-[10px] font-bold">You rolled {selectedRoll}! Moving forward {selectedRoll} step{selectedRoll > 1 ? "s" : ""}.</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
@@ -1104,6 +1162,11 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
 // 2. LUDO QUIZ MINI-GAME
 // ==========================================
 function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLetter, dbGames }: SubGameProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerPosition, setPlayerPosition] = useState(0);
   const [aiPosition, setAiPosition] = useState(0);
@@ -1385,38 +1448,34 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
   const isBothTokenHere = playerCoords && aiCoords && playerCoords[0] === aiCoords[0] && playerCoords[1] === aiCoords[1];
 
   return (
-    <div className="flex flex-col gap-3 font-sans pb-10">
+    <div className="flex flex-col gap-1.5 font-sans pb-2">
       {/* Mini Scoreboard */}
-      <div className="flex items-center justify-between bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-6.5 h-6.5 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium text-xs ring-2 ring-blue-100">{firstLetter}</div>
-          <div>
-            <p className="text-slate-800 font-extrabold text-[10px]">You</p>
-            <p className="text-blue-500 text-[9px] font-medium">{playerPosition === 0 ? "In Base" : playerPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${playerPosition}`}</p>
-          </div>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-transparent">
+        {/* Player Info */}
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
+          <span className="text-[10px] font-semibold text-slate-600">You ({playerPosition === 0 ? "Base" : playerPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${playerPosition}`})</span>
         </div>
 
-        <div className="text-center px-4 font-medium text-slate-400">
+        <div className="text-center px-2 font-medium text-slate-400">
           {diceVal > 0 ? (
-            <motion.span className="text-3xl text-indigo-600" animate={isRolling ? { rotate: 360, scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
+            <motion.span className="text-xl text-indigo-600 leading-none" animate={isRolling ? { rotate: 360, scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
               {["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][diceVal - 1]}
             </motion.span>
           ) : (
-            <span className="text-2xl text-slate-300">🎲</span>
+            <span className="text-lg text-slate-300 leading-none">🎲</span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-row-reverse">
-          <div className="w-6.5 h-6.5 rounded-full bg-rose-500 text-white flex items-center justify-center font-medium text-xs ring-2 ring-rose-100">🤖</div>
-          <div className="text-right">
-            <p className="text-slate-800 font-extrabold text-[10px]">{opponent.name.split(" ")[0]}</p>
-            <p className="text-rose-500 text-[9px] font-medium">{aiPosition === 0 ? "In Base" : aiPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${aiPosition}`}</p>
-          </div>
+        {/* AI Info */}
+        <div className="flex items-center gap-1.5 flex-row-reverse">
+          <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-[9px] shrink-0">🤖</div>
+          <span className="text-[10px] font-semibold text-slate-600">{opponent.name.split(" ")[0]} ({aiPosition === 0 ? "Base" : aiPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${aiPosition}`})</span>
         </div>
       </div>
 
       {/* Grid Board Render (15x15) */}
-      <div className="bg-white rounded-2xl p-2 border border-slate-100 shadow-sm relative">
+      <div className="bg-white rounded-xl p-1.5 border border-slate-100 shadow-sm relative max-w-md mx-auto w-full">
         <div className="grid grid-cols-15 gap-px" style={{ gridTemplateColumns: "repeat(15, 1fr)" }}>
           {N9.map((row, rIdx) =>
             row.map((cell, cIdx) => {
@@ -1464,26 +1523,26 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
                   style={{ minWidth: 0 }}
                 >
                   {/* Decorative Base Circles */}
-                  {cell === "B" && rIdx === 11 && cIdx === 2 && <div className="w-2.5 h-2.5 rounded-full bg-blue-400 opacity-60" />}
-                  {cell === "R" && rIdx === 2 && cIdx === 12 && <div className="w-2.5 h-2.5 rounded-full bg-rose-400 opacity-60" />}
-                  {cell === "G" && rIdx === 2 && cIdx === 2 && <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 opacity-60" />}
-                  {cell === "Y" && rIdx === 12 && cIdx === 12 && <div className="w-2.5 h-2.5 rounded-full bg-amber-400 opacity-60" />}
+                  {cell === "B" && rIdx === 11 && cIdx === 2 && <div className="w-1.5 h-1.5 rounded-full bg-blue-400 opacity-60" />}
+                  {cell === "R" && rIdx === 2 && cIdx === 12 && <div className="w-1.5 h-1.5 rounded-full bg-rose-400 opacity-60" />}
+                  {cell === "G" && rIdx === 2 && cIdx === 2 && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 opacity-60" />}
+                  {cell === "Y" && rIdx === 12 && cIdx === 12 && <div className="w-1.5 h-1.5 rounded-full bg-amber-400 opacity-60" />}
 
                   {isSafe && !isPlayerHere && !isAiHere && <span className="text-[6px] text-yellow-500 font-black">★</span>}
                   {cell === "C" && rIdx === 7 && cIdx === 7 && !isPlayerHere && !isAiHere && <span className="text-[7px]">🏠</span>}
 
                   {/* Token Overlay */}
                   {isBothHere ? (
-                    <div className="flex gap-px absolute z-10 scale-[0.85]">
+                    <div className="flex gap-px absolute z-10 scale-90">
                       <div className="w-2 h-2 rounded-full bg-blue-500 border border-white" />
                       <div className="w-2 h-2 rounded-full bg-rose-500 border border-white" />
                     </div>
                   ) : isPlayerHere ? (
-                    <motion.div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-md z-10" layoutId="ludo-p">
+                    <motion.div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="ludo-p">
                       {firstLetter}
                     </motion.div>
                   ) : isAiHere ? (
-                    <motion.div className="w-3.5 h-3.5 rounded-full bg-rose-500 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-md z-10" layoutId="ludo-a">
+                    <motion.div className="w-3.5 h-3.5 rounded-full bg-rose-500 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="ludo-a">
                       🤖
                     </motion.div>
                   ) : null}
@@ -1495,14 +1554,14 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
         {/* Safe Bases Status Alerts */}
         {playerPosition === 0 && (
-          <div className="flex items-center gap-1.5 mt-2 px-1 text-[9px] text-blue-500 font-medium">
-            <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5px] font-extrabold">{firstLetter}</div>
-            <span>Your token is at home — roll a 6 to open!</span>
+          <div className="flex items-center gap-1 mt-1.5 px-0.5 text-[8px] text-blue-500 font-semibold leading-none">
+            <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5.5px] font-extrabold">{firstLetter}</div>
+            <span>Token at home — roll a 6 to open!</span>
           </div>
         )}
         {aiPosition === 0 && (
-          <div className="flex items-center gap-1.5 mt-1 px-1 text-[9px] text-rose-400 font-medium">
-            <div className="w-3 h-3 rounded-full bg-rose-500 flex items-center justify-center text-white text-[5px] font-extrabold">🤖</div>
+          <div className="flex items-center gap-1 mt-1 px-0.5 text-[8px] text-rose-400 font-semibold leading-none">
+            <div className="w-3 h-3 rounded-full bg-rose-500 flex items-center justify-center text-white text-[5.5px] font-extrabold">🤖</div>
             <span>Opponent token is in base.</span>
           </div>
         )}
@@ -1512,27 +1571,21 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
       <AnimatePresence>
         {showSixCelebration && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="bg-indigo-500 text-white px-5 py-3 rounded-2xl shadow-xl text-center border border-indigo-400" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-              <span className="text-4xl block mb-1">🎯</span>
-              <p className="text-xs font-black">Rolled a 6!</p>
-              <p className="text-[10px] text-white/80 font-medium">{playerPosition === 0 ? "Releasing token!" : "Bonus Turn Granted!"}</p>
+            <motion.div className="bg-indigo-500 text-white px-4 py-2.5 rounded-xl shadow-lg text-center border border-indigo-400" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+              <span className="text-3xl block mb-1">🎯</span>
+              <p className="text-[10px] font-black">Rolled a 6!</p>
+              <p className="text-[9px] text-white/80 font-medium">{playerPosition === 0 ? "Releasing token!" : "Bonus Turn!"}</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Game Feed Status */}
-      <div className="rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-semibold bg-slate-100 text-slate-600 shadow-sm border border-slate-200/50">
-        <span className="text-sm shrink-0">{activeTurn === "ai" ? "⏳" : "💡"}</span>
-        <span>{logText}</span>
-      </div>
 
       {/* Play Controls */}
       {!isGameOver && (
         <Button
           onClick={handleOpenQuestion}
           disabled={activeTurn !== "player" || isRolling}
-          className={`w-full py-4 h-12 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all ${
+          className={`w-full py-2.5 h-10 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all ${
             activeTurn === "player"
               ? "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
               : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
@@ -1541,6 +1594,12 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
           🎲 {activeTurn === "player" ? "Answer & Roll" : "Waiting for Opponent..."}
         </Button>
       )}
+
+      {/* Game Feed Status */}
+      <div className="rounded-xl px-2 py-1.5 flex items-center gap-1.5 text-[10px] font-semibold bg-slate-100 text-slate-600 shadow-sm border border-slate-200/50">
+        <span className="text-xs shrink-0">{activeTurn === "ai" ? "⏳" : "💡"}</span>
+        <span>{logText}</span>
+      </div>
 
       {/* Game Over Banner */}
       {isGameOver && (
@@ -1573,101 +1632,136 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
       )}
 
       {/* QUESTION DIALOG MODAL */}
-      <AnimatePresence>
-        {showQuestion && currentQuestion && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center">
-            <motion.div className="absolute inset-0 bg-slate-900/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !answerStatus && setShowQuestion(false)} />
-            <motion.div
-              className="relative w-full max-w-md bg-white rounded-t-3xl p-5 pb-8 shadow-2xl z-10 max-h-[85%] overflow-y-auto"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-            >
-              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-4" />
+      {mounted && createPortal(
+        <AnimatePresence>
+          {showQuestion && currentQuestion && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => !answerStatus && setShowQuestion(false)}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] p-5 shadow-2xl z-[1000] max-h-[85vh] flex flex-col pb-[calc(1.5rem+env(safe-area-inset-bottom))] overflow-hidden w-full"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              >
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5 shrink-0" />
 
-              <p className="text-slate-800 text-[14px] font-medium leading-relaxed mb-4">{currentQuestion.question}</p>
+                <div className="flex items-center justify-between mb-3 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">🎲</span>
+                    <p className="text-slate-800 text-[11px] font-black tracking-widest uppercase">Answer correctly to roll!</p>
+                  </div>
+                  <div className="flex items-center gap-1 px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-600 text-[9px] font-bold shrink-0">
+                    <span>Pos {playerPosition}</span>
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                {currentQuestion.options.map((opt: string, idx: number) => {
-                  const isSelected = selectedOption === idx;
-                  const isCorrect = idx === currentQuestion.correctIndex;
+                {/* Module Banner */}
+                <div className="flex items-center gap-2 mb-3 bg-slate-50 border border-slate-100 p-2 rounded-xl shrink-0">
+                  <div className="w-5 h-5 rounded bg-indigo-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">L</div>
+                  <p className="text-slate-500 text-[10px] font-semibold truncate flex-1">Ludo Knowledge Check</p>
+                  <span className={`ml-auto px-2 py-0.5 rounded-md text-[9px] font-extrabold shrink-0 ${
+                    currentQuestion.difficulty === "easy" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                  }`}>
+                    +{currentQuestion.coins || 10} coins
+                  </span>
+                </div>
 
-                  let optStyle = "bg-slate-50 border-slate-100 text-slate-700";
-                  if (answerStatus) {
-                    if (isSelected && answerStatus === "correct") optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
-                    else if (isSelected && answerStatus === "wrong") optStyle = "bg-rose-50 border-rose-500 text-rose-700 font-semibold";
-                    else if (isCorrect) optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
-                  } else if (isSelected) {
-                    optStyle = "bg-slate-900 border-slate-900 text-white";
-                  }
+                {/* Scrollable Question Content */}
+                <div className="overflow-y-auto pr-1 hidden-scrollbar flex-1 mb-4 flex flex-col">
+                  <p className="text-slate-800 text-[13.5px] font-semibold leading-relaxed mb-3 shrink-0">{currentQuestion.question}</p>
 
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        if (!answerStatus) {
-                          setSelectedOption(idx);
-                        }
-                      }}
-                      disabled={!!answerStatus}
-                      className={`w-full px-4 py-3 rounded-xl border text-left text-xs font-medium transition-all ${optStyle}`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium text-slate-400 shrink-0">
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        <span className="flex-1">{opt}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                  {/* Options List */}
+                  <div className="space-y-2">
+                    {currentQuestion.options.map((opt: string, idx: number) => {
+                      const isSelected = selectedOption === idx;
+                      const isCorrect = idx === currentQuestion.correctIndex;
 
-              {/* Confirm Button if an option is selected but not yet submitted */}
-              {selectedOption !== null && !answerStatus && (
-                <Button
-                  onClick={() => handleAnswerOptionClick(selectedOption)}
-                  className="w-full mt-4 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all"
-                >
-                  Confirm Answer
-                </Button>
-              )}
+                      let optStyle = "bg-slate-50 border-slate-100 text-slate-700 hover:bg-slate-100";
+                      if (answerStatus) {
+                        if (isSelected && answerStatus === "correct") optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
+                        else if (isSelected && answerStatus === "wrong") optStyle = "bg-rose-50 border-rose-500 text-rose-700 font-semibold";
+                        else if (isCorrect) optStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-semibold";
+                      } else if (isSelected) {
+                        optStyle = "bg-slate-900 border-slate-900 text-white";
+                      }
 
-              {/* Rolling Controls */}
-              <AnimatePresence>
-                {answerStatus === "wrong" && (
-                  <motion.div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 border border-rose-100" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
-                    😔 Wrong answer — turn skipped!
-                  </motion.div>
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (!answerStatus) {
+                              setSelectedOption(idx);
+                            }
+                          }}
+                          disabled={!!answerStatus}
+                          className={`w-full px-4 py-3 rounded-2xl border text-left text-[11px] font-medium transition-all ${optStyle}`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className={`w-5 h-5 rounded-full bg-white flex items-center justify-center border text-[9px] font-medium shrink-0 ${isSelected && !answerStatus ? 'text-slate-900' : 'text-slate-400'}`}>
+                              {String.fromCharCode(65 + idx)}
+                            </span>
+                            <span className="flex-1 leading-snug">{opt}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Confirm Button always shown at the bottom until submitted */}
+                {!answerStatus && (
+                  <Button
+                    disabled={selectedOption === null}
+                    onClick={() => selectedOption !== null && handleAnswerOptionClick(selectedOption)}
+                    className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-2xl text-[11px] font-bold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all shrink-0"
+                  >
+                    Confirm Answer
+                  </Button>
                 )}
 
-                {answerStatus === "correct" && (
-                  <motion.div className="mt-5 space-y-3 animate-slideup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                    <p className="text-center text-emerald-600 text-xs font-extrabold">✅ Correct Answer! Lock in your dice roll below.</p>
-                    <Button
-                      onClick={handleRollDice}
-                      disabled={isRolling}
-                      className="w-full h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-md"
-                    >
-                      <motion.span className="text-lg" animate={isRolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}>🎲</motion.span>
-                      {isRolling ? "Rolling..." : "Roll Dice"}
-                    </Button>
+                {/* Rolling Controls */}
+                <AnimatePresence>
+                  {answerStatus === "wrong" && (
+                    <motion.div className="flex items-center justify-center gap-2 py-2.5 rounded-2xl text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-100 shrink-0" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+                      <span>😔</span> Wrong answer — turn skipped!
+                    </motion.div>
+                  )}
 
-                    {isRolling && diceVal > 0 && (
-                      <motion.div className="text-center mt-2" initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
-                        <span className="text-4xl">
-                          {["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][diceVal - 1]}
-                        </span>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  {answerStatus === "correct" && (
+                    <motion.div className="space-y-3 shrink-0" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                      <p className="text-center text-emerald-600 text-[11px] font-extrabold leading-none mb-1">✅ Correct Answer! Lock in your dice roll below.</p>
+                      <Button
+                        onClick={handleRollDice}
+                        disabled={isRolling}
+                        className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[11px] font-bold flex items-center justify-center gap-2 shadow-md shrink-0"
+                      >
+                        <motion.span className="text-lg" animate={isRolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}>🎲</motion.span>
+                        {isRolling ? "Rolling..." : "Roll Dice"}
+                      </Button>
+
+                      {isRolling && diceVal > 0 && (
+                        <motion.div className="text-center mt-1 shrink-0" initial={{ scale: 0.5 }} animate={{ scale: 1 }}>
+                          <span className="text-3xl leading-none">
+                            {["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][diceVal - 1]}
+                          </span>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
@@ -1762,9 +1856,9 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
   const getSafeCheckPointAmount = () => {
     for (let i = level - 1; i >= 0; i--) {
-      if (KBC_LADDER[i].safe) return KBC_LADDER[i].amount;
+      if (KBC_LADDER[i].safe) return KBC_LADDER[i];
     }
-    return "0 Coins";
+    return { amount: "0 Coins", value: 0 };
   };
 
   const handleOptionClick = (idx: number) => {
@@ -1782,20 +1876,21 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
       setRevealingStatus(isCorrect ? "correct" : "wrong");
 
       if (isCorrect) {
-        // Award coins
-        const earned = level < 5 ? 5 : level < 10 ? 10 : 20;
-        onCoinsEarned(earned);
-        setAccumulatedCoins((prev) => prev + earned);
+        // Calculate progressive delta to award
+        const previousAmount = level === 0 ? 0 : KBC_LADDER[level - 1].value;
+        const currentAmount = KBC_LADDER[level].value;
+        const delta = currentAmount - previousAmount;
+
+        onCoinsEarned(delta);
+        setAccumulatedCoins(currentAmount);
 
         if (level === KBC_LADDER.length - 1) {
-          // Absolute Crore Winner!
+          // Absolute 200 Coins Winner!
           setGameResultTitle(KBC_LADDER[level].amount);
           setCelebrationActive(true);
           setTimeout(() => {
             setIsGameOver(true);
-            onCoinsEarned(100);
-            setAccumulatedCoins((prev) => prev + 100);
-            onPlayComplete(100, accumulatedCoins + 100);
+            onPlayComplete(100, 200);
           }, 2000);
         } else {
           setTimeout(() => {
@@ -1817,11 +1912,31 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
   const triggerLoss = (cause: "wrong" | "timeout" | "quit") => {
     setTimerActive(false);
-    const safeAmount = getSafeCheckPointAmount();
-    setGameResultTitle(cause === "quit" ? KBC_LADDER[level - 1]?.amount || "0 Coins" : safeAmount);
+
+    let finalValue = 0;
+    let resultTitle = "";
+
+    if (cause === "quit") {
+      const lastCompleted = level > 0 ? KBC_LADDER[level - 1] : { amount: "0 Coins", value: 0 };
+      finalValue = lastCompleted.value;
+      resultTitle = lastCompleted.amount;
+    } else {
+      const safeNode = getSafeCheckPointAmount();
+      finalValue = safeNode.value;
+      resultTitle = safeNode.amount;
+    }
+
+    setGameResultTitle(resultTitle);
+
+    // Adjust the accumulatedCoins to correctly match the final checkpoint/quit value in DB
+    const adjustment = finalValue - accumulatedCoins;
+    if (adjustment !== 0) {
+      onCoinsEarned(adjustment);
+    }
+
     setTimeout(() => {
       setIsGameOver(true);
-      onPlayComplete(level * 10, accumulatedCoins);
+      onPlayComplete(level * 10, finalValue);
     }, cause === "quit" ? 500 : 1500);
   };
 
@@ -1874,50 +1989,88 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
   if (!isPlaying) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center w-full">
         <div className="bg-white rounded-3xl p-6 w-full mb-4 border border-slate-100 shadow-sm">
-          {/* Neon KBC Intro */}
-          <div className="relative bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-2xl p-6 mb-4 overflow-hidden text-center text-white border border-indigo-500/20 shadow-lg">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl" />
-            <motion.div className="text-4xl mb-2.5" animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 4 }}>
-              💎
-            </motion.div>
-            <p className="text-yellow-400 text-[10px] font-extrabold tracking-widest uppercase mb-1">KAUN BANEGA</p>
-            <h3 className="text-white text-[18px] font-black tracking-wide">CROREPATHI</h3>
-            <p className="text-purple-300 text-[10px] font-semibold mt-1">Kind Mentor Tech Edition</p>
+          {/* Simple Subtle Header */}
+          <div className="text-center py-4 mb-5 border-b border-slate-100/70">
+            <h3 className="text-slate-800 text-lg font-bold tracking-tight">KBC Quiz Game</h3>
+            <p className="text-slate-500 text-xs mt-1">Scale the ladder and earn tech coins</p>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl p-4.5 space-y-3 mb-5 border border-slate-100/50">
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm">🎯</span>
-              <p className="text-slate-600 text-xs font-medium">Answer 15 progressive questions to hit 1 Crore Coins</p>
+          {/* Simple Rules Info List */}
+          <div className="space-y-3 mb-6 px-1">
+            <div className="flex items-center gap-3 text-slate-600 text-xs font-medium">
+              <span className="text-slate-400 w-4 text-center">🎯</span>
+              <p>Answer 15 progressive questions to hit 200 Coins</p>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm">⏱️</span>
-              <p className="text-slate-600 text-xs font-medium">Time Limits: 30s (Easy) ➔ 45s (Med) ➔ 60s (Hard)</p>
+            <div className="flex items-center gap-3 text-slate-600 text-xs font-medium">
+              <span className="text-slate-400 w-4 text-center">⏱️</span>
+              <p>30s (Easy) ➔ 45s (Med) ➔ 60s (Hard) limits</p>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm">🛡️</span>
-              <p className="text-slate-600 text-xs font-medium">Safe checkpoints at Level 5 (10K) and Level 10 (3.2L)</p>
+            <div className="flex items-center gap-3 text-slate-600 text-xs font-medium">
+              <span className="text-slate-400 w-4 text-center">🛡️</span>
+              <p>Safe checkpoints at Levels 3, 5, 10, 12, and 15</p>
             </div>
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm">🆘</span>
-              <p className="text-slate-600 text-xs font-medium">Two premium lifelines: 50:50 and Audience Poll</p>
+            <div className="flex items-center gap-3 text-slate-600 text-xs font-medium">
+              <span className="text-slate-400 w-4 text-center">🆘</span>
+              <p>Two premium lifelines: 50:50 and Audience Poll</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 mb-5 text-amber-700">
-            <ShieldAlert className="w-4 h-4 shrink-0" />
-            <p className="text-[10px] font-medium">This KBC game can be played once per day limit. Make it count!</p>
+          {/* Safe Checkpoints List (Lines, no boxes, subtle) */}
+          <div className="border-t border-slate-100/70 pt-5 mb-6">
+            <h4 className="text-slate-800 text-[11px] font-black uppercase tracking-wider mb-2">
+              LADDER CHECKPOINTS
+            </h4>
+            <p className="text-slate-400 text-[10px] leading-relaxed mb-4">
+              Getting a question wrong drops you to the last secured safe level. If you quit before answering, you walk away with the previous level's coins.
+            </p>
+
+            <div className="flex flex-col py-1">
+              {[
+                { level: 15, amount: "200 Coins", safe: true },
+                { level: 12, amount: "120 Coins", safe: true },
+                { level: 10, amount: "80 Coins", safe: true },
+                { level: 5, amount: "20 Coins", safe: true },
+                { level: 3, amount: "6 Coins", safe: true }
+              ].map((milestone) => (
+                <div
+                  key={milestone.level}
+                  className="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-b-0"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-350" />
+                    <span className="text-xs font-semibold text-slate-700">
+                      Level {milestone.level}
+                    </span>
+                    <span className="text-[9px] font-extrabold uppercase tracking-wide text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200/60">
+                      Safe
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-650">
+                    {milestone.amount}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Simple Subtle Play Notice */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-100/80 rounded-xl px-3.5 py-2.5 mb-6 text-slate-500">
+            <ShieldAlert className="w-4 h-4 shrink-0 text-slate-450" />
+            <p className="text-[10px] font-medium leading-normal">
+              This KBC game can be played once per day limit. Make it count!
+            </p>
+          </div>
+
+          {/* Play button (Premium Subtle style, bg-slate-900 instead of colorful gradients) */}
           <Button
             onClick={startKbc}
             disabled={isLoadingQuestions}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3.5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-md shadow-indigo-500/10 active:scale-[0.98] transition-all"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
           >
             {isLoadingQuestions ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            Play KBC Tech Edition
+            Play KBC Quiz
           </Button>
         </div>
       </motion.div>
@@ -1946,8 +2099,8 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
             </div>
           )}
 
-          <span className="text-5xl block mb-3">{gameResultTitle === "1 Crore Coins" ? "🏆" : "💪"}</span>
-          <h3 className="text-slate-800 text-[18px] font-black">{gameResultTitle === "1 Crore Coins" ? "CROREPATHI!" : "Game Over"}</h3>
+          <span className="text-5xl block mb-3">{gameResultTitle === "200 Coins" ? "🏆" : "💪"}</span>
+          <h3 className="text-slate-800 text-[18px] font-black">{gameResultTitle === "200 Coins" ? "CROREPATHI!" : "Game Over"}</h3>
           <p className="text-indigo-600 font-extrabold text-2xl mt-1">{gameResultTitle}</p>
           <p className="text-slate-400 text-xs font-semibold mt-1">Reached Level {level + (revealingStatus === "correct" ? 1 : 0)} of 15</p>
 
@@ -1981,221 +2134,271 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
   const timerColor = timer <= 5 ? "bg-rose-500 animate-pulse" : timer <= 10 ? "bg-amber-500" : "bg-emerald-500";
 
   return (
-    <div className="flex flex-col gap-3 font-sans pb-10">
-      {/* Time & Income Header */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-100">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span className={`text-xs font-medium tabular-nums ${timer <= 10 ? "text-rose-500" : "text-slate-600"}`}>{timer}s</span>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 font-sans pb-10">
+      {/* Column 1: KBC Game Board */}
+      <div className="lg:col-span-8 flex flex-col gap-3">
+        {/* Time & Income Header */}
+        <div className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-slate-50 border border-slate-100">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className={`text-xs font-medium tabular-nums ${timer <= 10 ? "text-rose-500" : "text-slate-600"}`}>{timer}s</span>
+            </div>
+
+            <button
+              onClick={() => setShowQuestionsList(!showQuestionsList)}
+              className="text-xs font-medium text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 active:scale-95 transition-all lg:hidden"
+            >
+              Income Ladder: {activeLadderNode.amount}
+            </button>
+
+            <span className="hidden lg:inline-flex text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100/50">
+              Current Rank: Level {level + 1}
+            </span>
+
+            <button
+              onClick={handleQuitGame}
+              className="text-xs font-medium text-slate-400 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 hover:text-slate-600 active:bg-slate-100"
+            >
+              {confirmQuitPrompt ? "Confirm Quit?" : "Quit"}
+            </button>
           </div>
 
+          {/* Horizontal Timer Bar */}
+          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <motion.div className={`h-full rounded-full ${timerColor}`} animate={{ width: `${timerPercent}%` }} transition={{ duration: 0.5 }} />
+          </div>
+
+          {/* Milestones Progress Tracker */}
+          <div className="mt-3 flex items-center justify-between text-[9px] font-bold text-slate-400 border-t border-slate-50 pt-2 px-1">
+            <span className={level >= 0 ? "text-indigo-600 font-extrabold" : ""}>Start (0)</span>
+            <div className="flex-1 mx-2 h-0.5 border-t border-dashed border-slate-200" />
+            <span className={level >= 5 ? "text-amber-500 font-extrabold" : ""}>🛡️ 20 Coins</span>
+            <div className="flex-1 mx-2 h-0.5 border-t border-dashed border-slate-200" />
+            <span className={level >= 10 ? "text-amber-500 font-extrabold" : ""}>🛡️ 80 Coins</span>
+            <div className="flex-1 mx-2 h-0.5 border-t border-dashed border-slate-200" />
+            <span className={level >= 14 ? "text-emerald-500 font-extrabold" : ""}>🏆 200 Coins</span>
+          </div>
+        </div>
+
+        {/* Income Ladder Overlay List (Mobile only) */}
+        <AnimatePresence>
+          {showQuestionsList && (
+            <motion.div
+              className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm max-h-52 overflow-y-auto space-y-1.5 lg:hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+            >
+              {[...KBC_LADDER].reverse().map((ladder, idx) => {
+                const activeIdx = KBC_LADDER.length - 1 - idx;
+                const isCurrent = activeIdx === level;
+                const isPassed = activeIdx < level;
+
+                return (
+                  <div
+                    key={ladder.level}
+                    className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[10px] font-medium ${
+                      isCurrent
+                        ? "bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm"
+                        : isPassed
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    <span className="w-5">{ladder.level}</span>
+                    <span className={ladder.safe ? "text-amber-500 font-extrabold" : ""}>{ladder.amount}</span>
+                    {ladder.safe && <span className="text-[8px] opacity-75">🛡️ Checkpoint</span>}
+                    {isPassed && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                    {isCurrent && <span className="text-indigo-600">▶ Current</span>}
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Question Card */}
+        <div className="relative bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-3xl p-5 mb-1.5 overflow-hidden border border-indigo-500/25 shadow-lg">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl" />
+          <div className="flex items-center justify-between mb-3 text-[10px] font-extrabold uppercase tracking-wide">
+            <span className="text-indigo-300">Question {level + 1} of 15</span>
+            <span className="text-yellow-400">For {activeLadderNode.amount}</span>
+          </div>
+          <p className="text-white text-xs font-medium leading-relaxed">{activeQuestion.question}</p>
+        </div>
+
+        {/* Options Grid */}
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          {activeQuestion.options.map((opt: string, idx: number) => {
+            const isRemoved = removedOptions.has(idx);
+            const isSelected = lockedOption === idx;
+            const isCorrect = idx === activeQuestion.correctIndex;
+
+            let btnStyle = "bg-white border-slate-200 text-slate-700";
+            if (isRemoved) btnStyle = "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed";
+            else if (revealingStatus) {
+              if (isCorrect) btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-medium";
+              else if (isSelected) btnStyle = "bg-rose-50 border-rose-500 text-rose-700 font-medium";
+            } else if (isSelected) {
+              btnStyle = "bg-indigo-50 border-indigo-500 text-indigo-700 font-medium ring-1 ring-indigo-400";
+            }
+
+            return (
+              <button
+                key={idx}
+                disabled={isRemoved || isRevealing}
+                onClick={() => handleOptionClick(idx)}
+                className={`px-3 py-3.5 rounded-xl border text-left transition-all text-xs flex items-center gap-2.5 ${btnStyle}`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
+                  isSelected ? "bg-indigo-500 text-white" : "bg-slate-100 text-slate-400"
+                }`}>
+                  {["A", "B", "C", "D"][idx]}
+                </span>
+                <span className="flex-1 leading-snug">{isRemoved ? "—" : opt}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Audience Poll Render */}
+        <AnimatePresence>
+          {audiencePoll && (
+            <motion.div className="bg-purple-50 rounded-2xl p-4 mb-2 border border-purple-100 shadow-sm" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="flex items-center gap-1.5 mb-3 text-purple-900">
+                <span className="text-sm">📊</span>
+                <p className="text-[10px] font-extrabold tracking-wider uppercase">Audience Poll Results</p>
+              </div>
+              <div className="space-y-2">
+                {audiencePoll.map((percent, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-purple-500 w-3">{["A", "B", "C", "D"][idx]}</span>
+                    <div className="flex-1 h-3 bg-purple-100 rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-purple-500 rounded-full" initial={{ width: 0 }} animate={{ width: `${percent}%` }} transition={{ duration: 0.6 }} />
+                    </div>
+                    <span className="text-[10px] font-extrabold text-purple-600 w-8 text-right">{percent}%</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Lifeline Buttons */}
+        <div className="flex items-center gap-2.5 mb-2">
           <button
-            onClick={() => setShowQuestionsList(!showQuestionsList)}
-            className="text-xs font-medium text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 active:scale-95 transition-all"
+            onClick={triggerFiftyFifty}
+            disabled={!lifelines.fifty || isRevealing || !!revealingStatus}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
+              lifelines.fifty && !isRevealing && !revealingStatus
+                ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
+                : "bg-slate-100 border-slate-200 text-slate-300"
+            }`}
           >
-            Income Ladder: {activeLadderNode.amount}
+            <BadgeHelp className="w-4 h-4" />
+            50:50 Lifeline
           </button>
 
           <button
-            onClick={handleQuitGame}
-            className="text-xs font-medium text-slate-400 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 hover:text-slate-600 active:bg-slate-100"
+            onClick={triggerAudiencePoll}
+            disabled={!lifelines.audience || isRevealing || !!revealingStatus}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
+              lifelines.audience && !isRevealing && !revealingStatus
+                ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
+                : "bg-slate-100 border-slate-200 text-slate-300"
+            }`}
           >
-            {confirmQuitPrompt ? "Confirm Quit?" : "Quit"}
+            <Users className="w-4 h-4" />
+            Audience Poll
           </button>
         </div>
 
-        {/* Horizontal Timer Bar */}
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <motion.div className={`h-full rounded-full ${timerColor}`} animate={{ width: `${timerPercent}%` }} transition={{ duration: 0.5 }} />
-        </div>
+        {/* Lock Answer Action Trigger */}
+        <Button
+          onClick={lockOptionSelected}
+          disabled={lockedOption === null || isRevealing}
+          className={`w-full py-4 h-12 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
+            lockedOption !== null && !isRevealing
+              ? "bg-slate-900 hover:bg-slate-800 text-white shadow-md active:scale-[0.98]"
+              : isRevealing
+              ? "bg-amber-100 text-amber-700 cursor-not-allowed"
+              : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+          }`}
+        >
+          {isRevealing ? (
+            <>
+              <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>⏳</motion.span>
+              Locking Answer...
+            </>
+          ) : "Confirm Answer"}
+        </Button>
+
+        {/* Feedback Banner */}
+        <AnimatePresence>
+          {revealingStatus && (
+            <motion.div
+              className={`rounded-xl px-3.5 py-3 flex items-center gap-2 text-xs font-medium border ${
+                revealingStatus === "correct" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"
+              }`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span>{revealingStatus === "correct" ? "🎉" : "😔"}</span>
+              <span>
+                {revealingStatus === "correct"
+                  ? level === KBC_LADDER.length - 1
+                    ? "AMAZING! You won 200 Coins!"
+                    : "Correct! Level Up ➔ " + KBC_LADDER[level + 1].amount
+                  : "Wrong! You walk away with " + getSafeCheckPointAmount().amount}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Income Ladder Overlay List */}
-      <AnimatePresence>
-        {showQuestionsList && (
-          <motion.div
-            className="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm max-h-52 overflow-y-auto space-y-1.5"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-          >
-            {[...KBC_LADDER].reverse().map((ladder, idx) => {
-              const activeIdx = KBC_LADDER.length - 1 - idx;
-              const isCurrent = activeIdx === level;
-              const isPassed = activeIdx < level;
-
-              return (
-                <div
-                  key={ladder.level}
-                  className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[10px] font-medium ${
-                    isCurrent
-                      ? "bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm"
-                      : isPassed
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "text-slate-400"
-                  }`}
-                >
-                  <span className="w-5">{ladder.level}</span>
-                  <span className={ladder.safe ? "text-amber-500 font-extrabold" : ""}>{ladder.amount}</span>
-                  {ladder.safe && <span className="text-[8px] opacity-75">🛡️ Checkpoint</span>}
-                  {isPassed && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                  {isCurrent && <span className="text-indigo-600">▶ Current</span>}
-                </div>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Question Card */}
-      <div className="relative bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-3xl p-5 mb-1.5 overflow-hidden border border-indigo-500/25 shadow-lg">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl" />
-        <div className="flex items-center justify-between mb-3 text-[10px] font-extrabold uppercase tracking-wide">
-          <span className="text-indigo-300">Question {level + 1} of 15</span>
-          <span className="text-yellow-400">For {activeLadderNode.amount}</span>
-        </div>
-        <p className="text-white text-xs font-medium leading-relaxed">{activeQuestion.question}</p>
-      </div>
-
-      {/* Options Grid */}
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        {activeQuestion.options.map((opt: string, idx: number) => {
-          const isRemoved = removedOptions.has(idx);
-          const isSelected = lockedOption === idx;
-          const isCorrect = idx === activeQuestion.correctIndex;
-
-          let btnStyle = "bg-white border-slate-200 text-slate-700";
-          if (isRemoved) btnStyle = "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed";
-          else if (revealingStatus) {
-            if (isCorrect) btnStyle = "bg-emerald-50 border-emerald-500 text-emerald-700 font-medium";
-            else if (isSelected) btnStyle = "bg-rose-50 border-rose-500 text-rose-700 font-medium";
-          } else if (isSelected) {
-            btnStyle = "bg-indigo-50 border-indigo-500 text-indigo-700 font-medium ring-1 ring-indigo-400";
-          }
+      {/* Column 2: KBC Coin Ladder Panel (Always visible on Desktop) */}
+      <div className="hidden lg:flex lg:flex-col lg:col-span-4 bg-white rounded-3xl p-5 border border-slate-100 shadow-sm self-start space-y-1.5 sticky top-4">
+        <h4 className="text-slate-800 text-xs font-black tracking-tight mb-2 uppercase text-center border-b border-slate-100 pb-2 flex items-center justify-center gap-1.5">
+          💎 Coin Ladder
+        </h4>
+        {[...KBC_LADDER].reverse().map((ladder, idx) => {
+          const activeIdx = KBC_LADDER.length - 1 - idx;
+          const isCurrent = activeIdx === level;
+          const isPassed = activeIdx < level;
 
           return (
-            <button
-              key={idx}
-              disabled={isRemoved || isRevealing}
-              onClick={() => handleOptionClick(idx)}
-              className={`px-3 py-3.5 rounded-xl border text-left transition-all text-xs flex items-center gap-2.5 ${btnStyle}`}
+            <div
+              key={ladder.level}
+              className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-[10px] font-semibold transition-all ${
+                isCurrent
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02]"
+                  : isPassed
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "text-slate-400"
+              }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
-                isSelected ? "bg-indigo-500 text-white" : "bg-slate-100 text-slate-400"
-              }`}>
-                {["A", "B", "C", "D"][idx]}
-              </span>
-              <span className="flex-1 leading-snug">{isRemoved ? "—" : opt}</span>
-            </button>
+              <div className="flex items-center gap-2">
+                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] ${isCurrent ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"}`}>
+                  {ladder.level}
+                </span>
+                <span className={ladder.safe && !isCurrent ? "text-amber-500 font-extrabold animate-pulse" : ""}>
+                  {ladder.amount}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {ladder.safe && <span className={`text-[7px] uppercase font-bold tracking-wider ${isCurrent ? "text-white/80" : "text-amber-500"}`}>🛡️ Checkpoint</span>}
+                {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                {isCurrent && <span className="text-[8px] uppercase font-extrabold tracking-wider bg-white/25 text-white px-1.5 py-0.5 rounded-md animate-pulse">▶ Playing</span>}
+              </div>
+            </div>
           );
         })}
       </div>
-
-      {/* Audience Poll Render */}
-      <AnimatePresence>
-        {audiencePoll && (
-          <motion.div className="bg-purple-50 rounded-2xl p-4 mb-2 border border-purple-100 shadow-sm" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <div className="flex items-center gap-1.5 mb-3 text-purple-900">
-              <span className="text-sm">📊</span>
-              <p className="text-[10px] font-extrabold tracking-wider uppercase">Audience Poll Results</p>
-            </div>
-            <div className="space-y-2">
-              {audiencePoll.map((percent, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <span className="text-[10px] font-medium text-purple-500 w-3">{["A", "B", "C", "D"][idx]}</span>
-                  <div className="flex-1 h-3 bg-purple-100 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-purple-500 rounded-full" initial={{ width: 0 }} animate={{ width: `${percent}%` }} transition={{ duration: 0.6 }} />
-                  </div>
-                  <span className="text-[10px] font-extrabold text-purple-600 w-8 text-right">{percent}%</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Lifeline Buttons */}
-      <div className="flex items-center gap-2.5 mb-2">
-        <button
-          onClick={triggerFiftyFifty}
-          disabled={!lifelines.fifty || isRevealing || !!revealingStatus}
-          className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
-            lifelines.fifty && !isRevealing && !revealingStatus
-              ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
-              : "bg-slate-100 border-slate-200 text-slate-300"
-          }`}
-        >
-          <BadgeHelp className="w-4 h-4" />
-          50:50 Lifeline
-        </button>
-
-        <button
-          onClick={triggerAudiencePoll}
-          disabled={!lifelines.audience || isRevealing || !!revealingStatus}
-          className={`flex-1 py-3 rounded-xl text-[10px] font-medium flex flex-col items-center gap-1 border transition-all ${
-            lifelines.audience && !isRevealing && !revealingStatus
-              ? "bg-white border-slate-200 text-slate-600 active:scale-95 shadow-sm"
-              : "bg-slate-100 border-slate-200 text-slate-300"
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          Audience Poll
-        </button>
-      </div>
-
-      {/* Lock Answer Action Trigger */}
-      <Button
-        onClick={lockOptionSelected}
-        disabled={lockedOption === null || isRevealing}
-        className={`w-full py-4 h-12 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
-          lockedOption !== null && !isRevealing
-            ? "bg-slate-900 hover:bg-slate-800 text-white shadow-md active:scale-[0.98]"
-            : isRevealing
-            ? "bg-amber-100 text-amber-700 cursor-not-allowed"
-            : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-        }`}
-      >
-        {isRevealing ? (
-          <>
-            <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>⏳</motion.span>
-            Locking Answer...
-          </>
-        ) : lockedOption !== null ? (
-          "🔒 Lock It In!"
-        ) : (
-          "Select An Option"
-        )}
-      </Button>
-
-      {/* Feedback Banner */}
-      <AnimatePresence>
-        {revealingStatus && (
-          <motion.div
-            className={`rounded-xl px-3.5 py-3 flex items-center gap-2 text-xs font-medium border ${
-              revealingStatus === "correct" ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"
-            }`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <span>{revealingStatus === "correct" ? "🎉" : "😔"}</span>
-            <span>
-              {revealingStatus === "correct"
-                ? level === KBC_LADDER.length - 1
-                  ? "AMAZING! You won 1 Crore Coins!"
-                  : "Correct! Level Up ➔ " + KBC_LADDER[level + 1].amount
-                : "Wrong! You walk away with " + getSafeCheckPointAmount()}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
-// ==========================================
-// 4. LOCAL LEADERBOARD LIST VIEW
-// ==========================================
 function LeaderboardView({ userName, userCoins }: { userName: string; userCoins: number }) {
   // Sort user into ranking list
   const cleanName = userName.split(" ")[0] || "You";

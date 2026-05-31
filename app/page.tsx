@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, Menu, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 const supabase = createClient();
 const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
@@ -1732,7 +1732,41 @@ export default function OnboardingFlow() {
     };
 
     // 1. Submit to Supabase DB
-    const { error } = await (supabase as any).from('platform_feedback').insert([feedbackPayload]);
+    let { error } = await (supabase as any).from('platform_feedback').insert([feedbackPayload]);
+
+    if (error) {
+      console.warn("platform_feedback insert failed, trying reviews fallback:", error);
+      // Fallback to reviews table
+      const reviewsPayload = {
+        reviewer_id: session?.user?.id || null,
+        feedback: JSON.stringify({
+          type: "platform_feedback",
+          user_id: session?.user?.id || null,
+          user_name: name || "Anonymous",
+          user_email: email || session?.user?.email || "anonymous@mentorhub.com",
+          user_role: role ? role.toLowerCase() : "student",
+          message: feedbackMessage,
+          image_url: feedbackImageUrl || null
+        }),
+        rating: 5
+      };
+
+      let { error: fallbackError } = await supabase.from('reviews').insert(reviewsPayload);
+
+      // If foreign key constraint violates (e.g. user has no profile record yet), retry with reviewer_id as null
+      if (fallbackError && session?.user?.id) {
+        console.warn("Reviews fallback failed with user ID, retrying anonymously...");
+        const anonPayload = { ...reviewsPayload, reviewer_id: null };
+        const { error: retryError } = await supabase.from('reviews').insert(anonPayload);
+        fallbackError = retryError;
+      }
+
+      if (!fallbackError) {
+        error = null; // Clear primary error as fallback succeeded
+      } else {
+        console.error("reviews fallback failed too:", fallbackError);
+      }
+    }
 
     // 2. Submit to localStorage fallback
     try {
@@ -2752,6 +2786,7 @@ export default function OnboardingFlow() {
 
              {(state === "DASHBOARD_MAIN" || state === "STUDENT_COURSES" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
                 <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
+                  
                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
             
             {state === "MESSAGES" && featureFlags.student_messages !== false && (
@@ -3628,7 +3663,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "GAMES" && featureFlags.student_games !== false && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
                 <StudentGames
                   userName={name || "Student"}
                   userCoins={coinsCount}
@@ -4139,7 +4174,7 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
                   <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                     {featureFlags.student_dashboard !== false && (
                       <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "DASHBOARD_MAIN" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
@@ -4838,7 +4873,7 @@ export default function OnboardingFlow() {
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
-                  <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                  <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
                     <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                       {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                         <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>

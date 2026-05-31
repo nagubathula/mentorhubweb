@@ -1,25 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
+const url = 'https://vhrmcfwlkjgepdcyhmnw.supabase.co';
+const key = 'sb_publishable_ydTHzAWqcxh5309HHs-tCQ_RjOBCzFe';
+const supabase = createClient(url, key);
 
-const supabaseUrl = 'https://vhrmcfwlkjgepdcyhmnw.supabase.co';
-const supabaseKey = 'sb_publishable_ydTHzAWqcxh5309HHs-tCQ_RjOBCzFe';
-const supabase = createClient(supabaseUrl, supabaseKey);
+async function inspect() {
+  const tables = [
+    'profiles', 'courses', 'sessions', 'enrollments', 'reviews', 'messages', 'mapping',
+    'circles', 'registrations', 'questionnaires', 'inspiration', 'gratitude_messages',
+    'csr_sponsors', 'games_quizzes', 'student_quiz_responses', 'mentor_quiz_responses',
+    'feature_flags', 'platform_feedback'
+  ];
 
-async function test() {
-  console.log("Querying student_quiz_responses...");
-  const { data: students, error: studentErr } = await supabase.from('student_quiz_responses').select('*').limit(5);
-  if (studentErr) {
-    console.error("Student error:", studentErr);
-  } else {
-    console.log("Student quiz responses:", students);
-  }
-
-  console.log("Querying mentor_quiz_responses...");
-  const { data: mentors, error: mentorErr } = await supabase.from('mentor_quiz_responses').select('*').limit(5);
-  if (mentorErr) {
-    console.error("Mentor error:", mentorErr);
-  } else {
-    console.log("Mentor quiz responses:", mentors);
+  for (const table of tables) {
+    const { error } = await supabase.from(table).select('*').limit(1);
+    console.log(`Table '${table}' exists:`, !error, error ? `(Error: ${error.message})` : '');
   }
 }
 
-test();
+inspect();

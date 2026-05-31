@@ -2222,12 +2222,42 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
   const fetchFeedback = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
-    const { data: dbData, error } = await (supabase as any)
+    
+    // 1. Fetch from platform_feedback table
+    const { data: dbData } = await (supabase as any)
       .from("platform_feedback")
       .select("*")
       .order("created_at", { ascending: false });
 
-    // Read localStorage fallback feedback as well, merge them!
+    // 2. Fetch from reviews table (fallback)
+    const { data: reviewsData } = await supabase
+      .from("reviews")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    // Parse platform feedback items from reviews table
+    const reviewsFeedback = (reviewsData || [])
+      .filter((r: any) => r.feedback && r.feedback.startsWith('{"type":"platform_feedback"'))
+      .map((r: any) => {
+        try {
+          const parsed = JSON.parse(r.feedback);
+          return {
+            id: r.id,
+            user_id: r.reviewer_id || parsed.user_id || null,
+            user_name: parsed.user_name || "Anonymous",
+            user_email: parsed.user_email || "anonymous@mentorhub.com",
+            user_role: parsed.user_role || "student",
+            message: parsed.message || "",
+            image_url: parsed.image_url || null,
+            created_at: r.created_at
+          };
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    // 3. Read localStorage fallback feedback
     let localFeedback: any[] = [];
     try {
       const stored = localStorage.getItem("local_platform_feedback");
@@ -2238,20 +2268,17 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
       console.error(e);
     }
 
-    if (error) {
-      console.error("DB error reading platform_feedback, using local feedback only:", error);
-      setFeedback(localFeedback.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-    } else {
-      // Merge db and local, avoid duplicates based on id
-      const allFeedbackMap = new Map();
-      localFeedback.forEach(item => allFeedbackMap.set(item.id, item));
-      (dbData || []).forEach((item: any) => allFeedbackMap.set(item.id, item));
-      
-      const merged = Array.from(allFeedbackMap.values()).sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      setFeedback(merged);
-    }
+    // Merge everything (localStorage, reviews fallback, main platform_feedback)
+    const allFeedbackMap = new Map();
+    localFeedback.forEach(item => allFeedbackMap.set(item.id, item));
+    reviewsFeedback.forEach((item: any) => allFeedbackMap.set(item.id, item));
+    (dbData || []).forEach((item: any) => allFeedbackMap.set(item.id, item));
+    
+    const merged = Array.from(allFeedbackMap.values()).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    setFeedback(merged);
     setLoading(false);
   }, []);
 
@@ -2263,8 +2290,9 @@ function FeedbackPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
     if (!confirm("Are you sure you want to delete this feedback?")) return;
     const supabase = createClient();
     
-    // Delete from DB
+    // Delete from both platform_feedback and reviews tables to ensure it's removed
     await (supabase as any).from("platform_feedback").delete().eq("id", id);
+    await supabase.from("reviews").delete().eq("id", id);
     
     // Delete from LocalStorage
     try {
@@ -3516,7 +3544,9 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       };
     });
 
-    setData({ students, mentors, courses: mappedCourses, sessions, enrollments, reviews, messages, mapping,
+    const filteredReviews = reviews.filter((r: any) => !(r.feedback && r.feedback.startsWith('{"type":"platform_feedback"')));
+
+    setData({ students, mentors, courses: mappedCourses, sessions, enrollments, reviews: filteredReviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
       games, studentQuiz, mentorQuiz, feature_flags });
   }, []);
