@@ -118,6 +118,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
   const [showNotes, setShowNotes] = useState(false);
   const [showCourses, setShowCourses] = useState(false);
   const [assignedStudents, setAssignedStudents] = useState<any[]>([]);
+  const [activeRoadmapStudentId, setActiveRoadmapStudentId] = useState<string>("");
   const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const [sendSuccessMap, setSendSuccessMap] = useState<Record<string, boolean>>({});
@@ -233,6 +234,9 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
 
     if (!isMounted) return;
     setAssignedStudents(enrichedStudents);
+    if (enrichedStudents.length > 0) {
+      setActiveRoadmapStudentId(prev => prev || enrichedStudents[0].id);
+    }
 
     // Fetch messages
     const { data: msgs } = await supabase.from('messages')
@@ -412,8 +416,200 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     }
   };
 
+  const getDynamicRoadmapStatus = () => {
+    if (assignedStudents.length === 0) {
+      return { activeWeek: 3, optOutDays: ["Saturday", "Sunday"], learningDays: 15, skippedDays: 6, studentName: "Demo" };
+    }
+    
+    const student = assignedStudents.find(s => s.id === activeRoadmapStudentId) || assignedStudents[0];
+    const createdDate = student.created_at ? new Date(student.created_at) : new Date();
+    createdDate.setHours(0,0,0,0);
+    
+    const today = new Date();
+    today.setHours(23,59,59,999);
+    
+    const prefs = student.preferences || {};
+    const optOutDays = Array.isArray(prefs.opt_out_days) ? prefs.opt_out_days : ["Saturday", "Sunday"];
+    
+    let learningDays = 0;
+    let skippedDays = 0;
+    
+    const current = new Date(createdDate);
+    while (current <= today) {
+      const dayName = current.toLocaleDateString('en-US', { weekday: 'long' });
+      if (optOutDays.includes(dayName)) {
+        skippedDays++;
+      } else {
+        learningDays++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    
+    learningDays = Math.max(1, learningDays);
+    const activeWeek = Math.min(8, Math.max(1, Math.ceil(learningDays / 7)));
+    
+    return { activeWeek, optOutDays, learningDays, skippedDays, studentName: student.name };
+  };
+
   return (
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+
+      {/* 8-Week Roadmap Relocated to the Top */}
+      <div className="px-1 animate-in fade-in slide-in-from-top-3 duration-500">
+        <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl relative">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600">
+                <Zap className="w-4 h-4 fill-indigo-100" />
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">8-Week Roadmap</p>
+                <h3 className="text-slate-900 font-bold text-[15px] mt-1.5 leading-none">8-Week Mentor-Led Career Journey 🚀</h3>
+              </div>
+            </div>
+
+            {/* Mentee Selector Dropdown for Roadmap */}
+            {assignedStudents.length > 0 && (
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-1.5 shadow-2xs self-start sm:self-auto">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Viewing Roadmap for:</span>
+                <select
+                  value={activeRoadmapStudentId}
+                  onChange={(e) => setActiveRoadmapStudentId(e.target.value)}
+                  className="bg-transparent text-slate-700 text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+                >
+                  {assignedStudents.map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Dynamic calculations info */}
+          {(() => {
+            const { activeWeek, optOutDays, learningDays, skippedDays } = getDynamicRoadmapStatus();
+            const dynamicWeeks = ROADMAP_WEEKS.map(w => {
+              let status = "upcoming";
+              if (w.week < activeWeek) {
+                status = "completed";
+              } else if (w.week === activeWeek) {
+                status = "active";
+              }
+              return { ...w, status };
+            });
+
+            return (
+              <>
+                <div className="space-y-5 relative pl-1">
+                  {dynamicWeeks.map((w, idx) => {
+                    const isExpanded = expandedWeek === w.week;
+                    const isCompleted = w.status === "completed";
+                    const isActive = w.status === "active";
+                    
+                    let circleBg = "bg-slate-50 border border-slate-200 text-slate-400";
+                    let titleColor = "text-slate-500 font-medium";
+                    
+                    if (isCompleted) {
+                      circleBg = "bg-emerald-500 text-white";
+                      titleColor = "text-slate-700 font-medium";
+                    } else if (isActive) {
+                      circleBg = "bg-violet-50 border-2 border-violet-500 text-violet-600 font-bold animate-pulse";
+                      titleColor = "text-violet-600 font-bold";
+                    }
+
+                    return (
+                      <div key={w.week} className="relative flex items-start gap-4">
+                        {/* Vertical timeline connector */}
+                        {idx < dynamicWeeks.length - 1 && (
+                          <div className={`absolute left-3 top-7 bottom-[-25px] w-[2px] ${
+                            isCompleted ? "bg-emerald-200" : "bg-slate-100"
+                          }`} />
+                        )}
+
+                        {/* Icon Circle */}
+                        <button 
+                          onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 z-10 transition-all active:scale-90 ${circleBg}`}
+                        >
+                          {isCompleted ? (
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          ) : (
+                            w.week
+                          )}
+                        </button>
+
+                        {/* Content Block */}
+                        <div className="flex-1 min-w-0">
+                          <div 
+                            onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
+                            className="flex items-center justify-between cursor-pointer py-0.5 group"
+                          >
+                            <span className={`text-[13px] transition-colors group-hover:text-slate-900 ${titleColor}`}>
+                              Week {w.week} — {w.title}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {isActive && (
+                                <span className="bg-violet-50 border border-violet-100 text-violet-600 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0">
+                                  This week
+                                </span>
+                              )}
+                              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                                isExpanded ? "rotate-180 text-slate-600" : ""
+                              }`} />
+                            </div>
+                          </div>
+
+                          {/* Sub-items Accordion */}
+                          <AnimatePresence initial={false}>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-2.5 ml-1 space-y-2 border-l border-slate-100 pl-3">
+                                  {w.items.map((item, itemIdx) => (
+                                    <div key={itemIdx} className="flex items-start gap-2 text-slate-500 hover:text-slate-800 transition-colors py-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
+                                      <span className="text-[12px] font-medium leading-relaxed">{item}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Footer Info with dynamic rest calculations */}
+                {assignedStudents.length > 0 && (
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] font-medium text-slate-400">
+                    <p className="flex items-center gap-1.5">
+                      <span>🗓️</span>
+                      <span>
+                        Joined on <strong>{new Date((assignedStudents.find(s => s.id === activeRoadmapStudentId) || assignedStudents[0]).created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</strong>
+                      </span>
+                    </p>
+                    <p className="flex items-center gap-1.5 bg-slate-50 border border-slate-100/50 p-2 px-3 rounded-xl leading-normal text-slate-500/80">
+                      <span>⚡</span>
+                      <span>
+                        Active week: <strong>{learningDays} study days</strong> ({skippedDays} rest days skipped based on rest schedule: <em>{optOutDays.join(", ")}</em>).
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </Card>
+      </div>
       
       {/* 14. New Student Notifications (Real Data) - Premium Light Theme */}
       {featureFlags.mentor_students !== false && showNotification && assignedStudents.length > 0 && (
@@ -762,106 +958,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
 
 
 
-      {/* 10. 8-Week Roadmap Tile */}
-      <div className="px-1">
-        <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl">
-          <div className="flex items-center gap-2.5 mb-6">
-            <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600">
-              <Zap className="w-4 h-4 fill-indigo-100" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">8-Week Roadmap</p>
-              <h3 className="text-slate-900 font-bold text-[15px] mt-1.5 leading-none">8-Week Mentor-Led Career Journey 🚀</h3>
-            </div>
-          </div>
 
-          <div className="space-y-5 relative pl-1">
-            {ROADMAP_WEEKS.map((w, idx) => {
-              const isExpanded = expandedWeek === w.week;
-              const isCompleted = w.status === "completed";
-              const isActive = w.status === "active";
-              
-              let circleBg = "bg-slate-50 border border-slate-200 text-slate-400";
-              let titleColor = "text-slate-500 font-medium";
-              
-              if (isCompleted) {
-                circleBg = "bg-emerald-500 text-white";
-                titleColor = "text-slate-700 font-medium";
-              } else if (isActive) {
-                circleBg = "bg-violet-50 border-2 border-violet-500 text-violet-600 font-bold animate-pulse";
-                titleColor = "text-violet-600 font-bold";
-              }
-
-              return (
-                <div key={w.week} className="relative flex items-start gap-4">
-                  {/* Vertical timeline connector */}
-                  {idx < ROADMAP_WEEKS.length - 1 && (
-                    <div className={`absolute left-3 top-7 bottom-[-25px] w-[2px] ${
-                      isCompleted ? "bg-emerald-200" : "bg-slate-100"
-                    }`} />
-                  )}
-
-                  {/* Icon Circle */}
-                  <button 
-                    onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 z-10 transition-all active:scale-90 ${circleBg}`}
-                  >
-                    {isCompleted ? (
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                    ) : (
-                      w.week
-                    )}
-                  </button>
-
-                  {/* Content Block */}
-                  <div className="flex-1 min-w-0">
-                    <div 
-                      onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
-                      className="flex items-center justify-between cursor-pointer py-0.5 group"
-                    >
-                      <span className={`text-[13px] transition-colors group-hover:text-slate-900 ${titleColor}`}>
-                        Week {w.week} — {w.title}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {isActive && (
-                          <span className="bg-violet-50 border border-violet-100 text-violet-600 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0">
-                            This week
-                          </span>
-                        )}
-                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                          isExpanded ? "rotate-180 text-slate-600" : ""
-                        }`} />
-                      </div>
-                    </div>
-
-                    {/* Sub-items Accordion */}
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="mt-2.5 ml-1 space-y-2 border-l border-slate-100 pl-3">
-                            {w.items.map((item, itemIdx) => (
-                              <div key={itemIdx} className="flex items-start gap-2 text-slate-500 hover:text-slate-800 transition-colors py-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
-                                <span className="text-[12px] font-medium leading-relaxed">{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </div>
 
       {/* 11. Resources & Community Grid */}
       <div className="px-1 mt-6">
