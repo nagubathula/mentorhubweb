@@ -192,6 +192,7 @@ export default function OnboardingFlow() {
   const [coinsCount, setCoinsCount] = useState(240);
   const [streakCount, setStreakCount] = useState(0);
   const [activeInspiration, setActiveInspiration] = useState<any>(null);
+  const [optOutDays, setOptOutDays] = useState<string[]>(["Saturday", "Sunday"]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Messaging state
@@ -466,19 +467,39 @@ export default function OnboardingFlow() {
         
         // Check database profile preferences / answers for 20% questionnaire completion
         const prefs = (profile.preferences as any) || {};
+        if (Array.isArray(prefs.opt_out_days)) {
+          setOptOutDays(prefs.opt_out_days);
+        }
         const screeningPrefs = ((profile as any).screening_answers as any) || {};
         
         let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
         let screeningSelectionsToUse = Object.keys(screeningSelections).length > 0 ? screeningSelections : screeningPrefs;
         
-        const didRedirect = checkAndRedirectToDashboard(profile.role as any, selectionsToUse, screeningSelectionsToUse);
-        
-        // Restore last known state if available and didn't redirect via 20% rule
-        if (!didRedirect && profile.last_state) {
-          if (profile.last_state === "MENTOR_MATCHING" && prefs.has_seen_matching) {
+        const isGoogleLogin = session.user.app_metadata?.provider === 'google' || 
+                              session.user.app_metadata?.providers?.includes('google');
+        const isExistingUser = !!profile.role;
+
+        let didRedirect = false;
+        if (isExistingUser || isGoogleLogin) {
+          if (profile.role === "STUDENT") {
+            setState("DASHBOARD_MAIN");
+            didRedirect = true;
+          } else if (profile.role === "MENTOR") {
             setState("MENTOR_DASHBOARD");
-          } else {
-            setState(profile.last_state as any);
+            didRedirect = true;
+          }
+        }
+
+        if (!didRedirect) {
+          didRedirect = checkAndRedirectToDashboard(profile.role as any, selectionsToUse, screeningSelectionsToUse);
+          
+          // Restore last known state if available and didn't redirect via 20% rule
+          if (!didRedirect && profile.last_state) {
+            if (profile.last_state === "MENTOR_MATCHING" && prefs.has_seen_matching) {
+              setState("MENTOR_DASHBOARD");
+            } else {
+              setState(profile.last_state as any);
+            }
           }
         }
         
@@ -526,6 +547,9 @@ export default function OnboardingFlow() {
             .eq('mentor_id', session.user.id);
           
           const prefs = (profile.preferences as any) || {};
+          if (Array.isArray(prefs.opt_out_days)) {
+            setOptOutDays(prefs.opt_out_days);
+          }
           if ((mappings && mappings.length > 0) || prefs.has_seen_matching) {
              // If already has students or has seen matching, dashboard is the better default
              if (!profile.last_state || profile.last_state === "MENTOR_MATCHING") {
@@ -536,11 +560,15 @@ export default function OnboardingFlow() {
 
         // Auto-redirect based on role if still in auth screens and no saved state
         if (!didRedirect && ["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
-          const prefs = (profile.preferences as any) || {};
-          if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-            setState('MENTOR_DASHBOARD');
+          if (isExistingUser || isGoogleLogin) {
+            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
           } else {
-            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+            const prefs = (profile.preferences as any) || {};
+            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+              setState('MENTOR_DASHBOARD');
+            } else {
+              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+            }
           }
         }
       } else {
@@ -731,6 +759,20 @@ export default function OnboardingFlow() {
   const [isCourseCatalogOpen, setIsCourseCatalogOpen] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<any[]>(mentorCoursesCatalog);
   const [studentEnrollments, setStudentEnrollments] = useState<any[]>([]);
+  
+  // Calculate dynamic day of enrollment in real time
+  const getActiveDay = () => {
+    const activeEnrollment = studentEnrollments?.[0];
+    if (activeEnrollment?.enrolled_at) {
+      const enrollmentDate = new Date(activeEnrollment.enrolled_at);
+      const today = new Date();
+      const timeDiff = today.getTime() - enrollmentDate.getTime();
+      const diffDays = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+      return Math.max(1, diffDays);
+    }
+    return Math.max(1, streakCount);
+  };
+
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
 
   // Student Custom Todos State
@@ -982,42 +1024,105 @@ export default function OnboardingFlow() {
   };
 
   useEffect(() => {
+    if (state === "MENTOR_MATCHING") {
+      const checkMatchingStatus = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('preferences')
+              .eq('id', session.user.id)
+              .maybeSingle();
+
+            const { data: mappings } = await supabase
+              .from('mapping')
+              .select('student_id')
+              .eq('mentor_id', session.user.id);
+
+            const prefs = (profile?.preferences as any) || {};
+            if (prefs.has_seen_matching || (mappings && mappings.length > 0)) {
+              setState("MENTOR_DASHBOARD");
+            }
+          } catch (err) {
+            console.error("Error in real-time matching check:", err);
+          }
+        }
+      };
+
+      checkMatchingStatus();
+
+      const profileChannel = supabase
+        .channel('realtime_profile_matching_status')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, (payload) => {
+          checkMatchingStatus();
+        })
+        .subscribe();
+
+      const mappingChannel = supabase
+        .channel('realtime_mapping_status')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'mapping' }, (payload) => {
+          checkMatchingStatus();
+        })
+        .subscribe();
+
+      return () => {
+        profileChannel.unsubscribe();
+        mappingChannel.unsubscribe();
+      };
+    }
+  }, [state]);
+
+  useEffect(() => {
     const loadInspiration = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          // Fetch any active/sent inspirations from DB
+          // Fetch any active/published inspirations from DB
           const { data: dbInspirations } = await supabase
-            .from('inspirations')
+            .from('inspiration')
             .select('*')
-            .eq('sent', true)
-            .order('sent_at', { ascending: false });
+            .eq('is_published', true)
+            .order('created_at', { ascending: true });
 
           if (dbInspirations && dbInspirations.length > 0) {
-            // Get read/dismissed inspirations for this student
-            const { data: readPosts } = await supabase
-              .from('inspiration_reads')
-              .select('post_id')
-              .eq('student_id', session.user.id);
+            // Determine the dynamic enrollment day
+            let activeDay = 1;
+            const { data: enrolls } = await supabase
+              .from('enrollments')
+              .select('enrolled_at')
+              .eq('student_id', session.user.id)
+              .eq('status', 'Active')
+              .order('enrolled_at', { ascending: false });
 
-            const readIds = readPosts ? readPosts.map(r => r.post_id) : [];
-            const unread = dbInspirations.filter(insp => !readIds.includes(insp.id));
+            if (enrolls && enrolls.length > 0 && enrolls[0].enrolled_at) {
+              const enrollmentDate = new Date(enrolls[0].enrolled_at);
+              const today = new Date();
+              const timeDiff = today.getTime() - enrollmentDate.getTime();
+              activeDay = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1;
+            } else {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('streak')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              activeDay = Math.max(1, profile?.streak || 0);
+            }
 
-            if (unread.length > 0) {
-              const latest = unread[0];
-              
-              // Resolve author name from profiles if mentor_id is present
-              let authorName = "Mentor";
-              if (latest.mentor_id) {
-                const { data: mProfile } = await supabase.from('profiles').select('name').eq('id', latest.mentor_id).maybeSingle();
-                if (mProfile?.name) authorName = mProfile.name;
-              }
+            // Stored dismissed inspirations from localStorage
+            const dismissedIdsStr = localStorage.getItem("mentorhub_dismissed_inspirations");
+            const dismissedIds = dismissedIdsStr ? JSON.parse(dismissedIdsStr) : [];
 
+            // We pick the quote dynamically matching (activeDay - 1) % dbInspirations.length
+            const quoteIndex = (activeDay - 1) % dbInspirations.length;
+            const dailyQuote = dbInspirations[quoteIndex];
+
+            if (dailyQuote && !dismissedIds.includes(dailyQuote.id)) {
               setActiveInspiration({
-                id: latest.id,
-                type: latest.type === "morning" ? "thought" : "reflection",
-                message: latest.content,
-                author: authorName,
+                id: dailyQuote.id,
+                type: "thought",
+                message: dailyQuote.content,
+                author: dailyQuote.author || "MentorHub",
                 isDb: true
               });
               return;
@@ -1044,21 +1149,18 @@ export default function OnboardingFlow() {
     loadInspiration();
     window.addEventListener("storage", loadInspiration);
     return () => window.removeEventListener("storage", loadInspiration);
-  }, [state]);
+  }, [state, studentEnrollments]);
 
   const dismissInspiration = async (id: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && activeInspiration?.isDb) {
-        // Insert record to mark as read/dismissed for this student
-        const { error } = await supabase.from('inspiration_reads').insert({
-          post_id: id,
-          student_id: session.user.id,
-          saved: false
-        });
-        if (error) console.error("Error saving inspiration read status:", error);
-        
-        // Trigger reload
+        const dismissedIdsStr = localStorage.getItem("mentorhub_dismissed_inspirations");
+        const dismissedIds = dismissedIdsStr ? JSON.parse(dismissedIdsStr) : [];
+        if (!dismissedIds.includes(id)) {
+          dismissedIds.push(id);
+          localStorage.setItem("mentorhub_dismissed_inspirations", JSON.stringify(dismissedIds));
+        }
         setActiveInspiration(null);
         return;
       }
@@ -1082,49 +1184,70 @@ export default function OnboardingFlow() {
   };
 
   useEffect(() => {
+    let channel: any;
     if (state === "MENTOR_MATCHING" || state === "DASHBOARD_MAIN") {
+      const formatProfile = (profile: any) => {
+         const prefs = (profile.preferences as any) || {};
+         const tags = [];
+         if (prefs.q2) {
+           if (Array.isArray(prefs.q2)) tags.push(...prefs.q2);
+           else tags.push(prefs.q2);
+         }
+         if (prefs.q3) {
+           if (Array.isArray(prefs.q3)) tags.push(...prefs.q3);
+           else tags.push(prefs.q3);
+         }
+         if (tags.length === 0) tags.push("Computer Science", "Web Development");
+
+         const desc = prefs.q1 ? `Studying at ${prefs.q1}` : "Looking to grow and learn new skills.";
+
+         return {
+            id: profile.id,
+            name: profile.name || profile.email?.split('@')[0] || "Student",
+            email: profile.email || "student@example.com",
+            match: (Math.floor(Math.random() * (98 - 75 + 1)) + 75) + "%",
+            desc,
+            time: "Recently joined",
+            location: "Online",
+            tags: tags.slice(0, 3),
+            image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+            avatar_url: profile.avatar_url,
+            preferences: {
+               inspiration: prefs.q5 || "A teacher/mentor",
+               movie: "Sci-fi / Technology",
+               style: "Hands-on projects", 
+               location: "Online"
+            }
+         };
+      };
+
       const fetchStudents = async () => {
         const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
-        if (data && data.length > 0) {
-          const formatted = data.map(profile => {
-             const prefs = (profile.preferences as any) || {};
-             const tags = [];
-             if (prefs.q2) {
-               if (Array.isArray(prefs.q2)) tags.push(...prefs.q2);
-               else tags.push(prefs.q2);
-             }
-             if (prefs.q3) {
-               if (Array.isArray(prefs.q3)) tags.push(...prefs.q3);
-               else tags.push(prefs.q3);
-             }
-             if (tags.length === 0) tags.push("Computer Science", "Web Development");
-
-             const desc = prefs.q1 ? `Studying at ${prefs.q1}` : "Looking to grow and learn new skills.";
-
-             return {
-                id: profile.id,
-                name: profile.name || profile.email?.split('@')[0] || "Student",
-                email: profile.email || "student@example.com",
-                match: (Math.floor(Math.random() * (98 - 75 + 1)) + 75) + "%",
-                desc,
-                time: "Recently joined",
-                location: "Online",
-                tags: tags.slice(0, 3),
-                image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
-                avatar_url: profile.avatar_url,
-                preferences: {
-                   inspiration: prefs.q5 || "A teacher/mentor",
-                   movie: "Sci-fi / Technology",
-                   style: "Hands-on projects", 
-                   location: "Online"
-                }
-             };
-          });
+        if (data) {
+          const formatted = data.map(formatProfile);
           setRealStudents(formatted);
         }
       };
+
       fetchStudents();
+
+      // Subscribe to real-time changes on profiles table
+      channel = supabase
+        .channel('realtime_profiles_students')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'role=eq.STUDENT' }, async (payload) => {
+          const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
+          if (data) {
+            setRealStudents(data.map(formatProfile));
+          }
+        })
+        .subscribe();
     }
+    return () => {
+      if (channel) channel.unsubscribe();
+    };
+  }, [state]);
+
+  useEffect(() => {
     if (state === "DASHBOARD_MAIN") {
       const fetchDashboardData = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -1406,10 +1529,26 @@ export default function OnboardingFlow() {
             if (typeof prefs.coins === 'number') {
               setCoinsCount(prefs.coins);
             }
-            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-              setState('MENTOR_DASHBOARD');
+            if (Array.isArray(prefs.opt_out_days)) {
+              setOptOutDays(prefs.opt_out_days);
+            }
+            
+            const isGoogleLogin = session.user.app_metadata?.provider === 'google' || 
+                                  session.user.app_metadata?.providers?.includes('google');
+            const isExistingUser = !!profile.role;
+
+            if (isExistingUser || isGoogleLogin) {
+              if (profile.role === 'STUDENT') {
+                setState('DASHBOARD_MAIN');
+              } else if (profile.role === 'MENTOR') {
+                setState('MENTOR_DASHBOARD');
+              }
             } else {
-              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+                setState('MENTOR_DASHBOARD');
+              } else {
+                setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              }
             }
           } else {
             setState("ROLE");
@@ -1435,6 +1574,34 @@ export default function OnboardingFlow() {
         coins: newCoins,
         xp: currentXp + (coinDelta > 0 ? coinDelta * 10 : 0) // earn 10 XP for every new coin
       }).eq('id', session.user.id);
+    }
+  };
+
+  const handleToggleOptOutDay = async (dayName: string) => {
+    const nextDays = optOutDays.includes(dayName)
+      ? optOutDays.filter(d => d !== dayName)
+      : [...optOutDays, dayName];
+    
+    setOptOutDays(nextDays);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferences')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        const currentPrefs = (profile?.preferences as any) || {};
+        const newPrefs = { ...currentPrefs, opt_out_days: nextDays };
+        
+        await supabase.from('profiles').update({
+          preferences: newPrefs
+        }).eq('id', session.user.id);
+      } catch (err) {
+        console.error("Error saving opt-out days:", err);
+      }
     }
   };
 
@@ -1981,10 +2148,26 @@ export default function OnboardingFlow() {
           if (profile.role) {
             setRole(profile.role as "STUDENT" | "MENTOR");
             const prefs = (profile.preferences as any) || {};
-            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-              setState('MENTOR_DASHBOARD');
+            if (Array.isArray(prefs.opt_out_days)) {
+              setOptOutDays(prefs.opt_out_days);
+            }
+            
+            const isGoogleLogin = data.user.app_metadata?.provider === 'google' || 
+                                  data.user.app_metadata?.providers?.includes('google');
+            const isExistingUser = !!profile.role;
+
+            if (isExistingUser || isGoogleLogin) {
+              if (profile.role === 'STUDENT') {
+                setState('DASHBOARD_MAIN');
+              } else if (profile.role === 'MENTOR') {
+                setState('MENTOR_DASHBOARD');
+              }
             } else {
-              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+                setState('MENTOR_DASHBOARD');
+              } else {
+                setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              }
             }
           } else {
             setState(userRole ? (userRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") : "ROLE");
@@ -2968,9 +3151,7 @@ export default function OnboardingFlow() {
                       </div>
                       <div className="flex-1 min-w-0 pr-6">
                         <p className="text-[11px] font-bold text-violet-600 mb-1">
-                          {activeInspiration 
-                            ? `${activeInspiration.type === "thought" ? "Morning Thought" : "Evening Reflection"} from ${activeInspiration.author}` 
-                            : `Day ${Math.max(1, streakCount)} of 60 • Building Your Best Self`}
+                          Day {getActiveDay()} of 60 • Building Your Best Self
                         </p>
                         <p className="text-[13px] font-medium text-slate-700 italic leading-relaxed">
                           {activeInspiration 
@@ -3088,7 +3269,7 @@ export default function OnboardingFlow() {
                             onChange={(e) => setMessageInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                             placeholder={mappedMentor ? `Ask ${mappedMentor.name}...` : "Ask a quick question..."}
-                            className="flex-1 border border-slate-200 rounded-2xl px-4.5 py-3 bg-slate-50/50 text-[14px] text-slate-800 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-950 transition-all disabled:opacity-50 h-11"
+                            className="flex-1 border border-slate-200 rounded-2xl px-4.5 py-3 bg-slate-50/50 text-[14px] text-slate-800 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:border-slate-950 focus-visible:ring-0 dark:focus-visible:border-slate-50 transition-all disabled:opacity-50 h-11"
                           />
                           <Button 
                             onClick={handleSendMessage}
@@ -4121,6 +4302,59 @@ export default function OnboardingFlow() {
                      </Card>
                   </div>
                   
+                  {/* Study Schedule & Opt-Out Days */}
+                  <Card className="bg-white border border-slate-100 rounded-3xl shadow-sm mb-6">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
+                          <Clock className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-[15px] font-semibold text-slate-900 leading-tight mb-0.5">Study Schedule & Opt-Out Days</p>
+                          <p className="text-[11.5px] text-slate-400 font-medium leading-tight">Select days you want to take a break. Your roadmap progress will pause on these days.</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-1.5 my-4">
+                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => {
+                          const isOptedOut = optOutDays.includes(day);
+                          return (
+                            <button
+                              key={day}
+                              onClick={() => handleToggleOptOutDay(day)}
+                              className={`h-11 rounded-xl text-[11px] font-bold transition-all duration-200 flex flex-col items-center justify-center border active:scale-95 shadow-2xs ${
+                                isOptedOut
+                                  ? "bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100/50"
+                                  : "bg-[#0f172a] text-white border-[#0f172a] hover:bg-slate-800"
+                              }`}
+                              title={isOptedOut ? `${day} (Break / Opted Out)` : `${day} (Active Study)`}
+                            >
+                              <span className="text-[10px] leading-tight">{day.slice(0, 3)}</span>
+                              <span className="text-[7px] tracking-tight uppercase leading-none opacity-80 mt-0.5">
+                                {isOptedOut ? "Off" : "Study"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="text-[11.5px] font-medium text-slate-500 flex items-start gap-2 bg-slate-50/50 border border-slate-100/80 p-3 rounded-2xl leading-relaxed">
+                        <span className="text-sm shrink-0">✨</span>
+                        <div>
+                          {optOutDays.length > 0 ? (
+                            <span>
+                              You study <strong>{7 - optOutDays.length} days</strong> a week. Your roadmap progress will pause on <strong>{optOutDays.join(" and ")}</strong>.
+                            </span>
+                          ) : (
+                            <span>
+                              You study <strong>7 days</strong> a week! No rest days scheduled. Tap a day above to opt out and schedule a break.
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Share & Earn */}
                   <Card className="bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] border border-[#fef08a] rounded-3xl">
                      <CardContent className="p-5">
@@ -4654,35 +4888,25 @@ export default function OnboardingFlow() {
             )}
 
             {state === "MENTOR_MATCHING" && (
-              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-white overflow-y-auto hidden-scrollbar pb-[calc(12rem+env(safe-area-inset-bottom))] px-6 md:px-8 items-center">
-                <div className="w-full max-w-2xl flex flex-col gap-5 pt-8">
+              <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 overflow-y-auto hidden-scrollbar pb-[calc(4rem+env(safe-area-inset-bottom))] px-6 md:px-8 items-center relative font-inter">
+                <div className="w-full max-w-2xl flex flex-col gap-6 pt-8">
                   
                   {/* Header */}
-                  <div className="w-full relative flex items-center justify-between gap-4 shrink-0 border-b border-slate-100 pb-5 mb-1">
+                  <div className="w-full flex items-center justify-between gap-4 shrink-0 pb-2">
                     <div className="space-y-1">
-                      <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome, {name ? name.split(' ')[0] : 'Satya'}! 👋</h2>
-                      <p className="text-[13px] font-medium text-slate-400">Review & select your first students to mentor.</p>
+                      <h2 className="text-xl font-medium tracking-tight text-slate-900 leading-tight">Welcome, {name ? name.split(' ')[0] : 'Satya'}! 👋</h2>
+                      <p className="text-[13px] font-medium text-slate-400">Review and select your first students to mentor.</p>
                     </div>
-                    <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-slate-200 shrink-0">
-                      <Bell className="w-5 h-5 text-slate-500" />
+                    <Button variant="outline" size="icon" className="w-10 h-10 rounded-full border-slate-200/80 bg-white shrink-0 shadow-3xs">
+                      <Bell className="w-4.5 h-4.5 text-slate-500" />
                     </Button>
                   </div>
 
-                  {/* Banner */}
-                  <Card className="bg-indigo-50/60 border border-indigo-100/40 p-5 rounded-[1.25rem] flex items-start gap-3.5 relative overflow-hidden shadow-3xs">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
-                    <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-                    <div className="relative z-10">
-                       <p className="text-[13px] font-semibold text-slate-800 mb-1 leading-tight">{realStudents.length} student{realStudents.length !== 1 ? 's' : ''} {realStudents.length === 1 ? 'is' : 'are'} waiting for a mentor</p>
-                       <p className="text-[12px] text-slate-500 leading-relaxed font-medium">Select the students you&apos;d like to mentor. You can review their profiles and questionnaire responses below.</p>
-                    </div>
-                  </Card>
-
-                  {/* Sort Bar */}
-                  <div className="flex items-center gap-3 mt-1 mb-1 px-1">
-                     <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Sort by:</span>
-                     <button className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[12px] font-semibold shadow-sm transition-all hover:bg-slate-800">Best Match</button>
-                     <button className="bg-white text-slate-600 hover:bg-slate-50 px-4 py-1.5 rounded-full text-[12px] font-semibold border border-slate-100 shadow-3xs transition-all">Recent</button>
+                  {/* Subtle Subtitle Banner */}
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">
+                      {realStudents.length} student{realStudents.length !== 1 ? 's' : ''} waiting for a mentor
+                    </p>
                   </div>
 
                   {/* Student List */}
@@ -4691,14 +4915,14 @@ export default function OnboardingFlow() {
                       const isExpanded = expandedStudents.includes(student.id);
                       const isSelected = selectedStudents.includes(student.id);
                       return (
-                      <Card key={student.id} className={`bg-white rounded-[1.5rem] border ${isSelected ? 'border-slate-900 shadow-xs ring-1 ring-slate-900' : 'border-slate-100'} p-5.5 transition-all relative flex flex-col hover:border-slate-200`}>
+                      <Card key={student.id} className={`bg-white rounded-3xl border transition-all relative flex flex-col p-6 shadow-sm hover:shadow-md/5 hover:border-slate-200/80 cursor-pointer ${isSelected ? 'border-slate-950 ring-1 ring-slate-950 bg-slate-950/[0.01]' : 'border-slate-100 bg-white'}`}>
                         
                         {isExpanded ? (
                           <div className="flex flex-col">
                             {/* Expanded Header info */}
                             <div className="flex gap-4 mb-4">
                               <div className="relative shrink-0">
-                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-100 shadow-3xs bg-slate-100 flex items-center justify-center relative">
                                   {student.avatar_url ? (
                                     <img 
                                       className="w-full h-full object-cover" 
@@ -4706,7 +4930,7 @@ export default function OnboardingFlow() {
                                       alt={student.name}
                                     />
                                   ) : (
-                                    <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                    <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm uppercase">
                                       {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
                                     </div>
                                   )}
@@ -4714,57 +4938,57 @@ export default function OnboardingFlow() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-0.5">
-                                  <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
-                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                                  <h3 className="text-[14px] font-semibold text-slate-800">{student.name}</h3>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>{student.match} match</span>
                                 </div>
-                                <p className="text-[12px] text-slate-500 leading-relaxed font-medium line-clamp-1">{student.desc}</p>
+                                <p className="text-[12px] text-slate-400 font-medium line-clamp-1">{student.desc}</p>
                               </div>
                             </div>
 
-                            <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[13px] text-slate-600 w-full border border-slate-100/50">
+                            <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-center gap-2 mb-4 text-[12px] text-slate-600 w-full border border-slate-100/50">
                               <Mail className="w-4 h-4 shrink-0 text-slate-400" /> <span className="font-semibold">{student.email || "student@example.com"}</span>
                             </div>
                             
                             <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-indigo-50/50">
-                              <div className="flex items-center gap-2 text-indigo-600 mb-2.5">
-                                <Target className="w-4 h-4 shrink-0" />
-                                <span className="text-[13px] font-semibold">Learning Goal</span>
+                              <div className="flex items-center gap-2 text-slate-800 mb-2.5">
+                                <Target className="w-4 h-4 shrink-0 text-slate-400" />
+                                <span className="text-[12px] font-semibold">Learning Goal</span>
                               </div>
-                              <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+                              <p className="text-[12px] text-slate-500 leading-relaxed font-medium">
                                 {student.desc}
                               </p>
                             </div>
                             
                             <div className="mb-6 px-1">
-                              <div className="flex items-center gap-2 text-slate-500 mb-4">
-                                <BookOpen className="w-[18px] h-[18px] shrink-0" />
-                                <span className="text-[13px] font-semibold text-slate-700">Questionnaire Responses</span>
+                              <div className="flex items-center gap-2 text-slate-400 mb-4">
+                                <BookOpen className="w-4 h-4 shrink-0" />
+                                <span className="text-[12px] font-semibold text-slate-700">Questionnaire Responses</span>
                               </div>
-                              <div className="space-y-3.5">
-                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                   <span className="text-slate-400">Inspiration</span>
-                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
+                              <div className="space-y-3">
+                                 <div className="flex justify-between items-center text-[12.5px] border-b border-slate-100/50 pb-2">
+                                   <span className="text-slate-400 font-medium">Inspiration</span>
+                                   <span className="text-slate-700 font-semibold text-right">{student.preferences?.inspiration || "A teacher/mentor"}</span>
                                  </div>
-                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                   <span className="text-slate-400">Movie Preference</span>
-                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
+                                 <div className="flex justify-between items-center text-[12.5px] border-b border-slate-100/50 pb-2">
+                                   <span className="text-slate-400 font-medium">Movie Preference</span>
+                                   <span className="text-slate-700 font-semibold text-right">{student.preferences?.movie || "Sci-fi / Technology"}</span>
                                  </div>
-                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 border-b border-slate-100/50 pb-2.5">
-                                   <span className="text-slate-400">Learning Style</span>
-                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.style || "Hands-on projects"}</span>
+                                 <div className="flex justify-between items-center text-[12.5px] border-b border-slate-100/50 pb-2">
+                                   <span className="text-slate-400 font-medium">Learning Style</span>
+                                   <span className="text-slate-700 font-semibold text-right">{student.preferences?.style || "Hands-on projects"}</span>
                                  </div>
-                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[13.5px] gap-1 pb-1">
-                                   <span className="text-slate-400">Location</span>
-                                   <span className="text-slate-800 font-medium text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
+                                 <div className="flex justify-between items-center text-[12.5px] pb-1">
+                                   <span className="text-slate-400 font-medium">Location</span>
+                                   <span className="text-slate-700 font-semibold text-right">{student.preferences?.location || student.location || "Mumbai, India"}</span>
                                  </div>
                               </div>
                             </div>
                             
                             <div className="flex gap-3">
-                              <Button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`flex-1 py-5 rounded-[12px] text-[13.5px] font-medium flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'}`}>
+                              <Button onClick={(e) => { e.stopPropagation(); setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id]); }} className={`flex-1 py-4.5 rounded-xl text-[12.5px] font-semibold flex items-center justify-center gap-2 transition-all ${isSelected ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-sm'}`}>
                                 {isSelected ? "Deselect Student" : <><Check className="w-4 h-4" /> Select Student</>}
                               </Button>
-                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="text-[13px] text-slate-400 font-medium hover:text-slate-600 hover:bg-slate-100/50 rounded-[12px]">
+                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => prev.filter(id => id !== student.id)); }} className="text-[12px] text-slate-400 font-medium hover:text-slate-600 hover:bg-slate-100/50 rounded-xl">
                                 Collapse
                               </Button>
                             </div>
@@ -4773,7 +4997,7 @@ export default function OnboardingFlow() {
                           <div onClick={() => setSelectedStudents(prev => isSelected ? prev.filter(id => id !== student.id) : [...prev, student.id])} className="cursor-pointer">
                             <div className="flex gap-4">
                               <div className="relative shrink-0">
-                                <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 flex items-center justify-center relative">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-100 shadow-3xs bg-slate-100 flex items-center justify-center relative">
                                   {student.avatar_url ? (
                                     <img 
                                       className="w-full h-full object-cover" 
@@ -4781,7 +5005,7 @@ export default function OnboardingFlow() {
                                       alt={student.name}
                                     />
                                   ) : (
-                                    <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(student.id)} flex items-center justify-center text-white font-black text-lg uppercase tracking-tight shadow-inner`}>
+                                    <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm uppercase">
                                       {student.name ? student.name.trim().charAt(0).toUpperCase() : '?'}
                                     </div>
                                   )}
@@ -4789,22 +5013,22 @@ export default function OnboardingFlow() {
                               </div>
                               <div className="flex-1">
                                 <div className="flex justify-between items-start mb-0.5">
-                                  <h3 className="text-[15px] font-medium text-slate-800">{student.name}</h3>
-                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-[#ecfdf5] text-[#10b981] border-[#a7f3d0]' : 'bg-[#eff6ff] text-[#3b82f6] border-[#bfdbfe]'}`}>{student.match} match</span>
+                                  <h3 className="text-[14px] font-semibold text-slate-800">{student.name}</h3>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${student.match.startsWith('9') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>{student.match} match</span>
                                 </div>
-                                <p className="text-[12px] text-slate-500 mb-2 leading-relaxed line-clamp-1">{student.desc}</p>
-                                <div className="flex items-center gap-3 text-[11px] text-slate-400 font-medium mb-3">
+                                <p className="text-[12px] text-slate-400 mb-2 leading-relaxed line-clamp-1">{student.desc}</p>
+                                <div className="flex items-center gap-3 text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-wider">
                                   <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {student.time}</span>
                                   <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {student.location}</span>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5">
                                   {student.tags.map((tag: string) => (
-                                    <span key={tag} className="text-[11px] bg-slate-50 text-slate-600 border border-slate-100 px-2.5 py-1 rounded-md font-medium">{tag}</span>
+                                    <span key={tag} className="text-[10px] bg-slate-50 text-slate-500 border border-slate-100/50 px-2.5 py-0.5 rounded-md font-medium">{tag}</span>
                                   ))}
                                 </div>
                               </div>
                             </div>
-                            <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-center text-[12px] text-slate-400 font-semibold items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
+                            <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-center text-[11px] text-slate-400 font-bold items-center gap-1 hover:text-slate-600" onClick={(e) => { e.stopPropagation(); setExpandedStudents(prev => [...prev, student.id]); }}>
                               View Full Profile <ChevronDown className="w-3.5 h-3.5" />
                             </div>
                           </div>
@@ -4812,20 +5036,24 @@ export default function OnboardingFlow() {
                       </Card>
                     )})}
                   </div>
-                </div>
 
-                {/* Fixed Bottom Action Container */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.1)] flex flex-col p-5 sm:rounded-b-2xl z-50">
-                   <div className="w-full max-w-2xl mx-auto flex flex-col">
-                     <Button onClick={async () => { if(selectedStudents.length > 0) { await markMatchingAsSeen(); } }} className={`w-full h-[52px] rounded-xl text-[14px] font-semibold flex gap-2 items-center justify-center transition-all shadow-md ${selectedStudents.length > 0 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10 active:scale-[0.98]" : "bg-slate-200/60 text-slate-400 pointer-events-none"}`}>
-                       {selectedStudents.length > 0 ? `Select ${selectedStudents.length} Student${selectedStudents.length > 1 ? 's' : ''}` : "Select at least one student"}
-                     </Button>
-                     <button onClick={markMatchingAsSeen} className="text-[12px] text-slate-400 font-semibold hover:text-slate-600 mt-4 text-center transition-colors">
-                       Skip for now — I&apos;ll review students later
+                  {/* Polished Inline Match Controller Buttons */}
+                  <div className="flex justify-end items-center gap-3 mt-4 px-1">
+                     <button 
+                       onClick={markMatchingAsSeen} 
+                       className="px-5 py-2.5 rounded-2xl text-[13px] font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+                     >
+                       Skip
                      </button>
-                   </div>
-                </div>
+                     <Button 
+                       onClick={async () => { if(selectedStudents.length > 0) { await markMatchingAsSeen(); } }} 
+                       className={`h-11 px-6 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ${selectedStudents.length > 0 ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10 active:scale-[0.98]" : "bg-slate-200 text-slate-400 pointer-events-none"}`}
+                     >
+                       Confirm Match
+                     </Button>
+                  </div>
 
+                </div>
               </motion.div>
             )}
 

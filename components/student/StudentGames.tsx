@@ -1876,18 +1876,15 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
       setRevealingStatus(isCorrect ? "correct" : "wrong");
 
       if (isCorrect) {
-        // Calculate progressive delta to award
-        const previousAmount = level === 0 ? 0 : KBC_LADDER[level - 1].value;
         const currentAmount = KBC_LADDER[level].value;
-        const delta = currentAmount - previousAmount;
-
-        onCoinsEarned(delta);
         setAccumulatedCoins(currentAmount);
 
         if (level === KBC_LADDER.length - 1) {
           // Absolute 200 Coins Winner!
           setGameResultTitle(KBC_LADDER[level].amount);
           setCelebrationActive(true);
+          // Award full grand prize (200 coins)
+          onCoinsEarned(200);
           setTimeout(() => {
             setIsGameOver(true);
             onPlayComplete(100, 200);
@@ -1928,11 +1925,11 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
     setGameResultTitle(resultTitle);
 
-    // Adjust the accumulatedCoins to correctly match the final checkpoint/quit value in DB
-    const adjustment = finalValue - accumulatedCoins;
-    if (adjustment !== 0) {
-      onCoinsEarned(adjustment);
+    // Award final safe/quit coins directly at game end
+    if (finalValue > 0) {
+      onCoinsEarned(finalValue);
     }
+    setAccumulatedCoins(finalValue);
 
     setTimeout(() => {
       setIsGameOver(true);
