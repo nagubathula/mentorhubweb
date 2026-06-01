@@ -11,6 +11,7 @@ import {
   UserPlus, Shield, RefreshCw, Download, Upload,
   MapPin, BookMarked, Layers, BarChart2, Activity, ChevronRight,
   ChevronLeft, Cpu, Lightbulb, Save, Trash2, Edit3, MessageSquare, Image as ImageIcon,
+  StickyNote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
@@ -18,13 +19,14 @@ import { cn } from "@/lib/utils";
 import { mentorCoursesCatalog, MentorCourse } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "./CourseDetailsScreen";
 import { CourseCustomizer } from "./CourseCustomizer";
+import { MentorNotes } from "@/components/mentor/MentorNotes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AdminPage =
   | "dashboard" | "courses" | "mentors" | "mentees" | "registrations"
   | "mapping" | "enrollments" | "games" | "questionnaires" | "circles"
   | "sessions" | "reviews" | "inspiration" | "messages" | "gratitude-wall"
-  | "csr-sponsors" | "settings" | "features" | "feedback";
+  | "csr-sponsors" | "settings" | "features" | "feedback" | "notes";
 
 type ModalKey =
   | "add-student" | "add-mentor" | "schedule-session"
@@ -51,6 +53,7 @@ const NAV_OTHERS = [
   { key: "inspiration",    label: "Inspiration",      icon: Sparkles },
   { key: "messages",       label: "Messages",         icon: MessageCircle },
   { key: "gratitude-wall", label: "Gratitude Wall",   icon: Heart },
+  { key: "notes",          label: "Running Notes",    icon: StickyNote },
   { key: "feedback",       label: "User Feedback",    icon: MessageSquare },
   { key: "csr-sponsors",   label: "CSR Sponsors",     icon: Handshake },
   { key: "features",       label: "Feature Controls", icon: Settings },
@@ -2871,6 +2874,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "inspiration":    return <InspirationPage data={data} openModal={openModal} />;
       case "messages":       return <MessagesPage data={data} />;
       case "gratitude-wall": return <GratitudeWallPage data={data} />;
+      case "notes":          return <MentorNotes />;
       case "csr-sponsors":   return <CSRSponsorsPage data={data} />;
       case "features":       return <FeaturesPage data={data} fetchAll={fetchAll} />;
       case "settings":       return <SettingsPage />;
