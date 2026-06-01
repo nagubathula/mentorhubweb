@@ -85,7 +85,7 @@ export default function AdminSignupPage() {
                     id="name"
                     type="text"
                     placeholder="Dr. Mentor"
-                    className="bg-slate-50/50 border-slate-200 focus-visible:ring-slate-400 shadow-none h-10"
+                    className="bg-slate-50/50 border-slate-200 focus-visible:border-slate-950 focus-visible:ring-0 dark:focus-visible:border-slate-50 shadow-none h-10"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -96,7 +96,7 @@ export default function AdminSignupPage() {
                     id="email"
                     type="email"
                     placeholder="admin@kindmentor.com"
-                    className="bg-slate-50/50 border-slate-200 focus-visible:ring-slate-400 shadow-none h-10"
+                    className="bg-slate-50/50 border-slate-200 focus-visible:border-slate-950 focus-visible:ring-0 dark:focus-visible:border-slate-50 shadow-none h-10"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   />
@@ -109,7 +109,7 @@ export default function AdminSignupPage() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    className="bg-slate-50/50 border-slate-200 focus-visible:ring-slate-400 shadow-none h-10"
+                    className="bg-slate-50/50 border-slate-200 focus-visible:border-slate-950 focus-visible:ring-0 dark:focus-visible:border-slate-50 shadow-none h-10"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleSignUp()}

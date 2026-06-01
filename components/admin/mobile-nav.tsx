@@ -24,7 +24,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-between px-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+    <div className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-between px-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
       {navItems.map((item) => {
         const isActive = pathname.startsWith(item.href);
         return (

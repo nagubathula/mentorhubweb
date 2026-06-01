@@ -569,7 +569,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
           className="space-y-6 pb-32"
         >
           {/* Customizer Header */}
-          <div className="flex items-center gap-4 mt-6 px-1">
+          <div className="flex items-center gap-4 pt-6 md:pt-8 px-1">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -764,7 +764,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
     return (
       <div className="space-y-6 pb-20">
-         <div className="flex items-center gap-4 mt-6 px-1">
+         <div className="flex items-center gap-4 pt-6 md:pt-8 px-1">
            <Button 
              variant="ghost" 
              size="icon" 
@@ -1119,7 +1119,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between mt-6 px-1">
+      <div className="flex items-center justify-between pt-6 md:pt-8 px-1">
         <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">My Students</h2>
         <Button variant="outline" size="icon" className="w-10 h-10 rounded-full shadow-sm bg-white border-slate-100 text-slate-400 hover:text-slate-600 active:scale-95 transition-transform">
           <Search className="w-4 h-4" />
