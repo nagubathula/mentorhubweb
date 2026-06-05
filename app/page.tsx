@@ -30,7 +30,7 @@ import { StudentResources } from "@/components/student/StudentResources";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 
-type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS";
+type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -80,6 +80,15 @@ const IconMap: Record<string, any> = {
 
 const getIcon = (iconName: string) => IconMap[iconName] || HelpCircle;
 
+const getCourseIcon = (category: string) => {
+  const cat = (category || "").toLowerCase();
+  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) return <Layout className="w-5 h-5" />;
+  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) return <BarChart2 className="w-5 h-5" />;
+  if (cat.includes("code") || cat.includes("programming") || cat.includes("web") || cat.includes("software")) return <Code className="w-5 h-5" />;
+  if (cat.includes("brain") || cat.includes("mental") || cat.includes("health")) return <Brain className="w-5 h-5" />;
+  return <BookOpen className="w-5 h-5" />;
+};
+
 const setCookie = (name: string, value: string, days = 7) => {
   if (typeof window === "undefined") return;
   const date = new Date();
@@ -123,7 +132,7 @@ const getGradientClass = (id: string) => {
 
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("WELCOME");
-  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
+  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -2062,7 +2071,7 @@ export default function OnboardingFlow() {
 
 
   return (
-    <div className="min-h-screen mesh-bg flex items-center justify-center p-0 md:p-6 selection:bg-orange-200 font-inter">
+    <div className="min-h-[100dvh] md:min-h-screen mesh-bg flex items-stretch md:items-center justify-center p-0 md:p-6 selection:bg-orange-200 font-inter">
       <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-[100dvh] md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white/90 backdrop-blur-3xl border-slate-200/50' : 'w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[1.5rem] bg-white/70 backdrop-blur-2xl border-white/60 premium-shadow'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
         <div className={`flex-1 relative ${isDashboard ? 'px-0 pt-0 pb-0 overflow-hidden' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white overflow-hidden' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#fdfdfc] overflow-y-auto hidden-scrollbar' : 'px-5 sm:px-8 py-6 sm:py-8 flex flex-col justify-start md:justify-center overflow-y-auto hidden-scrollbar pb-[calc(4rem+env(safe-area-inset-bottom))]'}`}>
@@ -2741,7 +2750,7 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-             {(state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
+             {(state === "DASHBOARD_MAIN" || state === "STUDENT_COURSES" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
                 <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
             
@@ -3266,7 +3275,7 @@ export default function OnboardingFlow() {
                       onClick={() => setState("GAMES")}
                       className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
                     >
-                      <div className="bg-gradient-to-tr from-amber-500 to-orange-600 text-white p-3.5 rounded-2xl mr-4.5 shadow-sm group-hover:scale-105 group-hover:rotate-3 transition-all"><Swords className="w-5 h-5" /></div>
+                      <div className="text-orange-500 mr-4.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 shrink-0"><Swords className="w-6 h-6" strokeWidth={2.2} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14.5px] font-medium text-slate-800">Learning Arena</p>
@@ -3291,7 +3300,7 @@ export default function OnboardingFlow() {
                       onClick={() => setState("NOTES")}
                       className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
                     >
-                      <div className="bg-slate-100 text-slate-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><NotebookPen className="w-5 h-5" /></div>
+                      <div className="text-slate-500 mr-4.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 shrink-0"><NotebookPen className="w-6 h-6" strokeWidth={2.2} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14.5px] font-medium text-slate-800">Study Notebook</p>
@@ -3308,8 +3317,8 @@ export default function OnboardingFlow() {
                     onClick={() => setState("RESOURCES")}
                     className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99"
                   >
-                    <div className="bg-indigo-50 text-indigo-600 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all">
-                      <BookOpen className="w-5 h-5" />
+                    <div className="text-indigo-600 mr-4.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 shrink-0">
+                      <BookOpen className="w-6 h-6" strokeWidth={2.2} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
@@ -3328,7 +3337,7 @@ export default function OnboardingFlow() {
                    {/* Gratitude Wall */}
                   {featureFlags.student_gratitude !== false && (
                     <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("GRATITUDE_WALL")}>
-                      <div className="bg-rose-50 text-rose-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Heart className="w-5 h-5" /></div>
+                      <div className="text-rose-500 mr-4.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 shrink-0"><Heart className="w-6 h-6" strokeWidth={2.2} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14.5px] font-medium text-slate-800">Gratitude Wall</p>
@@ -3343,7 +3352,7 @@ export default function OnboardingFlow() {
                   {/* My Portfolio */}
                   {featureFlags.student_portfolio !== false && (
                     <div className="bg-white rounded-[1.25rem] p-4 flex items-center shadow-sm border border-slate-100/50 relative cursor-pointer group hover:shadow-md hover:border-slate-200 transition-all active:scale-99" onClick={() => setState("PORTFOLIO")}>
-                      <div className="bg-indigo-50 text-indigo-500 p-3.5 rounded-2xl mr-4.5 shadow-xs group-hover:scale-105 group-hover:rotate-3 transition-all"><Briefcase className="w-5 h-5" /></div>
+                      <div className="text-indigo-600 mr-4.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-200 shrink-0"><Briefcase className="w-6 h-6" strokeWidth={2.2} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14.5px] font-medium text-slate-800">Showcase Portfolio</p>
@@ -3360,7 +3369,7 @@ export default function OnboardingFlow() {
                     <div className="bg-gradient-to-r from-[#effdf5] to-[#e0f2fe] rounded-[1.25rem] border border-[#a7f3d0]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("WELLNESS")}>
                        <div className="flex items-center justify-between relative z-10 mb-3">
                          <div className="flex items-center gap-3">
-                           <div className="bg-white/75 text-[#14b8a6] p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Heart className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
+                           <div className="text-[#14b8a6] group-hover:scale-110 transition-transform shrink-0"><Heart className="w-6 h-6" strokeWidth={2.2} /></div>
                            <div>
                              <div className="flex items-center gap-2">
                                <p className="text-[14.5px] font-medium text-teal-900">Mental Wellness</p>
@@ -3369,7 +3378,7 @@ export default function OnboardingFlow() {
                              <p className="text-[12px] text-teal-700/70 font-semibold leading-relaxed mt-0.5">Calm Reset · Gratitude Game · Memes</p>
                            </div>
                          </div>
-                         <ChevronRight className="w-4 h-4 text-teal-500/50 group-hover:translate-x-0.5 transition-transform" />
+                         <ChevronRight className="w-4 h-4 text-teal-500/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
                        </div>
                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-teal-800/60 relative z-10 px-1">
                          <span className="flex items-center gap-1">🧘 Brain Recharge</span>
@@ -3383,7 +3392,7 @@ export default function OnboardingFlow() {
                   <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.25rem] border border-[#fde047]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
                      <div className="flex items-center justify-between relative z-10 mb-3">
                        <div className="flex items-center gap-3">
-                         <div className="bg-amber-100/50 text-amber-600 p-2.5 rounded-xl backdrop-blur-sm shadow-xs group-hover:scale-105 transition-transform"><Lightbulb className="w-[18px] h-[18px]" strokeWidth={2.5} /></div>
+                         <div className="text-amber-600 group-hover:scale-110 transition-transform shrink-0"><Lightbulb className="w-6 h-6" strokeWidth={2.2} /></div>
                          <div>
                            <div className="flex items-center gap-2">
                              <p className="text-[14.5px] font-medium text-amber-900">Interesting Facts</p>
@@ -3392,31 +3401,34 @@ export default function OnboardingFlow() {
                            <p className="text-[12px] text-amber-700/70 font-semibold leading-relaxed mt-0.5">Small facts. Big inspiration.</p>
                          </div>
                        </div>
-                       <ChevronRight className="w-4 h-4 text-amber-500/50 group-hover:translate-x-0.5 transition-transform" />
+                       <ChevronRight className="w-4 h-4 text-amber-500/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
                      </div>
-                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-amber-800/60 relative z-10 px-1">
-                       <span className="flex items-center gap-1">🧠 Brain & Learning</span>
-                       <span className="flex items-center gap-1">💻 Tech & Code</span>
-                       <span className="flex items-center gap-1">🏆 Challenges</span>
-                     </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-amber-800/60 relative z-10 px-1">
+                        <span className="flex items-center gap-1">
+                          <Brain className="w-3 h-3 text-amber-600/70" /> Brain & Learning
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Code className="w-3 h-3 text-amber-600/70" /> Tech & Code
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Trophy className="w-3 h-3 text-amber-600/70" /> Challenges
+                        </span>
+                      </div>
                   </div>
 
                   {/* Mentor's Thought of the Day */}
-                  <div className="bg-slate-100/50 rounded-[1.25rem] p-5 shadow-sm mt-4 border border-slate-100/50 flex flex-col">
-                    <div className="flex items-center gap-2 text-slate-700 font-medium text-[14px] mb-3">
-                      <Sun className="w-4 h-4 text-orange-500 animate-spin-slow" strokeWidth={2.5} /> Mentor's Thought of the Day
+                  <div className="bg-slate-100/50 rounded-[1.25rem] p-4.5 mt-4 border border-slate-100/50 flex flex-col gap-3">
+                    <div className="flex items-center justify-between text-slate-700 font-semibold text-[13px]">
+                      <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-orange-500 animate-spin-slow" /> Mentor's Thought of the Day</span>
+                      <span className="text-[10.5px] text-slate-400 font-medium flex items-center gap-1"><Flame className="w-3.5 h-3.5 text-orange-400" /> {streakCount}-day streak</span>
                     </div>
-                    <div className="bg-white rounded-2xl p-4 italic text-slate-700 text-[14px] leading-relaxed relative border border-slate-100/30 font-medium shadow-xs">
+                    <p className="text-[13.5px] italic text-slate-600 leading-relaxed font-medium px-1">
                       "Consistency beats intensity. Practice a little every day."
-                      <span className="block text-slate-400 not-italic text-[12px] font-medium uppercase tracking-wider mt-2">— Pradeep K.</span>
-                    </div>
-                    <button className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white py-3 rounded-2xl mt-3.5 font-medium text-[13px] flex gap-2 items-center justify-center transition-all active:scale-98 shadow-sm h-12">
-                      <Heart className="w-[18px] h-[18px] fill-current text-rose-500 animate-pulse" /> Read & Reflect
+                      <span className="text-[11px] text-slate-400 not-italic ml-2 font-medium uppercase tracking-wider">— Pradeep K.</span>
+                    </p>
+                    <button className="w-full bg-rose-50/50 hover:bg-rose-50 text-rose-600 border border-rose-100/40 py-2.5 rounded-xl font-semibold text-[12.5px] flex gap-2 items-center justify-center transition-all active:scale-98 h-10 cursor-pointer">
+                      <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> Read & Reflect (+5 XP)
                     </button>
-                    <div className="flex justify-between items-center mt-4 px-1">
-                      <p className="text-[12px] font-medium text-orange-500 flex items-center gap-1"><Flame className="w-3.5 h-3.5" /> {streakCount}-day streak</p>
-                      <p className="text-[12px] font-medium text-amber-600 flex items-center gap-1"><Coins className="w-3.5 h-3.5 fill-amber-100" /> +5 XP per reflection</p>
-                    </div>
                   </div>
                 </div>
 
@@ -3447,6 +3459,155 @@ export default function OnboardingFlow() {
               </div>
             )}
 
+            {state === "STUDENT_COURSES" && featureFlags.student_courses !== false && (
+              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter animate-in fade-in duration-300">
+                <div className="w-full max-w-2xl flex flex-col gap-4">
+                  
+                  {/* Premium Header */}
+                  <div className="w-full relative flex flex-row items-start justify-between gap-4 shrink-0 px-1 mb-2">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">My Learning Paths</h2>
+                      <p className="text-[13px] font-medium text-slate-400">Track your progress.</p>
+                    </div>
+                    <Button 
+                      onClick={() => setIsCourseCatalogOpen(true)}
+                      className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Browse Catalog
+                    </Button>
+                  </div>
+
+                  {/* Courses Listing */}
+                  {studentEnrollments.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-white rounded-3xl border border-dashed border-slate-200 shadow-2xs">
+                      <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm text-slate-400">
+                        <GraduationCap className="w-8 h-8 stroke-[1.5]" />
+                      </div>
+                      <p className="text-[16px] font-bold text-slate-800">No Courses Enrolled Yet</p>
+                      <p className="text-[13px] text-slate-400 mt-1 max-w-[280px] leading-relaxed font-medium">
+                        Select from our expert-designed learning paths and jumpstart your career.
+                      </p>
+                      <Button 
+                        onClick={() => setIsCourseCatalogOpen(true)} 
+                        className="mt-5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
+                      >
+                        <BookOpen className="w-4 h-4" /> View Course Catalog
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4 w-full">
+                      {studentEnrollments.map((enrollment) => {
+                        const course = enrollment.course;
+                        if (!course) return null;
+
+                        // Map using helper to get full lessons/modules counts
+                        const extended = mapToExtendedCourse(course);
+                        const totalModules = extended?.modules?.length || 0;
+                        const allLessons = extended?.modules?.reduce((acc: any[], m: any) => [...acc, ...(m.lessons || [])], []) || [];
+                        const totalLessons = allLessons.length;
+                        
+                        // Progress count for this course specifically
+                        const completedLessonsList = (enrollment.progress as string[]) || [];
+                        const completedLessonsCount = completedLessonsList.length;
+                        const progressPct = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : enrollment.progress_pct || 0;
+                        
+                        const completedModulesCount = extended?.modules?.filter((m: any) => 
+                          (m.lessons || []).every((l: any) => completedLessonsList.includes(l.id))
+                        )?.length || 0;
+
+                        // Determine next lesson to continue
+                        const nextLesson = allLessons.find((l: any) => !completedLessonsList.includes(l.id)) || allLessons[0];
+
+                        // Style variants
+                        const bgGradient = getGradientClass(course.id);
+                        
+                        return (
+                          <div 
+                            key={enrollment.id}
+                            className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group p-5 relative"
+                          >
+                            <div className="flex items-start gap-4">
+                              {/* Accent Icon Container */}
+                              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/10`}>
+                                {getCourseIcon(course.category)}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{course.category || "General"}</span>
+                                  <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold border border-slate-200/60 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0">
+                                    {course.difficulty || "Beginner"}
+                                  </span>
+                                </div>
+                                <h3 className="text-[16px] font-bold text-slate-900 truncate mt-1 group-hover:text-indigo-600 transition-colors">{course.title}</h3>
+                              </div>
+                            </div>
+
+                            {/* Body Content */}
+                            <div className="flex-1 flex flex-col justify-between gap-4 mt-4">
+                              <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">
+                                {course.description && course.description.trim().startsWith('{')
+                                  ? JSON.parse(course.description).description
+                                  : course.description || "Master core concepts and build practical projects step by step."}
+                              </p>
+
+                              {/* Progress info */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center text-[12.5px] font-semibold text-slate-700">
+                                  <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-slate-400" /> Course Progress</span>
+                                  <span className="text-slate-900 font-bold">{progressPct}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+                                  <div 
+                                    className={`h-full bg-gradient-to-r ${bgGradient} rounded-full transition-all duration-500`} 
+                                    style={{ width: `${progressPct}%` }}
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between text-[11.5px] font-semibold text-slate-400 pt-1">
+                                  <span className="flex items-center gap-1"><Layout className="w-3.5 h-3.5 text-slate-300" /> {completedModulesCount}/{totalModules} modules</span>
+                                  <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-slate-300" /> {completedLessonsCount}/{totalLessons} lessons</span>
+                                </div>
+                              </div>
+
+                              {/* Next lesson recommendation if available */}
+                              {nextLesson && progressPct < 100 && (
+                                <div className="p-3 bg-slate-50/50 rounded-2xl flex items-center justify-between border border-slate-100/40 hover:bg-slate-50 transition-colors">
+                                  <div className="min-w-0 flex items-center gap-2.5">
+                                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-3xs border border-slate-100">
+                                      <Play className="w-2.5 h-2.5 text-slate-500 fill-slate-500 ml-0.5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Next up</p>
+                                      <p className="text-[12px] text-slate-700 font-bold truncate">{nextLesson.title}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Actions */}
+                              <div className="flex gap-2.5 pt-2">
+                                <Button 
+                                  onClick={() => {
+                                    setEnrollmentId(enrollment.id);
+                                    setEnrolledCourse(course);
+                                    setCourseProgress(completedLessonsList);
+                                    setState("COURSE_DETAILS");
+                                  }}
+                                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                                >
+                                  <PlayCircle className="w-4 h-4" /> Continue Learning
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {state === "COURSE_DETAILS" && featureFlags.student_courses !== false && (
               <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
                 {(() => {
@@ -3455,7 +3616,7 @@ export default function OnboardingFlow() {
                   return (
                     <CourseDetailsScreen 
                       course={extendedCourse as any}
-                      onBack={() => setState("DASHBOARD_MAIN")}
+                      onBack={() => setState("STUDENT_COURSES")}
                       actionButtonText="Continue Learning"
                       onActionClick={() => setState("DASHBOARD_MAIN")}
                       secondaryActionButtonText="Change Course"
@@ -3603,39 +3764,7 @@ export default function OnboardingFlow() {
                       <p className="text-[12px] text-slate-400 font-semibold">{notes.length} note{notes.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                     {/* Hidden File Inputs */}
-                     <input 
-                       type="file" 
-                       id="camera-capture-input" 
-                       accept="image/*" 
-                       capture="environment" 
-                       className="hidden" 
-                       onChange={handlePhotoUpload} 
-                     />
-                     <input 
-                       type="file" 
-                       id="image-gallery-input" 
-                       accept="image/*" 
-                       className="hidden" 
-                       onChange={handlePhotoUpload} 
-                     />
-                     
-                     <button 
-                       onClick={() => document.getElementById('camera-capture-input')?.click()}
-                       className="w-10 h-10 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-xs"
-                       title="Capture Paper Note"
-                     >
-                       <Camera className="w-[18px] h-[18px]" strokeWidth={2.2} />
-                     </button>
-                     <button 
-                       onClick={() => document.getElementById('image-gallery-input')?.click()}
-                       className="w-10 h-10 rounded-full bg-white border border-slate-150 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-xs"
-                       title="Upload Note Photo"
-                     >
-                       <ImageIcon className="w-[18px] h-[18px]" strokeWidth={2.2} />
-                     </button>
-                  </div>
+
                 </div>
 
                 <div className="space-y-4 mx-0 relative z-10 px-0 pb-16">
@@ -3706,7 +3835,7 @@ export default function OnboardingFlow() {
                         <NotebookPen className="w-7 h-7 text-slate-300" strokeWidth={1.8} />
                       </div>
                       <p className="text-[15px] font-medium text-slate-700">No running notes yet</p>
-                      <p className="text-[12px] text-slate-400 mt-1 max-w-[240px] leading-relaxed">Write down thoughts or tap the header icons to save paper notes as photos.</p>
+                      <p className="text-[12px] text-slate-400 mt-1 max-w-[240px] leading-relaxed">Write down thoughts, code snippets, or key concepts from your learning journey.</p>
                     </div>
                   )}
 
@@ -3857,121 +3986,122 @@ export default function OnboardingFlow() {
                     </CardContent>
                   </Card>
 
-                  {/* Nav Pills */}
-                  <div className="flex items-center justify-between bg-white rounded-[1.5rem] p-1.5 shadow-sm border border-slate-100 mb-6">
-                    <div className="bg-slate-50 text-slate-800 rounded-xl px-5 py-2.5 text-[13px] font-semibold flex items-center gap-2 border border-slate-200/60 shadow-sm">
-                      <BarChart2 className="w-4 h-4" /> Overview
-                    </div>
-                    <div className="text-slate-400 hover:text-slate-600 px-5 py-2.5 text-[13px] font-semibold flex items-center gap-2 transition-colors cursor-pointer">
+                  {/* Minimalist Nav Tabs */}
+                  <div className="flex items-center justify-around border-b border-slate-100/60 pb-3 mb-6">
+                    <button className="text-slate-850 text-[13px] font-bold flex items-center gap-1.5 pb-2 border-b-2 border-slate-800 -mb-3.5 transition-colors cursor-pointer">
+                      <BarChart2 className="w-4 h-4 text-slate-700" /> Overview
+                    </button>
+                    <button className="text-slate-400 hover:text-slate-600 text-[13px] font-semibold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer">
                       <ListChecks className="w-4 h-4" /> Answers
-                    </div>
-                    <div className="text-slate-400 hover:text-slate-600 px-5 py-2.5 text-[13px] font-semibold flex items-center gap-2 transition-colors cursor-pointer">
+                    </button>
+                    <button className="text-slate-400 hover:text-slate-600 text-[13px] font-semibold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer">
                       <Medal className="w-4 h-4" /> Badges
-                    </div>
+                    </button>
                   </div>
 
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-3 mb-8">
-                     <Card size="sm" className="bg-amber-50/50 border border-amber-100/50 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <Coins className="w-5 h-5 text-amber-500 fill-amber-100" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">240</p>
-                           <p className="text-[11px] text-slate-500">Coins</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                     <Card size="sm" className="bg-orange-50/50 border border-orange-100/50 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <Flame className="w-5 h-5 text-orange-500" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">3</p>
-                           <p className="text-[11px] text-slate-500 whitespace-nowrap">Day Streak</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                     <Card size="sm" className="bg-slate-50/50 border border-slate-100/50 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <Target className="w-5 h-5 text-slate-500" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">85%</p>
-                           <p className="text-[11px] text-slate-500">Quiz Avg</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                     <Card size="sm" className="bg-blue-50/50 border border-blue-100/50 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <BookOpen className="w-5 h-5 text-blue-500" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">1</p>
-                           <p className="text-[11px] text-slate-500">Courses</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                     <Card size="sm" className="bg-slate-50 border border-slate-100 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <Briefcase className="w-5 h-5 text-slate-500" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">4</p>
-                           <p className="text-[11px] text-slate-500">Projects</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                     <Card size="sm" className="bg-emerald-50/50 border border-emerald-100/50 shadow-sm py-4">
-                       <CardContent className="p-0 flex flex-col items-center justify-center gap-2">
-                         <FileText className="w-5 h-5 text-emerald-500" />
-                         <div className="text-center">
-                           <p className="text-[15px] font-semibold text-slate-800 leading-tight">2</p>
-                           <p className="text-[11px] text-slate-500">Notes</p>
-                         </div>
-                       </CardContent>
-                     </Card>
-                  </div>
+                  {/* Unified Stats Card */}
+                  <Card className="bg-white rounded-3xl border border-slate-100 shadow-xs mb-6 overflow-hidden">
+                    <CardContent className="p-5">
+                      <div className="grid grid-cols-3 gap-y-5">
+                        {/* Stat 1 */}
+                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
+                          <Coins className="w-5 h-5 text-amber-500 fill-amber-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{coinsCount}</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Coins</span>
+                        </div>
+                        {/* Stat 2 */}
+                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
+                          <Flame className="w-5 h-5 text-orange-500 fill-orange-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{streakCount}</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Streak</span>
+                        </div>
+                        {/* Stat 3 */}
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <Target className="w-5 h-5 text-indigo-500 fill-indigo-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">85%</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Quiz Avg</span>
+                        </div>
+
+                        {/* Divider row */}
+                        <div className="col-span-3 h-px bg-slate-100/60 my-1" />
+
+                        {/* Stat 4 */}
+                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
+                          <BookOpen className="w-5 h-5 text-blue-500 fill-blue-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{studentEnrollments.length}</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Courses</span>
+                        </div>
+                        {/* Stat 5 */}
+                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
+                          <Briefcase className="w-5 h-5 text-emerald-500 fill-emerald-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">4</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Projects</span>
+                        </div>
+                        {/* Stat 6 */}
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <FileText className="w-5 h-5 text-pink-500 fill-pink-500/5 mb-1" />
+                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{notes.length}</span>
+                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Notes</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
                   {/* Share & Earn */}
-                  <Card className="bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] border border-[#fef08a] rounded-3xl">
+                  <Card className="bg-white border border-slate-100 rounded-3xl shadow-xs">
                      <CardContent className="p-5">
-                       <div className="flex items-center gap-3 mb-5">
-                         <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 shrink-0"><Coins className="w-5 h-5" /></div>
+                       <div className="flex items-center gap-3 mb-4">
+                         <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 shrink-0"><Coins className="w-4.5 h-4.5" /></div>
                          <div>
-                           <p className="text-[15px] font-medium text-slate-900 leading-tight mb-0.5">Share & Earn Coins</p>
-                           <p className="text-[12px] text-amber-700/70 font-medium">Invite friends, get rewarded!</p>
+                           <p className="text-[14px] font-bold text-slate-800 leading-tight mb-0.5">Share & Earn Coins</p>
+                           <p className="text-[11.5px] text-slate-400 font-semibold">Invite friends, get rewarded!</p>
                          </div>
                        </div>
                        
-                       <div className="bg-white rounded-2xl border border-amber-100 p-2 flex justify-between items-center shadow-sm mb-5">
-                         <div className="pl-3">
-                           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Your referral code</p>
-                           <p className="text-[15px] font-medium text-slate-800 tracking-wider">MHUB-0H2CY</p>
+                       <div className="bg-slate-50/50 rounded-2xl p-2.5 pl-4 flex justify-between items-center mb-5 border border-slate-100/50">
+                         <div>
+                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Your referral code</p>
+                           <p className="text-[14px] font-bold text-slate-800 tracking-wider">MHUB-0H2CY</p>
                          </div>
-                         <Button variant="outline" className="bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 font-medium text-[13px] px-5 h-12 rounded-xl transition-colors border border-amber-100">
-                           <Link className="w-4 h-4 mr-2" /> Copy
+                         <Button variant="ghost" className="h-9 px-4 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-[11px] rounded-xl transition-all border border-slate-100 shadow-3xs">
+                           <Link className="w-3.5 h-3.5 mr-1.5" /> Copy
                          </Button>
                        </div>
 
-                       <div className="flex gap-2">
-                         <Button variant="outline" className="flex-1 h-auto bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex flex-col items-center justify-center p-3 rounded-2xl border border-emerald-100 transition-colors gap-1.5">
-                           <MessageCircle className="w-5 h-5 text-emerald-600 shrink-0" strokeWidth={2.5} />
-                           <span className="text-[10px] font-medium text-emerald-600">WhatsApp</span>
-                         </Button>
-                         <Button variant="outline" className="flex-1 h-auto bg-pink-50 text-pink-600 hover:bg-pink-100 flex flex-col items-center justify-center p-3 rounded-2xl border border-pink-100 transition-colors gap-1.5">
-                           <Camera className="w-5 h-5 text-pink-600 shrink-0" strokeWidth={2.5} />
-                           <span className="text-[10px] font-medium text-pink-600">Instagram</span>
-                         </Button>
-                         <Button variant="outline" className="flex-1 h-auto bg-slate-100 text-slate-700 hover:bg-slate-200 flex flex-col items-center justify-center p-3 rounded-2xl border border-slate-200 transition-colors gap-1.5">
-                           <AtSign className="w-5 h-5 text-slate-700 shrink-0" strokeWidth={2.5} />
-                           <span className="text-[10px] font-medium text-slate-700">X / Twitter</span>
-                         </Button>
-                         <Button variant="outline" className="flex-[0.8] h-auto bg-slate-100 text-slate-500 hover:bg-slate-200 flex flex-col items-center justify-center p-3 rounded-2xl border border-slate-200 transition-colors gap-1.5 relative">
-                           <Link className="w-5 h-5 text-slate-500 shrink-0" strokeWidth={2.5} />
-                           <span className="text-[10px] font-medium text-slate-500" style={{ whiteSpace: 'nowrap', transform: 'scale(0.85)' }}>Copy Link</span>
-                         </Button>
+                       <div className="flex justify-around pt-1">
+                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-emerald-600 group-hover:scale-105 active:scale-95 transition-all">
+                              <MessageCircle className="w-5 h-5" strokeWidth={2.2} />
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">WhatsApp</span>
+                          </button>
+                          
+                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-pink-600 group-hover:scale-105 active:scale-95 transition-all">
+                              <Camera className="w-5 h-5" strokeWidth={2.2} />
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">Instagram</span>
+                          </button>
+
+                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-sky-500 group-hover:scale-105 active:scale-95 transition-all">
+                              <AtSign className="w-5 h-5" strokeWidth={2.2} />
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">X / Twitter</span>
+                          </button>
+
+                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-105 active:scale-95 transition-all">
+                              <Link className="w-5 h-5" strokeWidth={2.2} />
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">Copy Link</span>
+                          </button>
                        </div>
                      </CardContent>
                   </Card>
                   
                   {/* Log Out Option */}
-                  <Button variant="destructive" onClick={handleSignOut} className="w-full mt-6 bg-rose-50 text-rose-600 hover:bg-rose-100 font-medium py-3.5 h-12 rounded-2xl flex items-center justify-center gap-2 border border-rose-100 transition-colors shadow-sm">
+                  <Button variant="destructive" onClick={handleSignOut} className="w-full mt-6 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-rose-100 transition-colors shadow-sm">
                     <LogOut className="w-[18px] h-[18px]" strokeWidth={2.5}/> Log Out
                   </Button>
 
@@ -3981,7 +4111,7 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
                   <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                     {featureFlags.student_dashboard !== false && (
                       <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "DASHBOARD_MAIN" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
@@ -3990,8 +4120,8 @@ export default function OnboardingFlow() {
                       </button>
                     )}
                     {featureFlags.student_courses !== false && (
-                      <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "COURSE_DETAILS" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
-                        <BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/>
+                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                        <BookOpen className="w-5 h-5" strokeWidth={["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? 2.5 : 2}/>
                         <span className="text-[10px]">Courses</span>
                       </button>
                     )}
@@ -4680,7 +4810,7 @@ export default function OnboardingFlow() {
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
-                  <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                  <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
                     <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                       {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                         <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>

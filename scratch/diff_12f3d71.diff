@@ -1,0 +1,262 @@
+commit 12f3d717083d730a005fae5d28dbac0a2429f8c2
+Author: Satya Sai <satyasai2108@gmail.com>
+Date:   Sun May 31 00:00:46 2026 +0530
+
+    Changes on may 30
+
+diff --git a/app/page.tsx b/app/page.tsx
+index 5274922..6b09230 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -30,7 +30,7 @@ import { StudentResources } from "@/components/student/StudentResources";
+ import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
+ import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
+ 
+-type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS";
++type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS";
+ 
+ // Google SVG Icon component
+ const GoogleIcon = () => (
+@@ -80,6 +80,15 @@ const IconMap: Record<string, any> = {
+ 
+ const getIcon = (iconName: string) => IconMap[iconName] || HelpCircle;
+ 
++const getCourseIcon = (category: string) => {
++  const cat = (category || "").toLowerCase();
++  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) return <Layout className="w-5 h-5" />;
++  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) return <BarChart2 className="w-5 h-5" />;
++  if (cat.includes("code") || cat.includes("programming") || cat.includes("web") || cat.includes("software")) return <Code className="w-5 h-5" />;
++  if (cat.includes("brain") || cat.includes("mental") || cat.includes("health")) return <Brain className="w-5 h-5" />;
++  return <BookOpen className="w-5 h-5" />;
++};
++
+ const setCookie = (name: string, value: string, days = 7) => {
+   if (typeof window === "undefined") return;
+   const date = new Date();
+@@ -123,7 +132,7 @@ const getGradientClass = (id: string) => {
+ 
+ export default function OnboardingFlow() {
+   const [state, setState] = useState<FlowState>("WELCOME");
+-  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
++  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
+   const [authEmail, setAuthEmail] = useState("");
+   const [authPassword, setAuthPassword] = useState("");
+   const [authError, setAuthError] = useState("");
+@@ -457,12 +466,12 @@ export default function OnboardingFlow() {
+         
+         // Check database profile preferences / answers for 20% questionnaire completion
+         const prefs = (profile.preferences as any) || {};
+-        const screeningPrefs = (profile.screening_answers as any) || {};
++        const screeningPrefs = ((profile as any).screening_answers as any) || {};
+         
+         let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
+         let screeningSelectionsToUse = Object.keys(screeningSelections).length > 0 ? screeningSelections : screeningPrefs;
+         
+-        const didRedirect = checkAndRedirectToDashboard(profile.role, selectionsToUse, screeningSelectionsToUse);
++        const didRedirect = checkAndRedirectToDashboard(profile.role as any, selectionsToUse, screeningSelectionsToUse);
+         
+         // Restore last known state if available and didn't redirect via 20% rule
+         if (!didRedirect && profile.last_state) {
+@@ -2741,7 +2750,7 @@ export default function OnboardingFlow() {
+               </motion.div>
+             )}
+ 
+-             {(state === "DASHBOARD_MAIN" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
++             {(state === "DASHBOARD_MAIN" || state === "STUDENT_COURSES" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
+                 <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
+                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+             
+@@ -2889,7 +2898,7 @@ export default function OnboardingFlow() {
+             )}
+ 
+             {state === "DASHBOARD_MAIN" && (
+-              <div className="flex flex-col pt-0 relative w-full items-center pb-32 font-inter">
++              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter">
+                 <div className="w-full max-w-2xl flex flex-col gap-4">
+ 
+                 
+@@ -3447,6 +3456,155 @@ export default function OnboardingFlow() {
+               </div>
+             )}
+ 
++            {state === "STUDENT_COURSES" && featureFlags.student_courses !== false && (
++              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter animate-in fade-in duration-300">
++                <div className="w-full max-w-2xl flex flex-col gap-4">
++                  
++                  {/* Premium Header */}
++                  <div className="w-full relative flex flex-row items-start justify-between gap-4 shrink-0 px-1 mb-2">
++                    <div className="space-y-1">
++                      <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">My Learning Paths</h2>
++                      <p className="text-[13px] font-medium text-slate-400">Track your progress.</p>
++                    </div>
++                    <Button 
++                      onClick={() => setIsCourseCatalogOpen(true)}
++                      className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
++                    >
++                      <Plus className="w-3.5 h-3.5" /> Browse Catalog
++                    </Button>
++                  </div>
++
++                  {/* Courses Listing */}
++                  {studentEnrollments.length === 0 ? (
++                    <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-white rounded-3xl border border-dashed border-slate-200 shadow-2xs">
++                      <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm text-slate-400">
++                        <GraduationCap className="w-8 h-8 stroke-[1.5]" />
++                      </div>
++                      <p className="text-[16px] font-bold text-slate-800">No Courses Enrolled Yet</p>
++                      <p className="text-[13px] text-slate-400 mt-1 max-w-[280px] leading-relaxed font-medium">
++                        Select from our expert-designed learning paths and jumpstart your career.
++                      </p>
++                      <Button 
++                        onClick={() => setIsCourseCatalogOpen(true)} 
++                        className="mt-5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
++                      >
++                        <BookOpen className="w-4 h-4" /> View Course Catalog
++                      </Button>
++                    </div>
++                  ) : (
++                    <div className="flex flex-col gap-4 w-full">
++                      {studentEnrollments.map((enrollment) => {
++                        const course = enrollment.course;
++                        if (!course) return null;
++
++                        // Map using helper to get full lessons/modules counts
++                        const extended = mapToExtendedCourse(course);
++                        const totalModules = extended?.modules?.length || 0;
++                        const allLessons = extended?.modules?.reduce((acc: any[], m: any) => [...acc, ...(m.lessons || [])], []) || [];
++                        const totalLessons = allLessons.length;
++                        
++                        // Progress count for this course specifically
++                        const completedLessonsList = (enrollment.progress as string[]) || [];
++                        const completedLessonsCount = completedLessonsList.length;
++                        const progressPct = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : enrollment.progress_pct || 0;
++                        
++                        const completedModulesCount = extended?.modules?.filter((m: any) => 
++                          (m.lessons || []).every((l: any) => completedLessonsList.includes(l.id))
++                        )?.length || 0;
++
++                        // Determine next lesson to continue
++                        const nextLesson = allLessons.find((l: any) => !completedLessonsList.includes(l.id)) || allLessons[0];
++
++                        // Style variants
++                        const bgGradient = getGradientClass(course.id);
++                        
++                        return (
++                          <div 
++                            key={enrollment.id}
++                            className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group p-5 relative"
++                          >
++                            <div className="flex items-start gap-4">
++                              {/* Accent Icon Container */}
++                              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/10`}>
++                                {getCourseIcon(course.category)}
++                              </div>
++                              
++                              <div className="flex-1 min-w-0">
++                                <div className="flex items-center justify-between gap-2">
++                                  <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{course.category || "General"}</span>
++                                  <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold border border-slate-200/60 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0">
++                                    {course.difficulty || "Beginner"}
++                                  </span>
++                                </div>
++                                <h3 className="text-[16px] font-bold text-slate-900 truncate mt-1 group-hover:text-indigo-600 transition-colors">{course.title}</h3>
++                              </div>
++                            </div>
++
++                            {/* Body Content */}
++                            <div className="flex-1 flex flex-col justify-between gap-4 mt-4">
++                              <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">
++                                {course.description && course.description.trim().startsWith('{')
++                                  ? JSON.parse(course.description).description
++                                  : course.description || "Master core concepts and build practical projects step by step."}
++                              </p>
++
++                              {/* Progress info */}
++                              <div className="space-y-2">
++                                <div className="flex justify-between items-center text-[12.5px] font-semibold text-slate-700">
++                                  <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-slate-400" /> Course Progress</span>
++                                  <span className="text-slate-900 font-bold">{progressPct}%</span>
++                                </div>
++                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
++                                  <div 
++                                    className={`h-full bg-gradient-to-r ${bgGradient} rounded-full transition-all duration-500`} 
++                                    style={{ width: `${progressPct}%` }}
++                                  />
++                                </div>
++                                <div className="flex items-center justify-between text-[11.5px] font-semibold text-slate-400 pt-1">
++                                  <span className="flex items-center gap-1"><Layout className="w-3.5 h-3.5 text-slate-300" /> {completedModulesCount}/{totalModules} modules</span>
++                                  <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-slate-300" /> {completedLessonsCount}/{totalLessons} lessons</span>
++                                </div>
++                              </div>
++
++                              {/* Next lesson recommendation if available */}
++                              {nextLesson && progressPct < 100 && (
++                                <div className="p-3 bg-slate-50/50 rounded-2xl flex items-center justify-between border border-slate-100/40 hover:bg-slate-50 transition-colors">
++                                  <div className="min-w-0 flex items-center gap-2.5">
++                                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-3xs border border-slate-100">
++                                      <Play className="w-2.5 h-2.5 text-slate-500 fill-slate-500 ml-0.5" />
++                                    </div>
++                                    <div className="min-w-0">
++                                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Next up</p>
++                                      <p className="text-[12px] text-slate-700 font-bold truncate">{nextLesson.title}</p>
++                                    </div>
++                                  </div>
++                                </div>
++                              )}
++
++                              {/* Actions */}
++                              <div className="flex gap-2.5 pt-2">
++                                <Button 
++                                  onClick={() => {
++                                    setEnrollmentId(enrollment.id);
++                                    setEnrolledCourse(course);
++                                    setCourseProgress(completedLessonsList);
++                                    setState("COURSE_DETAILS");
++                                  }}
++                                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
++                                >
++                                  <PlayCircle className="w-4 h-4" /> Continue Learning
++                                </Button>
++                              </div>
++                            </div>
++                          </div>
++                        );
++                      })}
++                    </div>
++                  )}
++                </div>
++              </div>
++            )}
++
+             {state === "COURSE_DETAILS" && featureFlags.student_courses !== false && (
+               <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
+                 {(() => {
+@@ -3455,7 +3613,7 @@ export default function OnboardingFlow() {
+                   return (
+                     <CourseDetailsScreen 
+                       course={extendedCourse as any}
+-                      onBack={() => setState("DASHBOARD_MAIN")}
++                      onBack={() => setState("STUDENT_COURSES")}
+                       actionButtonText="Continue Learning"
+                       onActionClick={() => setState("DASHBOARD_MAIN")}
+                       secondaryActionButtonText="Change Course"
+@@ -3990,8 +4148,8 @@ export default function OnboardingFlow() {
+                       </button>
+                     )}
+                     {featureFlags.student_courses !== false && (
+-                      <button onClick={() => setState("COURSE_DETAILS")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "COURSE_DETAILS" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+-                        <BookOpen className="w-5 h-5" strokeWidth={state === "COURSE_DETAILS" ? 2.5 : 2}/>
++                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
++                        <BookOpen className="w-5 h-5" strokeWidth={["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? 2.5 : 2}/>
+                         <span className="text-[10px]">Courses</span>
+                       </button>
+                     )}
+@@ -4642,7 +4800,7 @@ export default function OnboardingFlow() {
+                    
+                    {/* Mentor Portal Shared Header (only for main dashboard) */}
+                    {state === "MENTOR_DASHBOARD" && (
+-                     <div className="w-full flex flex-col pt-0 pb-2 gap-4">
++                     <div className="w-full flex flex-col pt-6 md:pt-8 pb-2 gap-4">
+                         <div className="w-full flex justify-between items-center">
+                           <div className="space-y-1">
+                             <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Mentor'}! 👋</h2>

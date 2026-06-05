@@ -134,6 +134,12 @@
   html {
     @apply font-sans;
   }
+  /* Prevent iOS auto-zoom on input focus by forcing minimum 16px font-size on mobile screens */
+  @media (max-width: 768px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer utilities {

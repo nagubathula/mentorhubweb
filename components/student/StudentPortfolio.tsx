@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Plus, Trash2, Check, ExternalLink, Link as LinkIcon, BookOpen, Clock, Activity, Award, Briefcase, ChevronDown, CheckCircle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Check, ExternalLink, Link as LinkIcon, BookOpen, Clock, Activity, Award, Briefcase, ChevronDown, CheckCircle, ClipboardList, Hammer, Rocket, Binary, GitFork, RotateCcw, Box, Library, Map, HardDrive, Layout, Cpu, FolderOpen, ShieldAlert, CheckCircle2, Trophy, Flame, Coins, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 interface Project {
@@ -21,18 +21,18 @@ interface StudentPortfolioProps {
 
 // 1. Module Definition matching Course Modules
 const syllabusModules = [
-  { id: "m1", title: "Getting Started", color: "bg-emerald-500", icon: "🚀" },
-  { id: "m2", title: "Data Types & Variables", color: "bg-blue-500", icon: "🔢" },
-  { id: "m3", title: "Control Flow", color: "bg-violet-500", icon: "🔀" },
-  { id: "m4", title: "Loops & Iterations", color: "bg-amber-500", icon: "🔁" },
-  { id: "m5", title: "Functions & Scope", color: "bg-pink-500", icon: "📦" },
-  { id: "m6", title: "Lists & Tuples", color: "bg-indigo-500", icon: "📚" },
-  { id: "m7", title: "Dictionaries & Sets", color: "bg-rose-500", icon: "🗺️" },
-  { id: "m8", title: "File Input & Output", color: "bg-cyan-500", icon: "💾" },
-  { id: "m9", title: "OOP: Classes & Objects", color: "bg-teal-500", icon: "🧱" },
-  { id: "m10", title: "Error & Exception Handling", color: "bg-emerald-600", icon: "🛡️" },
-  { id: "m11", title: "Libraries & Modules", color: "bg-sky-500", icon: "🔌" },
-  { id: "m12", title: "Final Capstone Project", color: "bg-orange-500", icon: "🏆" }
+  { id: "m1", title: "Getting Started", color: "bg-emerald-500", icon: <Rocket className="w-4 h-4 text-white" /> },
+  { id: "m2", title: "Data Types & Variables", color: "bg-blue-500", icon: <Binary className="w-4 h-4 text-white" /> },
+  { id: "m3", title: "Control Flow", color: "bg-violet-500", icon: <GitFork className="w-4 h-4 text-white" /> },
+  { id: "m4", title: "Loops & Iterations", color: "bg-amber-500", icon: <RotateCcw className="w-4 h-4 text-white" /> },
+  { id: "m5", title: "Functions & Scope", color: "bg-pink-500", icon: <Box className="w-4 h-4 text-white" /> },
+  { id: "m6", title: "Lists & Tuples", color: "bg-indigo-500", icon: <Library className="w-4 h-4 text-white" /> },
+  { id: "m7", title: "Dictionaries & Sets", color: "bg-rose-500", icon: <Map className="w-4 h-4 text-white" /> },
+  { id: "m8", title: "File Input & Output", color: "bg-cyan-500", icon: <HardDrive className="w-4 h-4 text-white" /> },
+  { id: "m9", title: "OOP: Classes & Objects", color: "bg-teal-500", icon: <Layout className="w-4 h-4 text-white" /> },
+  { id: "m10", title: "Error & Exception Handling", color: "bg-emerald-600", icon: <ShieldAlert className="w-4 h-4 text-white" /> },
+  { id: "m11", title: "Libraries & Modules", color: "bg-sky-500", icon: <Cpu className="w-4 h-4 text-white" /> },
+  { id: "m12", title: "Final Capstone Project", color: "bg-orange-500", icon: <Trophy className="w-4 h-4 text-white" /> }
 ];
 
 // Default Projects List
@@ -67,10 +67,10 @@ const defaultProjects: Project[] = [
 ];
 
 // Status metadata styling matching ae in unminified_index.js
-const statusConfig: Record<string, { label: string; bg: string; color: string }> = {
-  planned: { label: "📋 Plan", bg: "bg-gray-100", color: "text-gray-500" },
-  "in-progress": { label: "🔨 Build", bg: "bg-amber-50 border border-amber-100", color: "text-amber-600" },
-  completed: { label: "✅ Done", bg: "bg-emerald-50 border border-emerald-100", color: "text-emerald-600" }
+const statusConfig: Record<string, { label: string; bg: string; color: string; icon: React.ReactNode }> = {
+  planned: { label: "Plan", bg: "bg-gray-100", color: "text-gray-500", icon: <ClipboardList className="w-3 h-3 text-gray-500 shrink-0" /> },
+  "in-progress": { label: "Build", bg: "bg-amber-50 border border-amber-100", color: "text-amber-600", icon: <Hammer className="w-3 h-3 text-amber-600 shrink-0" /> },
+  completed: { label: "Done", bg: "bg-emerald-50 border border-emerald-100", color: "text-emerald-600", icon: <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" /> }
 };
 
 const supabase = createClient();
@@ -243,8 +243,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0">
-                🔥
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <Flame className="w-5 h-5 text-white fill-white/20" />
               </div>
               <div>
                 <p className="text-[9px] uppercase font-black tracking-widest text-white/75">STREAK</p>
@@ -253,8 +253,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0">
-                🪙
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <Coins className="w-5 h-5 text-white fill-white/20" />
               </div>
               <div>
                 <p className="text-[9px] uppercase font-black tracking-widest text-white/75">COINS</p>
@@ -263,8 +263,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0">
-                ⚡
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-white fill-white/20" />
               </div>
               <div>
                 <p className="text-[9px] uppercase font-black tracking-widest text-white/75">EXP</p>
@@ -393,7 +393,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
               exit={{ opacity: 0, y: -10, height: 0 }}
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-indigo-500 text-sm">📁</span>
+                <FolderOpen className="w-4 h-4 text-indigo-500 shrink-0" />
                 <p className="text-gray-900 text-xs font-medium uppercase tracking-wider">New Project</p>
               </div>
 
@@ -478,8 +478,8 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
         {/* Projects Accordion List */}
         {filteredProjects.length === 0 && !isAddOpen ? (
           <div className="flex flex-col items-center py-12 bg-white border border-gray-100 rounded-2xl p-6 text-center shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-3xl">
-              📦
+            <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 text-slate-350">
+              <Briefcase className="w-8 h-8" />
             </div>
             <h3 className="text-gray-800 text-xs font-medium">No projects yet</h3>
             <p className="text-gray-400 text-[10px] mt-1">Tap the float button below to add your first project.</p>
@@ -504,13 +504,14 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                     onClick={() => setExpandedProjectId(isExpanded ? null : proj.id)}
                     className="w-full p-4 text-left flex items-start gap-3 hover:bg-gray-50/50 transition-colors"
                   >
-                    <div className={`w-8 h-8 rounded-lg ${relatedMod?.color || "bg-gray-400"} flex items-center justify-center shrink-0 text-white font-medium`}>
-                      {relatedMod?.icon || "📁"}
+                    <div className={`w-8 h-8 rounded-lg ${relatedMod?.color || "bg-gray-400"} flex items-center justify-center shrink-0 text-white`}>
+                      {relatedMod?.icon || <FolderOpen className="w-4 h-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-gray-900 text-xs font-medium truncate flex-1">{proj.title}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium shrink-0 ${statusInfo.bg} ${statusInfo.color}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium shrink-0 flex items-center gap-1 ${statusInfo.bg} ${statusInfo.color}`}>
+                          {statusInfo.icon}
                           {statusInfo.label}
                         </span>
                       </div>
@@ -569,6 +570,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                             <div className="flex gap-1.5 flex-1">
                               {(["planned", "in-progress", "completed"] as const).map(status => {
                                 const isCurrent = proj.status === status;
+                                const config = statusConfig[status];
                                 return (
                                   <button
                                     key={status}
@@ -576,13 +578,14 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                                       e.stopPropagation();
                                       handleUpdateStatus(proj.id, status);
                                     }}
-                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
+                                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all flex items-center gap-1 ${
                                       isCurrent
                                         ? "bg-gray-900 text-white shadow-sm"
                                         : "bg-gray-50 text-gray-400 border border-gray-100 hover:bg-gray-100"
                                     }`}
                                   >
-                                    {status === "planned" ? "📋 Plan" : status === "in-progress" ? "🔨 Build" : "✅ Done"}
+                                    {config.icon}
+                                    {config.label}
                                   </button>
                                 );
                               })}
@@ -611,13 +614,13 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
         {/* Informational advice box at the bottom */}
         {projects.length > 0 && (
           <motion.div
-            className="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm"
+            className="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm flex flex-col items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <span className="text-2xl">💼</span>
-            <p className="text-gray-500 text-xs mt-2 leading-relaxed font-semibold">
+            <Briefcase className="w-6 h-6 text-indigo-500 fill-indigo-500/10 mb-2" />
+            <p className="text-gray-500 text-xs leading-relaxed font-semibold">
               Add projects as you complete each module. By the end of the course, you&apos;ll have a full portfolio to showcase to recruiters!
             </p>
             <p className="text-gray-300 text-[10px] font-semibold mt-1">Tap any project card to adjust its planning state</p>

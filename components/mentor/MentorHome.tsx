@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2 } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -127,6 +127,54 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
   const [showShareMaterials, setShowShareMaterials] = useState(false);
   const [selectedStudentForSharing, setSelectedStudentForSharing] = useState<string>("");
 
+  // Student joined date edit states
+  const [isEditingJoinedDate, setIsEditingJoinedDate] = useState(false);
+  const [editJoinedDateValue, setEditJoinedDateValue] = useState("");
+  const [isSavingJoinedDate, setIsSavingJoinedDate] = useState(false);
+
+  const handleSaveJoinedDate = async () => {
+    if (!activeRoadmapStudentId || !editJoinedDateValue) return;
+    setIsSavingJoinedDate(true);
+    try {
+      const student = assignedStudents.find(s => s.id === activeRoadmapStudentId);
+      if (!student) return;
+
+      const updatedPrefs = {
+        ...(student.preferences || {}),
+        joined_date: editJoinedDateValue
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ preferences: updatedPrefs })
+        .eq('id', activeRoadmapStudentId);
+
+      if (error) {
+        alert("Error updating joined date: " + error.message);
+      } else {
+        setAssignedStudents(prev => prev.map(s => {
+          if (s.id === activeRoadmapStudentId) {
+            const createdDate = new Date(editJoinedDateValue);
+            const diffTime = Math.abs(Date.now() - createdDate.getTime());
+            const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+            return {
+              ...s,
+              preferences: updatedPrefs,
+              daysJoined: diffDays
+            };
+          }
+          return s;
+        }));
+        setIsEditingJoinedDate(false);
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert("Error: " + e.message);
+    } finally {
+      setIsSavingJoinedDate(false);
+    }
+  };
+
   // Interactive review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedReviewSession, setSelectedReviewSession] = useState<any>(null);
@@ -217,7 +265,9 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
         const completedTopics = studentEnrollment?.progress?.length || 0;
         const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-        const createdDate = p.created_at ? new Date(p.created_at) : new Date();
+        const prefs = (p.preferences as any) || {};
+        const joinedDateStr = prefs.joined_date || p.created_at;
+        const createdDate = joinedDateStr ? new Date(joinedDateStr) : new Date();
         const diffTime = Math.abs(Date.now() - createdDate.getTime());
         const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
@@ -422,7 +472,8 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     }
     
     const student = assignedStudents.find(s => s.id === activeRoadmapStudentId) || assignedStudents[0];
-    const createdDate = student.created_at ? new Date(student.created_at) : new Date();
+    const joinedDateStr = student.preferences?.joined_date || student.created_at;
+    const createdDate = joinedDateStr ? new Date(joinedDateStr) : new Date();
     createdDate.setHours(0,0,0,0);
     
     const today = new Date();
@@ -450,6 +501,13 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     
     return { activeWeek, optOutDays, learningDays, skippedDays, studentName: student.name };
   };
+
+  useEffect(() => {
+    if (assignedStudents.length > 0) {
+      const { activeWeek } = getDynamicRoadmapStatus();
+      setExpandedWeek(activeWeek);
+    }
+  }, [activeRoadmapStudentId, assignedStudents]);
 
   return (
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
@@ -490,6 +548,8 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
           {/* Dynamic calculations info */}
           {(() => {
             const { activeWeek, optOutDays, learningDays, skippedDays } = getDynamicRoadmapStatus();
+            const student = assignedStudents.find(s => s.id === activeRoadmapStudentId) || assignedStudents[0];
+            const currentStudentJoinedDate = student?.preferences?.joined_date || student?.created_at || new Date().toISOString();
             const dynamicWeeks = ROADMAP_WEEKS.map(w => {
               let status = "upcoming";
               if (w.week < activeWeek) {
@@ -591,12 +651,52 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                 {/* Footer Info with dynamic rest calculations */}
                 {assignedStudents.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] font-medium text-slate-400">
-                    <p className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5">
                       <span>🗓️</span>
-                      <span>
-                        Joined on <strong>{new Date((assignedStudents.find(s => s.id === activeRoadmapStudentId) || assignedStudents[0]).created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</strong>
-                      </span>
-                    </p>
+                      <div>
+                        {isEditingJoinedDate ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="date"
+                              value={editJoinedDateValue}
+                              onChange={(e) => setEditJoinedDateValue(e.target.value)}
+                              className="bg-white border border-slate-200 text-slate-800 text-[10.5px] font-semibold rounded-lg px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
+                            />
+                            <button
+                              onClick={handleSaveJoinedDate}
+                              disabled={isSavingJoinedDate}
+                              className="h-6 px-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-md text-[9px] font-bold disabled:opacity-50 transition-colors cursor-pointer"
+                            >
+                              {isSavingJoinedDate ? "..." : "Save"}
+                            </button>
+                            <button
+                              onClick={() => setIsEditingJoinedDate(false)}
+                              className="h-6 px-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-[9px] font-medium transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            Joined on <strong className="text-slate-700">{new Date(currentStudentJoinedDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</strong>
+                            <button
+                              onClick={() => {
+                                const d = new Date(currentStudentJoinedDate);
+                                const yyyy = d.getFullYear();
+                                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                const dd = String(d.getDate()).padStart(2, '0');
+                                setEditJoinedDateValue(`${yyyy}-${mm}-${dd}`);
+                                setIsEditingJoinedDate(true);
+                              }}
+                              className="p-0.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-colors inline-flex items-center justify-center cursor-pointer ml-0.5"
+                              title="Edit Joined Date"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <p className="flex items-center gap-1.5 bg-slate-50 border border-slate-100/50 p-2 px-3 rounded-xl leading-normal text-slate-500/80">
                       <span>⚡</span>
                       <span>
