@@ -163,14 +163,14 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
 
   return (
     <motion.div
-      className="flex flex-col h-full bg-slate-50 -mx-5 font-inter"
+      className="flex flex-col h-full bg-slate-50 -mx-6 md:-mx-8 font-inter"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header Bar */}
-      <div className="bg-white px-5 pt-4 pb-4 border-b border-slate-100 shrink-0 shadow-3xs">
+      <div className="bg-white px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 border-b border-slate-100 shrink-0 shadow-3xs">
         <div className="flex items-center justify-between mb-4.5">
           <div className="flex items-center gap-3">
             <button
@@ -223,7 +223,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 pb-[calc(8rem+env(safe-area-inset-bottom))] md:px-8">
         
         {/* Search */}
         <div className="relative">

@@ -430,7 +430,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Top Header */}
-      <div className="bg-white px-5 pt-3 pb-3 border-b border-slate-100 shrink-0 shadow-xs">
+      <div className="bg-white px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 border-b border-slate-100 shrink-0 shadow-xs">
         <div className="flex items-center gap-3 mb-3">
           <Button
             variant="ghost"
@@ -478,7 +478,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
           {activeTab === "practices" ? (
             <motion.div
               key="practices_tab"
-              className="px-5 pt-4 pb-6 space-y-4"
+              className="px-6 pt-4 pb-6 space-y-4 md:px-8"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
@@ -634,7 +634,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
           ) : (
             <motion.div
               key="checklist_tab"
-              className="px-5 pt-4 pb-6 space-y-4"
+              className="px-6 pt-4 pb-6 space-y-4 md:px-8"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}

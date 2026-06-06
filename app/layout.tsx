@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Volkhov, Mulish, Lato, Open_Sans, Inter, Poppins } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,14 +51,22 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
   title: "Kind Mentor | Connect & Grow",
   description: "Connect with verified mentors, learn new skills, and level up your tech career.",
+  manifest: "/manifest.json",
   icons: {
     icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kind Mentor",
   },
 };
 
@@ -76,6 +85,22 @@ export default function RootLayout({
         <TooltipProvider>
           {children}
         </TooltipProvider>
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(
+                  function(reg) {
+                    console.log('SW registered:', reg.scope);
+                  },
+                  function(err) {
+                    console.log('SW registration failed:', err);
+                  }
+                );
+              });
+            }
+          `}
+        </Script>
       </body>
     </html>
   );

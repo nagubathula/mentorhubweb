@@ -123,7 +123,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header Panel */}
-      <div className="bg-white px-5 pt-3 pb-3 border-b border-slate-100 shrink-0 shadow-xs">
+      <div className="bg-white px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 border-b border-slate-100 shrink-0 shadow-xs">
         <div className="flex items-center gap-3 mb-3">
           <Button
             variant="ghost"
@@ -178,7 +178,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
           {activeTab === "morning" && (
             <motion.div
               key="morning_thought_tab"
-              className="px-5 pt-4 pb-6 space-y-4"
+              className="px-6 pt-4 pb-6 space-y-4 md:px-8"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
@@ -271,7 +271,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
           {activeTab === "evening" && (
             <motion.div
               key="evening_reflection_tab"
-              className="px-5 pt-4 pb-6 space-y-4"
+              className="px-6 pt-4 pb-6 space-y-4 md:px-8"
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
@@ -384,7 +384,7 @@ export function MentorInspiration({ mentorName, onClose }: MentorInspirationProp
           {activeTab === "history" && (
             <motion.div
               key="history_metrics_tab"
-              className="px-5 pt-4 pb-6 space-y-4"
+              className="px-6 pt-4 pb-6 space-y-4 md:px-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

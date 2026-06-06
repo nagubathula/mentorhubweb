@@ -54,9 +54,9 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
   // Helper to clone a course for customization
   const startCustomizing = (course: any) => {
-    const clonedModules = (course.modules || course.content || []).map((m: any) => {
-      const lessons = m.lessons || (m.topics || []).map((topicName: string, tIdx: number) => ({
-        id: `${m.id || 'm'}-l-${tIdx}`,
+    const clonedModules = (course.modules || course.content || []).map((m: any, mIdx: number) => {
+      const dbLessons = m.lessons || (m.topics || []).map((topicName: string, tIdx: number) => ({
+        id: `l-${course.id || 'c'}-${mIdx}-${tIdx}`,
         title: topicName,
         duration: "10 min",
         type: "video",
@@ -64,12 +64,12 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
       }));
 
       return {
-        id: m.id || `m-${Date.now()}-${Math.random()}`,
+        id: m.id || `m-${course.id || 'c'}-${mIdx}`,
         title: m.title || "Untitled Module",
         description: m.description || "",
         enabled: m.enabled !== false,
-        lessons: lessons.map((l: any) => ({
-          id: l.id || `l-${Date.now()}-${Math.random()}`,
+        lessons: dbLessons.map((l: any, lIdx: number) => ({
+          id: l.id || `l-${course.id || 'c'}-${mIdx}-${lIdx}`,
           title: l.title || "Untitled Lesson",
           duration: l.duration || "10 min",
           type: l.type || "video",
@@ -569,7 +569,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
           className="space-y-6 pb-32"
         >
           {/* Customizer Header */}
-          <div className="flex items-center gap-4 pt-6 md:pt-8 px-1">
+          <div className="flex items-center gap-4 pt-6 md:pt-8 px-0">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -600,7 +600,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
           {/* Module List */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between px-0">
               <h3 className="text-slate-900 font-black text-[11px] uppercase tracking-[0.2em]">Syllabus Modules</h3>
               <button 
                 onClick={() => setAddingModule(true)}
@@ -742,7 +742,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
           </div>
 
           {/* Bottom Actions Bar */}
-          <div className="flex gap-4 pt-8 pb-16 px-1">
+          <div className="flex gap-4 pt-8 pb-16 px-0">
             <Button 
               variant="outline" 
               onClick={() => setCustomizingCourse(null)}
@@ -764,7 +764,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
     return (
       <div className="space-y-6 pb-20">
-         <div className="flex items-center gap-4 pt-6 md:pt-8 px-1">
+         <div className="flex items-center gap-4 pt-6 md:pt-8 px-0">
            <Button 
              variant="ghost" 
              size="icon" 
@@ -812,7 +812,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
          </div>
 
           {/* Student Detail View Key Metrics */}
-          <div className="flex gap-3 px-1">
+          <div className="flex gap-3 px-0">
              <div className="flex-1 bg-white p-5 rounded-3xl border border-slate-100 text-center shadow-sm">
                <p className="text-2xl font-bold text-slate-900">{selectedStudent.streak}</p>
                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-2">Streak</p>
@@ -1119,14 +1119,14 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between pt-6 md:pt-8 px-1">
+      <div className="flex items-center justify-between pt-6 md:pt-8 px-0">
         <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">My Students</h2>
         <Button variant="outline" size="icon" className="w-10 h-10 rounded-full shadow-sm bg-white border-slate-100 text-slate-400 hover:text-slate-600 active:scale-95 transition-transform">
           <Search className="w-4 h-4" />
         </Button>
       </div>
 
-      <div className="grid gap-4 px-1">
+      <div className="grid gap-4 px-0">
         {students.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
              <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300">

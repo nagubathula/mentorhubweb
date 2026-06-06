@@ -325,7 +325,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
   return (
     <div className="flex flex-col h-full bg-slate-50 relative">
       {/* Header Panel */}
-      <div className="bg-white px-5 pt-3 pb-2.5 border-b border-slate-100/80 sticky top-0 z-30">
+      <div className="bg-white px-6 pt-6 pb-3 md:px-8 md:pt-8 md:pb-4 border-b border-slate-100/80 sticky top-0 z-30">
         <div className="flex items-center gap-3 mb-2.5">
           <button
             onClick={onBack}
@@ -389,7 +389,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
       </div>
 
       {/* Main Game Screen Render */}
-      <div className="flex-1 overflow-y-auto px-5 pt-2.5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-[calc(8rem+env(safe-area-inset-bottom))] md:px-8">
         <AnimatePresence mode="wait">
           {activeTab === "snakes" && (
             <motion.div key="snakes-tab" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>

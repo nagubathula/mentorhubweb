@@ -181,7 +181,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
       {/* Header Bar */}
-      <div className="bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between shrink-0 shadow-3xs">
+      <div className="bg-white border-b border-slate-100 px-6 py-4 md:px-8 flex items-center justify-between shrink-0 shadow-3xs">
         <div className="flex items-center gap-3.5">
           <Button 
             variant="ghost" 
@@ -199,7 +199,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6 max-w-xl mx-auto w-full pb-20">
+      <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 max-w-xl mx-auto w-full pb-20">
         
         {/* Recipient Selector Banner */}
         <div className="bg-gradient-to-r from-indigo-50/50 to-violet-50/50 border border-indigo-100/40 p-4.5 rounded-[1.25rem] flex items-center justify-between gap-4 shadow-3xs">

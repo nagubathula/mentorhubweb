@@ -212,7 +212,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header */}
-      <div className="bg-white px-6 pt-3 pb-3 md:px-8 border-b border-gray-100 shrink-0">
+      <div className="bg-white px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 border-b border-gray-100 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button

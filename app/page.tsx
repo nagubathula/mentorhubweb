@@ -641,27 +641,6 @@ export default function OnboardingFlow() {
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result;
-      if (result && typeof result === 'string') {
-        const newNote = {
-          id: `n-${Date.now()}`,
-          type: "photo",
-          title: file.name.replace(/\.[^.]+$/, "") || "Paper Note",
-          content: result,
-          timestamp: Date.now()
-        };
-        setNotes(prev => [newNote, ...prev]);
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = ""; // Clear input value
-  };
-
   const formatNoteTime = (time: number) => {
     const diff = Date.now() - time;
     if (diff < 60000) return "Just now";
@@ -1394,11 +1373,11 @@ export default function OnboardingFlow() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          if (session.user.user_metadata?.full_name) setName(session.user.user_metadata.full_name);
-          else if (session.user.user_metadata?.name) setName(session.user.user_metadata.name);
+          const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Google User';
+          if (fullName) setName(fullName);
           if (session.user.email) setEmail(session.user.email);
           
-          const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+          const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
           if (profile) {
             if (profile.name) setName(profile.name);
             if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
@@ -1406,12 +1385,30 @@ export default function OnboardingFlow() {
             if (typeof prefs.coins === 'number') {
               setCoinsCount(prefs.coins);
             }
-            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-              setState('MENTOR_DASHBOARD');
+            if (profile.role) {
+              if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
+                setState('MENTOR_DASHBOARD');
+              } else {
+                setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              }
             } else {
-              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
+              setState("ROLE");
             }
           } else {
+            const avatarUrl = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || null;
+            const { error: profileError } = await supabase.from('profiles').insert({
+              id: session.user.id,
+              name: fullName,
+              email: session.user.email,
+              role: null,
+              coins: 0,
+              streak: 1,
+              xp: 10,
+              avatar_url: avatarUrl
+            });
+            if (profileError) {
+              console.error("Error creating profile in checkActiveSession:", profileError);
+            }
             setState("ROLE");
           }
         }
@@ -2898,7 +2895,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_MAIN" && (
-              <div className="flex flex-col pt-0 relative w-full items-center pb-32 font-inter">
+              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter">
                 <div className="w-full max-w-2xl flex flex-col gap-4">
 
                 
@@ -4772,7 +4769,7 @@ export default function OnboardingFlow() {
                    
                    {/* Mentor Portal Shared Header (only for main dashboard) */}
                    {state === "MENTOR_DASHBOARD" && (
-                     <div className="w-full flex flex-col pt-0 pb-2 gap-4">
+                     <div className="w-full flex flex-col pt-6 md:pt-8 pb-2 gap-4">
                         <div className="w-full flex justify-between items-center">
                           <div className="space-y-1">
                             <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight leading-tight">Welcome Back, {name ? name.split(' ')[0] : 'Mentor'}! 👋</h2>
@@ -4819,10 +4816,6 @@ export default function OnboardingFlow() {
                       {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                         <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-semibold" : "font-medium"}`}>Students</span>
-                      </button>}
-                      {featureFlags.mentor_courses !== false && <button onClick={() => setState("MENTOR_COURSES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_COURSES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <GraduationCap className={`w-5 h-5 ${state === "MENTOR_COURSES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_COURSES" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_COURSES" ? "font-semibold" : "font-medium"}`}>Courses</span>
                       </button>}
                       {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
                         <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>

@@ -6,7 +6,8 @@ import {
   GraduationCap, Plus, Pencil, Trash2, Send, ChevronRight, X, Check, 
   BookOpen, Clock, Activity, Target, Settings, ArrowRight, ArrowLeft, 
   Layers, BookMarked, Download, Upload, ChevronDown, CheckCircle2, 
-  AlertCircle, FileSpreadsheet, Play, Code2, HelpCircle, FolderOpen, Save, Eye, Star
+  AlertCircle, FileSpreadsheet, Play, Code2, HelpCircle, FolderOpen, Save, Eye, Star,
+  Cpu, Layout, BarChart2, Code, Brain
 } from "lucide-react";
 import React from "react";
 import { createClient } from "@/lib/supabase";
@@ -18,6 +19,35 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 
 const supabase = createClient();
+
+const AESTHETIC_GRADIENTS = [
+  "from-indigo-500 to-purple-600",
+  "from-emerald-500 to-teal-600",
+  "from-pink-500 to-rose-600",
+  "from-amber-500 to-orange-600",
+  "from-cyan-500 to-blue-600",
+  "from-violet-500 to-indigo-600",
+];
+
+const getGradientClass = (id: string) => {
+  if (!id) return AESTHETIC_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % AESTHETIC_GRADIENTS.length;
+  return AESTHETIC_GRADIENTS[index];
+};
+
+const getCourseIcon = (category: string) => {
+  const cat = (category || "").toLowerCase();
+  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) return <Layout className="w-5.5 h-5.5 text-white" />;
+  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) return <BarChart2 className="w-5.5 h-5.5 text-white" />;
+  if (cat.includes("code") || cat.includes("programming") || cat.includes("web") || cat.includes("software")) return <Code className="w-5.5 h-5.5 text-white" />;
+  if (cat.includes("brain") || cat.includes("mental") || cat.includes("health")) return <Brain className="w-5.5 h-5.5 text-white" />;
+  if (cat.includes("vlsi") || cat.includes("semiconductor") || cat.includes("hardware") || cat.includes("engineering")) return <Cpu className="w-5.5 h-5.5 text-white" />;
+  return <BookOpen className="w-5.5 h-5.5 text-white" />;
+};
 
 export interface ExtendedLesson {
   id: string;
@@ -55,14 +85,15 @@ export interface ExtendedCourse {
 
 // Helper to map and inject enabled: true property to modules/lessons to match decompiler 'l5' exactly
 function l5(c: any): ExtendedCourse {
-  // Try to parse description if it contains serialized JSON metadata
-  let parsedCourse = { ...c };
-  try {
-    if (c.description && c.description.trim().startsWith('{')) {
-      const parsed = JSON.parse(c.description);
+  let finalSource = { ...c };
+  
+  // Only parse description JSON if modules/content are not already populated
+  if (!finalSource.modules && !finalSource.content && finalSource.description && typeof finalSource.description === 'string' && finalSource.description.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(finalSource.description);
       if (parsed && typeof parsed === 'object') {
-        parsedCourse = {
-          ...c,
+        finalSource = {
+          ...finalSource,
           description: parsed.description || "",
           difficulty: parsed.difficulty || "Beginner",
           duration: parsed.duration || "10 hours",
@@ -71,10 +102,10 @@ function l5(c: any): ExtendedCourse {
           content: parsed.modules || parsed.content || []
         };
       }
+    } catch (e) {
+      console.warn("Failed to parse description in l5:", e);
     }
-  } catch (e) {}
-
-  const finalSource = parsedCourse;
+  }
 
   return {
     id: finalSource.id,
@@ -89,9 +120,10 @@ function l5(c: any): ExtendedCourse {
     color: finalSource.color || "text-emerald-600",
     bgColor: finalSource.bgColor || "bg-emerald-500",
     icon: finalSource.icon || <BookOpen className="w-5 h-5" />,
-    modules: (finalSource.modules || finalSource.content || []).map((m: any) => {
+    modules: (finalSource.modules || finalSource.content || []).map((m: any, mIdx: number) => {
+      const moduleId = m.id || `m-${finalSource.id}-${mIdx}`;
       const dbLessons = m.lessons || (m.topics || []).map((topicName: string, tIdx: number) => ({
-        id: `${m.id || 'm'}-l-${tIdx}`,
+        id: `l-${finalSource.id}-${mIdx}-${tIdx}`,
         title: topicName,
         duration: "10 min",
         type: "video",
@@ -99,13 +131,13 @@ function l5(c: any): ExtendedCourse {
       }));
 
       return {
-        id: m.id || `m-${Date.now()}-${Math.random()}`,
+        id: moduleId,
         title: m.title || "Untitled Module",
         description: m.description || "",
         color: m.color || "bg-emerald-500",
         enabled: m.enabled ?? true,
-        lessons: dbLessons.map((l: any) => ({
-          id: l.id || `l-${Date.now()}-${Math.random()}`,
+        lessons: dbLessons.map((l: any, lIdx: number) => ({
+          id: l.id || `l-${finalSource.id}-${mIdx}-${lIdx}`,
           title: l.title || "Untitled Lesson",
           duration: l.duration || "10 min",
           type: l.type || "video",
@@ -160,14 +192,120 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
   const [isSubmitReviewOpen, setIsSubmitReviewOpen] = useState(false);
   const [submissionRating, setSubmissionRating] = useState(5);
   const [submissionFeedback, setSubmissionFeedback] = useState("");
+  // Student context customization state
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
+  const [studentEnrollments, setStudentEnrollments] = useState<any[]>([]);
+  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
+  const [activeEnrollmentId, setActiveEnrollmentId] = useState<string | null>(null);
 
-  const fetchReviewQueue = async () => {
+  const fetchStudentEnrollments = useCallback(async (studentId: string) => {
+    if (studentId === "all") {
+      setStudentEnrollments([]);
+      return;
+    }
     try {
-      const { data } = await supabase
+      const { data: enrollments, error } = await supabase.from('enrollments')
+        .select('*, course:courses(*)')
+        .eq('student_id', studentId)
+        .eq('status', 'Active')
+        .order('enrolled_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching student enrollments:", error);
+        return;
+      }
+
+      const parsedEnrollments = (enrollments || []).map(enr => {
+        let c = enr.course;
+        if (c) {
+          try {
+            if (c.description && c.description.trim().startsWith('{')) {
+              const parsed = JSON.parse(c.description);
+              if (parsed && typeof parsed === 'object') {
+                c = {
+                  ...c,
+                  description: parsed.description || "",
+                  difficulty: parsed.difficulty || "Beginner",
+                  duration: parsed.duration || "10 hours",
+                  category: parsed.category || "General",
+                  modules: parsed.modules || parsed.content || [],
+                  content: parsed.modules || parsed.content || []
+                } as any;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to parse course JSON:", e);
+          }
+        }
+        return {
+          ...enr,
+          course: c ? l5(c) : null
+        };
+      });
+
+      setStudentEnrollments(parsedEnrollments);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    if (selectedStudentId !== "all") {
+      fetchStudentEnrollments(selectedStudentId);
+    }
+  }, [selectedStudentId, fetchStudentEnrollments]);
+
+  const fetchReviewQueue = async (studentIds: string[] = []) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      let filterStudentIds = studentIds;
+      if (filterStudentIds.length === 0) {
+        const { data: mappings } = await supabase.from('mapping')
+          .select('student_id')
+          .eq('mentor_id', session.user.id);
+        filterStudentIds = mappings?.map(m => m.student_id).filter(Boolean) || [];
+      }
+
+      if (filterStudentIds.length === 0) {
+        setReviewQueue([]);
+        return;
+      }
+
+      const { data, error } = await supabase
         .from('review_queue')
         .select('*, student:profiles!review_queue_student_id_fkey(*)')
-        .order('id', { ascending: false });
-      if (data) {
+        .in('student_id', filterStudentIds)
+        .order('submitted_at', { ascending: false });
+
+      if (error) {
+        console.warn("Failed to fetch review_queue, falling back to reviews table:", error.message);
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('*')
+          .in('reviewee_id', filterStudentIds)
+          .order('created_at', { ascending: false });
+
+        if (reviewsData) {
+          const { data: studentProfiles } = await supabase.from('profiles')
+            .select('*')
+            .in('id', filterStudentIds);
+          
+          const mappedReviews = reviewsData.map((r: any) => ({
+            id: r.id,
+            student_id: r.reviewee_id,
+            mentor_id: r.reviewer_id,
+            project_name: r.session_id || "Project Submission",
+            status: r.rating ? "done" : "pending",
+            submitted_at: r.created_at,
+            feedback: r.feedback,
+            rating: r.rating,
+            student: studentProfiles?.find((s: any) => s.id === r.reviewee_id) || null
+          }));
+          setReviewQueue(mappedReviews);
+        }
+      } else if (data) {
         setReviewQueue(data);
       }
     } catch (e) {
@@ -178,22 +316,40 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
   const handleCompleteSubmissionReview = async (status: "Approved" | "Rejected") => {
     if (!selectedSubmission) return;
     try {
-      const { error } = await supabase
-        .from('review_queue')
-        .update({
-          status,
-          feedback: submissionFeedback.trim() || null,
-          rating: submissionRating,
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', selectedSubmission.id);
+      const isFromReviewsTable = !selectedSubmission.project_name || selectedSubmission.project_name === "Project Submission" || selectedSubmission.hasOwnProperty('reviewee_id');
 
-      if (error) {
-        alert("Error updating review submission: " + error.message);
+      let updateError;
+      if (!isFromReviewsTable) {
+        const { error } = await supabase
+          .from('review_queue')
+          .update({
+            status,
+            feedback: submissionFeedback.trim() || null,
+            rating: submissionRating,
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', selectedSubmission.id);
+        updateError = error;
+      }
+
+      if (isFromReviewsTable || (updateError && updateError.code === 'PGRST205')) {
+        const { error } = await supabase
+          .from('reviews')
+          .update({
+            feedback: submissionFeedback.trim() || null,
+            rating: submissionRating
+          })
+          .eq('id', selectedSubmission.id);
+        updateError = error;
+      }
+
+      if (updateError) {
+        alert("Error updating review submission: " + updateError.message);
       } else {
         setIsSubmitReviewOpen(false);
         setSelectedSubmission(null);
-        fetchReviewQueue();
+        const studentIds = assignedStudents.map(s => s.id);
+        fetchReviewQueue(studentIds);
       }
     } catch (e) {
       console.error(e);
@@ -202,60 +358,76 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
 
   const fetchAllData = useCallback(async () => {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    // Fetch courses from Supabase
-    const { data: dbCourses } = await supabase.from('courses')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    // Combine database courses with mock ones if they aren't duplicate
-    const parsedDbCourses = (dbCourses || []).map((c: any) => {
-      try {
-        if (c.description && c.description.trim().startsWith('{')) {
-          const parsed = JSON.parse(c.description);
-          if (parsed && typeof parsed === 'object') {
-            return {
-              ...c,
-              description: parsed.description || "",
-              difficulty: parsed.difficulty || "Beginner",
-              duration: parsed.duration || "10 hours",
-              category: parsed.category || "General",
-              modules: parsed.modules || parsed.content || [],
-              content: parsed.modules || parsed.content || []
-            };
-          }
-        }
-      } catch (e) {
-        console.warn("Failed to parse course description JSON", e);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
       }
-      return c;
-    });
 
-    const localCatalog = mentorCoursesCatalog;
-    const combined = [
-      ...parsedDbCourses.map(c => ({
-        ...c,
-        modules: c.modules || c.content || []
-      })),
-      ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
-    ];
+      const [coursesRes, mappingsRes] = await Promise.all([
+        supabase.from('courses')
+          .select('*')
+          .or(`mentor_id.is.null,mentor_id.eq.${session.user.id}`)
+          .order('created_at', { ascending: false }),
+        supabase.from('mapping')
+          .select('student:profiles!mapping_student_id_fkey(*)')
+          .eq('mentor_id', session.user.id)
+      ]);
 
-    setCourses(combined.map(l5));
+      const dbCourses = coursesRes.data || [];
+      const assigned = mappingsRes.data?.map(m => m.student).filter(Boolean) || [];
+      const studentIds = assigned.map(s => s.id);
+      setAssignedStudents(assigned);
 
-    // Fetch students assigned to this mentor
-    const { data: mappings } = await supabase.from('mapping')
-      .select('student:profiles!mapping_student_id_fkey(*)')
-      .eq('mentor_id', session.user.id);
-    
-    setAssignedStudents(mappings?.map(m => m.student).filter(Boolean) || []);
-    setLoading(false);
-  }, []);
+      if (studentIds.length > 0) {
+        await fetchReviewQueue(studentIds);
+      } else {
+        setReviewQueue([]);
+      }
+
+      const parsedDbCourses = dbCourses.map((c: any) => {
+        try {
+          if (c.description && c.description.trim().startsWith('{')) {
+            const parsed = JSON.parse(c.description);
+            if (parsed && typeof parsed === 'object') {
+              return {
+                ...c,
+                description: parsed.description || "",
+                difficulty: parsed.difficulty || "Beginner",
+                duration: parsed.duration || "10 hours",
+                category: parsed.category || "General",
+                modules: parsed.modules || parsed.content || [],
+                content: parsed.modules || parsed.content || []
+              };
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to parse course description JSON", e);
+        }
+        return c;
+      });
+
+      const localCatalog = mentorCoursesCatalog;
+      const combined = [
+        ...parsedDbCourses.map(c => ({
+          ...c,
+          modules: c.modules || c.content || []
+        })),
+        ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
+      ];
+
+      setCourses(combined.map(l5));
+    } catch (err) {
+      console.error("Critical error in fetchAllData:", err);
+      setCourses(mentorCoursesCatalog.map(l5));
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     fetchAllData();
-    fetchReviewQueue();
   }, [fetchAllData]);
 
   const activeCourse = courses.find(c => c.id === selectedCourseId);
@@ -333,23 +505,71 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
       }))
     });
 
-    const payload = {
-      title: activeCourse.title,
-      description: serializedDescription,
-      mentor_id: session?.user?.id,
-      status: 'Active'
-    };
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(activeCourse.id);
+    const isCustom = activeCourse.status === 'Custom';
 
     let err;
-    // If course ID is a UUID, update it. Otherwise, insert a new customized course in DB
-    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(activeCourse.id);
-    
-    if (isUUID) {
-      const { error } = await supabase.from('courses').update(payload).eq('id', activeCourse.id);
-      err = error;
+
+    if (selectedStudentId && selectedStudentId !== "all") {
+      // Customizing for a specific student
+      const payload = {
+        title: activeCourse.title,
+        description: serializedDescription,
+        mentor_id: session?.user?.id,
+        status: 'Custom'
+      };
+
+      if (isUUID && isCustom) {
+        // Update in-place
+        const { error } = await supabase.from('courses').update(payload).eq('id', activeCourse.id);
+        err = error;
+      } else {
+        // Clone and insert new custom course
+        const { data: newCourse, error: insertError } = await supabase.from('courses')
+          .insert(payload)
+          .select('id')
+          .single();
+
+        if (insertError) {
+          err = insertError;
+        } else if (newCourse) {
+          // Update the enrollment to point to this new customized course
+          if (activeEnrollmentId) {
+            const { error: enrollError } = await supabase.from('enrollments')
+              .update({ course_id: newCourse.id })
+              .eq('id', activeEnrollmentId);
+            err = enrollError;
+          } else {
+            // Deactivate other active enrollments first
+            await supabase.from('enrollments')
+              .update({ status: 'Inactive' })
+              .eq('student_id', selectedStudentId);
+
+            const { error: enrollError } = await supabase.from('enrollments').insert({
+              student_id: selectedStudentId,
+              course_id: newCourse.id,
+              status: 'Active'
+            });
+            err = enrollError;
+          }
+        }
+      }
     } else {
-      const { error } = await supabase.from('courses').insert(payload);
-      err = error;
+      // General Course Template
+      const payload = {
+        title: activeCourse.title,
+        description: serializedDescription,
+        mentor_id: session?.user?.id,
+        status: activeCourse.status || 'Active'
+      };
+
+      if (isUUID) {
+        const { error } = await supabase.from('courses').update(payload).eq('id', activeCourse.id);
+        err = error;
+      } else {
+        const { error } = await supabase.from('courses').insert(payload);
+        err = error;
+      }
     }
 
     setIsSaving(false);
@@ -358,7 +578,13 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
     } else {
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
-      fetchAllData();
+      setIsEditingCourse(false);
+      setSelectedCourseId(null);
+      setActiveEnrollmentId(null);
+      await fetchAllData();
+      if (selectedStudentId && selectedStudentId !== "all") {
+        await fetchStudentEnrollments(selectedStudentId);
+      }
     }
   };
 
@@ -572,7 +798,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden -mx-4 -my-4 min-h-[92vh]">
+    <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden -mx-6 md:-mx-8 min-h-[92vh]">
       <AnimatePresence mode="wait">
         {!selectedCourseId ? (
           // SCREEN 1: Course list manager screen matching decompiled bD catalog view
@@ -584,7 +810,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             className="flex-1 flex flex-col h-full overflow-y-auto"
           >
             {/* Premium Emerald Header Panel */}
-            <div className="bg-slate-900 px-6 pt-12 pb-8 text-white relative shadow-xl shadow-slate-900/10 overflow-hidden">
+            <div className="bg-slate-900 px-6 pt-12 pb-8 md:px-8 text-white relative shadow-xl shadow-slate-900/10 overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -translate-y-24 translate-x-12"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl translate-y-16 -translate-x-16"></div>
               
@@ -636,6 +862,22 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                 </Button>
               </div>
 
+              <div className="mt-5 mb-4 flex items-center gap-3 relative z-10">
+                <span className="text-xs text-white/60 font-semibold shrink-0">Student:</span>
+                <select
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-300 backdrop-blur-md cursor-pointer flex-1 md:flex-initial"
+                >
+                  <option value="all" className="text-slate-900 font-semibold">General Course Templates</option>
+                  {assignedStudents.map((s) => (
+                    <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
+                      {s.name || s.email?.split('@')[0]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex bg-white/5 backdrop-blur-md p-1.5 rounded-2xl relative z-10 border border-white/5">
                 <button
                   onClick={() => setActiveTab("builder")}
@@ -653,85 +895,256 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                     activeTab === "queue" ? "bg-white text-slate-900 shadow-lg" : "text-slate-400 hover:text-white"
                   )}
                 >
-                  Review Queue {reviewQueue.filter(r => r.status === 'Pending').length > 0 && <span className="ml-1.5 w-5 h-5 bg-emerald-500 text-white rounded-full inline-flex items-center justify-center text-[10px] shadow-sm">{reviewQueue.filter(r => r.status === 'Pending').length}</span>}
+                  Review Queue {reviewQueue.filter(r => r.status === 'Pending' && (selectedStudentId === 'all' || r.student_id === selectedStudentId)).length > 0 && <span className="ml-1.5 w-5 h-5 bg-emerald-500 text-white rounded-full inline-flex items-center justify-center text-[10px] shadow-sm">{reviewQueue.filter(r => r.status === 'Pending' && (selectedStudentId === 'all' || r.student_id === selectedStudentId)).length}</span>}
                 </button>
               </div>
             </div>
 
             {/* Courses list matching mobile styling exactly */}
             {activeTab === "builder" && (
-              <div className="px-5 py-6 space-y-3 flex-1 overflow-y-auto">
-                {loading ? (
-                  <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
-                    <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
-                    <p className="text-xs font-semibold">Loading curriculum path...</p>
+              <div className="px-6 py-6 md:px-8 space-y-3 flex-1 overflow-y-auto">
+                {selectedStudentId !== "all" ? (
+                  // STUDENT CUSTOMIZED LEARNING PATHS (Image 2 style)
+                  <div className="space-y-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 bg-white p-5 rounded-[1.5rem] border border-slate-100/80 shadow-xs">
+                      <div>
+                        <h3 className="text-base font-black uppercase tracking-wider text-slate-900">My Learning Paths</h3>
+                        <p className="text-xs text-slate-400 font-semibold mt-0.5">
+                          Track {assignedStudents.find(s => s.id === selectedStudentId)?.name || "student"}'s progress and tailor their curriculum.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => setIsCatalogModalOpen(true)}
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-4 rounded-xl shadow-xs flex items-center gap-1.5 self-start md:self-auto"
+                      >
+                        <Plus className="w-4 h-4" /> Browse Catalog
+                      </Button>
+                    </div>
+
+                    {loading ? (
+                      <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
+                        <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                        <p className="text-xs font-semibold">Loading student paths...</p>
+                      </div>
+                    ) : studentEnrollments.length === 0 ? (
+                      <div className="bg-white rounded-[2rem] border border-slate-100 p-10 flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4">
+                          <BookOpen className="w-8 h-8" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900">No Learning Paths Assigned</h4>
+                        <p className="text-xs text-slate-500 max-w-xs mt-1.5 mb-6">Assign expert-designed courses or customize a syllabus to begin guiding this student.</p>
+                        <Button
+                          onClick={() => setIsCatalogModalOpen(true)}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl"
+                        >
+                          Assign First Course
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {studentEnrollments.map((enrollment, idx) => {
+                          const course = enrollment.course;
+                          if (!course) return null;
+
+                          const courseModules = course.modules || [];
+                          const totalLessons = courseModules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0);
+                          const completedLessons = Array.isArray(enrollment.progress) ? enrollment.progress.length : 0;
+                          const progressPct = enrollment.progress_pct ?? (totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0);
+
+                          const nextUpLesson = courseModules
+                            .flatMap((m: any) => m.lessons || [])
+                            .find((l: any) => l.enabled && !(enrollment.progress || []).includes(l.id))?.title || "Course Completed!";
+
+                          const bgGradient = getGradientClass(course.id);
+
+                          return (
+                            <motion.div
+                              key={enrollment.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: idx * 0.04 }}
+                              className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 p-6 relative overflow-hidden group"
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className={`w-14 h-14 rounded-2.5xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm`}>
+                                  {getCourseIcon(course.category)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{course.category || "General"}</span>
+                                    <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold border border-slate-200/60 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0">
+                                      {course.difficulty || "Beginner"}
+                                    </span>
+                                  </div>
+                                  <h4 className="text-[16px] font-bold text-slate-900 truncate mt-1">
+                                    {course.title}
+                                  </h4>
+                                </div>
+                              </div>
+
+                              <p className="text-[13px] text-slate-500 font-medium leading-relaxed mt-4 line-clamp-2">
+                                {course.description || "Master core concepts and build practical projects step by step."}
+                              </p>
+
+                              {/* Progress Section */}
+                              <div className="mt-5 space-y-2">
+                                <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                                  <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-slate-400" /> Course Progress</span>
+                                  <span className="text-slate-900 font-bold">{progressPct}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                  <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
+                                </div>
+                                <div className="flex justify-between items-center text-[11px] font-medium text-slate-400 pt-1">
+                                  <span>{courseModules.filter((m: any) => m.enabled).length} modules</span>
+                                  <span>{completedLessons}/{totalLessons} lessons</span>
+                                </div>
+                              </div>
+
+                              {/* Next Lesson Box */}
+                              <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4 mt-5 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                  <Play className="w-3.5 h-3.5 text-slate-500 fill-slate-500" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Next Up</p>
+                                  <p className="text-xs font-bold text-slate-700 truncate mt-0.5">{nextUpLesson}</p>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex gap-2.5 mt-5">
+                                <Button
+                                  onClick={() => {
+                                    setSelectedCourseId(course.id);
+                                    setActiveEnrollmentId(enrollment.id);
+                                    setIsEditingCourse(true);
+                                  }}
+                                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" /> Customize Course
+                                </Button>
+                                <Button
+                                  onClick={async () => {
+                                    if (confirm("Are you sure you want to unassign this course for this student?")) {
+                                      const { error } = await supabase.from('enrollments')
+                                        .update({ status: 'Inactive' })
+                                        .eq('id', enrollment.id);
+                                      if (error) {
+                                        alert("Error: " + error.message);
+                                      } else {
+                                        alert("Course unassigned successfully.");
+                                        fetchStudentEnrollments(selectedStudentId);
+                                      }
+                                    }
+                                  }}
+                                  variant="outline"
+                                  className="h-11 px-4 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 border border-slate-200/60"
+                                >
+                                  Unassign
+                                </Button>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  courses.map((course, idx) => {
-                    const activeModCount = course.modules.filter(m => m.enabled).length;
-                    const totalLessonCount = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
+                  // GENERAL COURSE CATALOG (Image 1 style)
+                  loading ? (
+                    <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
+                      <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                      <p className="text-xs font-semibold">Loading curriculum path...</p>
+                    </div>
+                  ) : (
+                    courses.map((course, idx) => {
+                      const activeModCount = course.modules.filter(m => m.enabled).length;
+                      const totalLessonCount = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
+                      const bgGradient = getGradientClass(course.id);
 
-                    return (
-                      <motion.div
-                        key={course.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.04 }}
-                        className="bg-white rounded-[1.5rem] p-5 flex items-center gap-4 border border-slate-100 shadow-sm hover:shadow-md transition-all group relative active:scale-[0.98]"
-                      >
-                        <div 
-                          onClick={() => {
-                            setSelectedCourseId(course.id);
-                            setIsEditingCourse(false);
-                          }}
-                          className="flex-1 flex items-center gap-4 cursor-pointer min-w-0"
+                      return (
+                        <motion.div
+                          key={course.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.04 }}
+                          className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group p-5 relative"
                         >
-                          <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0 shadow-3xs group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
-                            <Layers className="w-5.5 h-5.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-[15px] font-medium text-slate-900 truncate leading-tight">
-                              {course.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1.5">
-                               <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{activeModCount} Units</span>
-                               <span className="text-slate-200 text-[10px]">|</span>
-                               <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{course.difficulty}</span>
+                          <div className="flex items-start gap-4">
+                            {/* Accent Icon Container */}
+                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-300`}>
+                              {getCourseIcon(course.category)}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{course.category || "General"}</span>
+                                <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold border border-slate-200/60 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0">
+                                  {course.difficulty || "Beginner"}
+                                </span>
+                              </div>
+                              <h3 className="text-[16px] font-bold text-slate-900 truncate mt-1 group-hover:text-indigo-600 transition-colors">
+                                {course.title}
+                              </h3>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button
-                            onClick={() => {
-                              setAssigningCourse(course);
-                              setAssignStep("preview");
-                            }}
-                            className="h-9 px-4 rounded-xl text-[11px] font-black uppercase tracking-wider bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
-                          >
-                            Assign
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => {
-                              setSelectedCourseId(course.id);
-                              setIsEditingCourse(false);
-                            }}
-                            className="w-9 h-9 rounded-xl text-slate-300 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                          >
-                            <ChevronRight className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      </motion.div>
-                    );
-                  })
+                          {/* Body Content */}
+                          <div className="flex-1 flex flex-col justify-between gap-4 mt-4">
+                            <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">
+                              {course.description || "Master core concepts and build practical projects step by step."}
+                            </p>
+
+                            <div className="flex items-center gap-4 text-[11.5px] font-semibold text-slate-400 pt-1">
+                              <span className="flex items-center gap-1"><Layers className="w-3.5 h-3.5 text-slate-300" /> {activeModCount} modules</span>
+                              <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-slate-300" /> {totalLessonCount} lessons</span>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-2.5 pt-2">
+                              <Button 
+                                onClick={() => {
+                                  setSelectedCourseId(course.id);
+                                  setIsEditingCourse(false);
+                                }}
+                                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                              >
+                                <Eye className="w-4 h-4" /> View Details
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setAssigningCourse(course);
+                                  setAssignStep("selectStudent");
+                                }}
+                                className="h-11 px-5 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-all active:scale-[0.98]"
+                              >
+                                Assign to Mentee
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setSelectedCourseId(course.id);
+                                  setIsEditingCourse(true);
+                                }}
+                                size="icon"
+                                variant="outline"
+                                className="w-11 h-11 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shrink-0"
+                                title="Edit Syllabus"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  )
                 )}
               </div>
             )}
 
             {activeTab === "queue" && (
-              <div className="px-5 py-6 space-y-3.5 flex-1 overflow-y-auto">
+              <div className="px-6 py-6 md:px-8 space-y-3.5 flex-1 overflow-y-auto">
                 {reviewQueue.length === 0 ? (
                   <div className="py-20 text-center text-slate-400">
                     <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-2" />
@@ -826,7 +1239,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             <CourseDetailsScreen 
               course={activeCourse!} 
               onBack={() => setSelectedCourseId(null)} 
-              actionButtonText="Assign to Student"
+              actionButtonText="Assign to Mentee"
               onActionClick={() => {
                 setAssigningCourse(activeCourse!);
                 setAssignStep("selectStudent");
@@ -846,7 +1259,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50"
           >
             {/* Header with Save progress bar status */}
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 px-5 pt-4 pb-4 text-white shrink-0 shadow-md">
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 text-white shrink-0 shadow-md">
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => {
@@ -880,7 +1293,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             </div>
 
             {/* Scrollable editor fields and modules layout */}
-            <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+            <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 space-y-4">
               
               {/* Core metadata editor form */}
               {activeCourse && (
@@ -1311,6 +1724,107 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
           </DialogContent>
         </Dialog>
       )}
+      {/* Browse Catalog Dialog (Explore Learning Paths modal matching Image 1) */}
+      <AnimatePresence>
+        {isCatalogModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="bg-slate-900 text-white rounded-t-[2.5rem] w-full max-w-xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-white/10 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">Explore Learning Paths</h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Choose from expert-designed courses</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCatalogModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Modal Body / Courses List */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                {courses
+                  .filter(c => c.status !== 'Custom') // Only show template courses
+                  .map((course) => {
+                    const modulesCount = course.modules.filter(m => m.enabled).length;
+                    const lessonsCount = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
+                    const isAlreadyEnrolled = studentEnrollments.some(e => e.course_id === course.id);
+
+                    return (
+                      <div key={course.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex gap-3 min-w-0">
+                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${getGradientClass(course.id)} flex items-center justify-center shrink-0`}>
+                              {getCourseIcon(course.category)}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-white truncate">{course.title}</h4>
+                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                {modulesCount} modules · {lessonsCount} lessons
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                // Deactivate existing active enrollments first
+                                await supabase.from('enrollments')
+                                  .update({ status: 'Inactive' })
+                                  .eq('student_id', selectedStudentId);
+
+                                const { error } = await supabase.from('enrollments').insert({
+                                  student_id: selectedStudentId,
+                                  course_id: course.id,
+                                  status: 'Active'
+                                });
+
+                                if (error) {
+                                  alert("Error assigning course: " + error.message);
+                                } else {
+                                  alert("Course assigned successfully!");
+                                  setIsCatalogModalOpen(false);
+                                  fetchStudentEnrollments(selectedStudentId);
+                                }
+                              } catch (err: any) {
+                                console.error(err);
+                              }
+                            }}
+                            disabled={isAlreadyEnrolled}
+                            className={cn(
+                              "text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shrink-0 transition-all",
+                              isAlreadyEnrolled 
+                                ? "bg-white/10 text-white/40 cursor-default" 
+                                : "bg-white text-slate-900 hover:bg-slate-100 shadow-sm"
+                            )}
+                          >
+                            {isAlreadyEnrolled ? "Assigned" : "+ Enroll"}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                          {course.description || "Master core concepts and build practical projects step by step."}
+                        </p>
+                      </div>
+                    );
+                  })}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Submit Review Submission Feedback Dialog */}
       <AnimatePresence>
         {isSubmitReviewOpen && selectedSubmission && (

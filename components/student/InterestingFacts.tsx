@@ -129,14 +129,14 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
   return (
     <motion.div
-      className="flex flex-col h-full bg-gray-50 -mx-5"
+      className="flex flex-col h-full bg-gray-50 -mx-6 md:-mx-8"
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 300 }}
     >
       {/* Header */}
-      <div className="bg-white px-5 pt-3 pb-3 border-b border-gray-100 shrink-0">
+      <div className="bg-white px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 border-b border-gray-100 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <button
@@ -188,7 +188,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
       </div>
 
       {/* Main Content scrollable */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto px-6 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))] md:px-8">
         <AnimatePresence mode="wait">
           {activeTab === "feed" && (
             <motion.div

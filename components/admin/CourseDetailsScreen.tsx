@@ -223,7 +223,7 @@ export function CourseDetailsScreen({
       <div className="flex-1 overflow-y-auto hidden-scrollbar flex flex-col">
         
         {/* SCREEN HERO HEADER */}
-        <div className="bg-white px-5 pt-10 pb-5 border-b border-slate-100 shadow-sm shrink-0">
+        <div className="bg-white px-6 pt-10 pb-5 md:px-8 border-b border-slate-100 shadow-sm shrink-0">
           {/* Breadcrumb & Back Row */}
           <div className="flex items-center gap-3 mb-4">
             <button
@@ -299,7 +299,7 @@ export function CourseDetailsScreen({
         
         {/* Admin Intelligence Section */}
         {adminData && (
-          <div className="px-5 py-6 bg-white border-b border-slate-100 flex flex-col gap-6 shrink-0">
+          <div className="px-6 py-6 md:px-8 bg-white border-b border-slate-100 flex flex-col gap-6 shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                 <Award className="w-4 h-4 text-blue-500" /> Admin Intelligence
@@ -370,7 +370,7 @@ export function CourseDetailsScreen({
         )}
 
         {/* SYLLABUS LISTING */}
-        <div className="px-5 pt-5 pb-24">
+        <div className="px-6 pt-5 pb-24 md:px-8">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="w-4 h-4 text-slate-500" />
             <p className="text-slate-900 text-xs font-medium uppercase tracking-wider">Syllabus Curriculum</p>
@@ -564,7 +564,7 @@ export function CourseDetailsScreen({
 
       {/* Sticky footer button panel */}
       {(!hideMarkAsComplete || secondaryActionButtonText) && (
-        <div className="bg-white px-5 py-3.5 pb-4 border-t border-slate-100 shrink-0 shadow-lg flex items-center justify-center gap-3 relative z-30">
+        <div className="bg-white px-6 py-3.5 pb-4 md:px-8 border-t border-slate-100 shrink-0 shadow-lg flex items-center justify-center gap-3 relative z-30">
           {secondaryActionButtonText && (
             <button
               onClick={onSecondaryActionClick}

@@ -1038,19 +1038,22 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
 
 // ─── Registrations ────────────────────────────────────────────────────────────
 function RegistrationsPage({ data }: { data: any }) {
-  const { students = [], mentors = [], studentQuiz = [], mentorQuiz = [] } = data;
+  const { students = [], mentors = [], unassigned = [], studentQuiz = [], mentorQuiz = [] } = data;
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<"all"|"students"|"mentors">("all");
+  const [filter, setFilter] = useState<"all"|"students"|"mentors"|"unassigned">("all");
 
   const allProfiles = [
     ...students.map((s: any) => ({ ...s, _role: "Student" })),
     ...mentors.map((m: any) => ({ ...m, _role: "Mentor" })),
+    ...unassigned.map((u: any) => ({ ...u, _role: "Unassigned" })),
   ];
 
   const enriched = allProfiles.map((p: any) => {
     const quiz = p._role === "Student"
       ? studentQuiz.find((q: any) => q.student_id === p.id)
-      : mentorQuiz.find((q: any) => q.mentor_id === p.id);
+      : p._role === "Mentor"
+        ? mentorQuiz.find((q: any) => q.mentor_id === p.id)
+        : null;
     const college = quiz?.college || "—";
     const branch = quiz?.branch || "—";
     const lang = quiz?.mother_tongue || "—";
@@ -1064,10 +1067,17 @@ function RegistrationsPage({ data }: { data: any }) {
 
   const filtered = enriched
     .filter((p: any) => !q || (p.name || p.email || "").toLowerCase().includes(q.toLowerCase()))
-    .filter((p: any) => filter === "all" ? true : filter === "students" ? p._role === "Student" : p._role === "Mentor");
+    .filter((p: any) => {
+      if (filter === "all") return true;
+      if (filter === "students") return p._role === "Student";
+      if (filter === "mentors") return p._role === "Mentor";
+      if (filter === "unassigned") return p._role === "Unassigned";
+      return true;
+    });
 
   const studentCount = allProfiles.filter((p: any) => p._role === "Student").length;
   const mentorCount = allProfiles.filter((p: any) => p._role === "Mentor").length;
+  const unassignedCount = allProfiles.filter((p: any) => p._role === "Unassigned").length;
 
   return (
     <PageShell title="Registrations" subtitle="All onboarding data captured from the mobile app"
@@ -1079,7 +1089,7 @@ function RegistrationsPage({ data }: { data: any }) {
           { label: "Total Registrations", value: allProfiles.length, color: "text-slate-900", icon: null },
           { label: "Students",            value: studentCount,       color: "text-emerald-600", icon: GraduationCap },
           { label: "Mentors",             value: mentorCount,        color: "text-blue-600",    icon: Users },
-          { label: "Avg Completion",      value: "100%",             color: "text-blue-600",    icon: null },
+          { label: "Pending Onboarding",  value: unassignedCount,    color: "text-amber-600",   icon: HelpCircle },
         ].map((s) => (
           <Card key={s.label} className="p-4 text-center">
             <p className={cn("text-[28px] font-medium", s.color)}>{s.value}</p>
@@ -1095,7 +1105,7 @@ function RegistrationsPage({ data }: { data: any }) {
       <div className="flex items-center gap-3">
         <div className="flex-1"><SearchInput value={q} onChange={setQ} placeholder="Search by name, email, or bio..." /></div>
         <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1">
-          {(["all","students","mentors"] as const).map((f) => (
+          {(["all","students","mentors","unassigned"] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}
               className={cn("h-7 px-3 rounded-lg text-[12px] font-medium capitalize transition-colors",
                 filter === f ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800")}>
@@ -1122,7 +1132,7 @@ function RegistrationsPage({ data }: { data: any }) {
                     <p className="text-[12px] text-slate-400 truncate">{p.email || "—"}</p>
                   </div>
                 </div>
-                <Pill color={p._role === "Student" ? "green" : "blue"}>{p._role}</Pill>
+                <Pill color={p._role === "Student" ? "green" : p._role === "Mentor" ? "blue" : "amber"}>{p._role}</Pill>
               </div>
 
               {p.interests.length > 0 && (
@@ -2674,7 +2684,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
   const [page, setPage] = useState<AdminPage>(initialPage);
   const [modal, setModal] = useState<ModalKey>(null);
   const [data, setData] = useState<any>({
-    students: [], mentors: [], courses: [], sessions: [], enrollments: [],
+    students: [], mentors: [], unassigned: [], courses: [], sessions: [], enrollments: [],
     reviews: [], messages: [], mapping: [], circles: [], registrations: [],
     questionnaires: [], inspiration: [], gratitude_messages: [], csr_sponsors: [],
     games: [], studentQuiz: [], mentorQuiz: [], feature_flags: [],
@@ -2693,11 +2703,10 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       try { const { data: rows } = await fn(); return rows || []; } catch { return []; }
     };
 
-    const [students, mentors, courses, sessions, enrollments, reviews, messages, mapping,
+    const [profilesList, courses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
       games, studentQuiz, mentorQuiz, feature_flags] = await Promise.all([
-      q(() => supabase.from("profiles").select("*").eq("role", "STUDENT").limit(200)),
-      q(() => supabase.from("profiles").select("*").eq("role", "MENTOR").limit(200)),
+      q(() => supabase.from("profiles").select("*").limit(500)),
       q(() => supabase.from("courses").select("*").limit(200)),
       q(() => supabase.from("sessions").select("*").limit(200)),
       q(() => supabase.from("enrollments").select("*").limit(200)),
@@ -2715,6 +2724,10 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       q(() => supabase.from("mentor_quiz_responses").select("*").limit(200)),
       q(() => supabase.from("feature_flags").select("*").limit(200)),
     ]);
+
+    const students = profilesList.filter((p: any) => p.role === "STUDENT");
+    const mentors = profilesList.filter((p: any) => p.role === "MENTOR");
+    const unassigned = profilesList.filter((p: any) => !p.role);
  
     const mappedCourses = courses.map((c: any) => {
       let mapped = { ...c };
@@ -2743,7 +2756,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       };
     });
 
-    setData({ students, mentors, courses: mappedCourses, sessions, enrollments, reviews, messages, mapping,
+    setData({ students, mentors, unassigned, courses: mappedCourses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
       games, studentQuiz, mentorQuiz, feature_flags });
   }, []);

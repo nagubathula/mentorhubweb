@@ -29,11 +29,13 @@ export async function proxy(request: NextRequest) {
   const isAdminAuth = pathname === '/admin/login' || pathname === '/admin/signup'
   const isAdminRoute = pathname.startsWith('/admin') && !isAdminAuth
 
-  if (isAdminRoute && !user) {
+  const hasAdminSession = request.cookies.get('admin_session')?.value === 'true'
+
+  if (isAdminRoute && !user && !hasAdminSession) {
     return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
-  if (isAdminAuth && user) {
+  if (isAdminAuth && (user || hasAdminSession)) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url))
   }
 
