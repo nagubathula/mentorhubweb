@@ -15,7 +15,8 @@ import {
   Link as LinkIcon, 
   Check, 
   Bookmark,
-  Share2
+  Share2,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ interface CuratedResource {
   title: string;
   url: string;
   description: string;
-  category: "Frontend" | "Backend" | "Design" | "Wellness" | "Interview Prep";
+  category: "Frontend" | "Backend" | "Design" | "Wellness" | "Interview Prep" | "Videos";
   icon: React.ReactNode;
 }
 
@@ -58,6 +59,22 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       icon: <Code className="w-4.5 h-4.5 text-sky-500" />
     },
     {
+      id: "res-v1",
+      title: "Next.js App Router Crash Course (Video)",
+      url: "https://www.youtube.com/watch?v=wm5gMKuwSYk",
+      description: "A comprehensive video crash course on Next.js App Router, routing, layouts, and server actions.",
+      category: "Videos",
+      icon: <Video className="w-4.5 h-4.5 text-indigo-500" />
+    },
+    {
+      id: "res-v2",
+      title: "React Hooks & State Management (Video)",
+      url: "https://www.youtube.com/watch?v=LlvBzyy-558",
+      description: "Master React useState, useEffect, useContext, and custom hooks in one crash course.",
+      category: "Videos",
+      icon: <Video className="w-4.5 h-4.5 text-rose-500" />
+    },
+    {
       id: "res-3",
       title: "Node.js & Express Production Best Practices",
       url: "https://github.com/goldbergyoni/nodebestpractices",
@@ -74,12 +91,28 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       icon: <Compass className="w-4.5 h-4.5 text-teal-500" />
     },
     {
+      id: "res-v3",
+      title: "Database Indexing & Query Optimization (Video)",
+      url: "https://www.youtube.com/watch?v=HkbdDDXYDek",
+      description: "Learn how indexes work under the hood and how to optimize slow SQL queries with video tutorials.",
+      category: "Videos",
+      icon: <Video className="w-4.5 h-4.5 text-emerald-500" />
+    },
+    {
       id: "res-5",
       title: "Laws of UX: Psychological Principles Handbook",
       url: "https://lawsofux.com/",
       description: "A highly visual guide covering design heuristics and psychological principles for premium UIs.",
       category: "Design",
       icon: <Sparkles className="w-4.5 h-4.5 text-pink-500" />
+    },
+    {
+      id: "res-v4",
+      title: "Figma UI/UX Design Tutorial for Beginners (Video)",
+      url: "https://www.youtube.com/watch?v=FTFaQWZBqA8",
+      description: "Step-by-step video tutorial on creating stunning UI components and prototypes in Figma.",
+      category: "Videos",
+      icon: <Video className="w-4.5 h-4.5 text-pink-500" />
     },
     {
       id: "res-6",
@@ -99,7 +132,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
     }
   ];
 
-  const categories = ["All", "Frontend", "Backend", "Design", "Wellness", "Interview Prep"];
+  const categories = ["All", "Frontend", "Backend", "Design", "Videos", "Wellness", "Interview Prep"];
 
   // Helper to extract resource links from messages
   const extractResourcesFromMessages = (msgs: any[]) => {

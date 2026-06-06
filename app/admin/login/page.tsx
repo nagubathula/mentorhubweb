@@ -20,15 +20,25 @@ const GoogleIcon = () => (
 );
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@kindmentor.in");
+  const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
+    useEffect(() => {
     setMounted(true);
+    // If admin session cookie exists, redirect directly
+    const adminCookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('admin_session='));
+    if (adminCookie && adminCookie.split('=')[1] === 'true') {
+      window.location.href = '/admin/dashboard';
+      return;
+    }
+    // Auto sign in if admin default credentials are present
+    if (email === "admin@kindmentor.in" && password === "admin123") {
+      handleSignIn();
+    }
   }, []);
 
   const handleSignIn = async () => {

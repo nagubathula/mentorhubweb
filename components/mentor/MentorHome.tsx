@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil, Video } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -562,57 +562,41 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
 
             return (
               <>
-                <div className="space-y-5 relative pl-1">
+                <div className="space-y-3 relative pl-1">
                   {dynamicWeeks.map((w, idx) => {
                     const isExpanded = expandedWeek === w.week;
                     const isCompleted = w.status === "completed";
                     const isActive = w.status === "active";
                     
-                    let circleBg = "bg-slate-50 border border-slate-200 text-slate-400";
                     let titleColor = "text-slate-500 font-medium";
+                    let statusIcon = null;
                     
                     if (isCompleted) {
-                      circleBg = "bg-emerald-500 text-white";
                       titleColor = "text-slate-700 font-medium";
+                      statusIcon = <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3.5] shrink-0" />;
                     } else if (isActive) {
-                      circleBg = "bg-violet-50 border-2 border-violet-500 text-violet-600 font-bold animate-pulse";
                       titleColor = "text-violet-600 font-bold";
+                      statusIcon = <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse shrink-0" />;
                     }
 
                     return (
-                      <div key={w.week} className="relative flex items-start gap-4">
-                        {/* Vertical timeline connector */}
-                        {idx < dynamicWeeks.length - 1 && (
-                          <div className={`absolute left-3 top-7 bottom-[-25px] w-[2px] ${
-                            isCompleted ? "bg-emerald-200" : "bg-slate-100"
-                          }`} />
-                        )}
-
-                        {/* Icon Circle */}
-                        <button 
-                          onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 z-10 transition-all active:scale-90 ${circleBg}`}
-                        >
-                          {isCompleted ? (
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          ) : (
-                            w.week
-                          )}
-                        </button>
-
+                      <div key={w.week} className="border-b border-slate-100 last:border-0 pb-3 last:pb-0">
                         {/* Content Block */}
                         <div className="flex-1 min-w-0">
                           <div 
                             onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
-                            className="flex items-center justify-between cursor-pointer py-0.5 group"
+                            className="flex items-center justify-between cursor-pointer py-1 group"
                           >
-                            <span className={`text-[13px] transition-colors group-hover:text-slate-900 ${titleColor}`}>
-                              Week {w.week} — {w.title}
-                            </span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              {statusIcon}
+                              <span className={`text-[13.5px] transition-colors group-hover:text-slate-900 truncate ${titleColor}`}>
+                                Week {w.week}: {w.title}
+                              </span>
+                            </div>
                             <div className="flex items-center gap-2">
                               {isActive && (
                                 <span className="bg-violet-50 border border-violet-100 text-violet-600 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0">
-                                  This week
+                                  Active
                                 </span>
                               )}
                               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
@@ -631,7 +615,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                                 transition={{ duration: 0.15 }}
                                 className="overflow-hidden"
                               >
-                                <div className="mt-2.5 ml-1 space-y-2 border-l border-slate-100 pl-3">
+                                <div className="mt-2 ml-1 space-y-2 border-l border-slate-100 pl-3">
                                   {w.items.map((item, itemIdx) => (
                                     <div key={itemIdx} className="flex items-start gap-2 text-slate-500 hover:text-slate-800 transition-colors py-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
                                       <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
@@ -818,6 +802,25 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                             disabled={isSending}
                             className="flex-1 bg-white hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
                           />
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              const chars = "abcdefghijklmnopqrstuvwxyz";
+                              const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                              const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                              const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                              const link = `https://meet.google.com/${part1}-${part2}-${part3}`;
+                              setReplyInputs(prev => ({ 
+                                ...prev, 
+                                [targetStudentId]: (prev[targetStudentId] || "") + (prev[targetStudentId] ? " " : "") + `🎥 Video Call Link: ${link}`
+                              }));
+                            }}
+                            className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all shrink-0 shadow-sm active:scale-95"
+                            size="icon"
+                            title="Insert Google Meet Link"
+                          >
+                            <Video className="w-4 h-4" />
+                          </Button>
                           <Button 
                             onClick={() => handleReply(targetStudentId, studentName)}
                             disabled={isSending || !currentInput.trim()}
@@ -890,6 +893,25 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                           disabled={isSending}
                           className="flex-1 bg-white/95 hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
                         />
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const chars = "abcdefghijklmnopqrstuvwxyz";
+                            const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                            const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                            const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                            const link = `https://meet.google.com/${part1}-${part2}-${part3}`;
+                            setReplyInputs(prev => ({ 
+                              ...prev, 
+                              [msg.from_user_id]: (prev[msg.from_user_id] || "") + (prev[msg.from_user_id] ? " " : "") + `🎥 Video Call Link: ${link}`
+                            }));
+                          }}
+                          className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-650 transition-all shrink-0 shadow-sm active:scale-95"
+                          size="icon"
+                          title="Insert Google Meet Link"
+                        >
+                          <Video className="w-4 h-4" />
+                        </Button>
                         <Button 
                           onClick={() => handleReply(msg.from_user_id, msg.sender_name)}
                           disabled={isSending || !studentReplyInput.trim()}
@@ -1184,7 +1206,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
           >
-            <div className="flex-1 overflow-y-auto hidden-scrollbar">
+            <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 py-6 md:px-8">
               <MentorCourses onClose={() => setShowCourses(false)} />
             </div>
           </motion.div>

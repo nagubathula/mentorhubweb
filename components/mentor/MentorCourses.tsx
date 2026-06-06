@@ -20,33 +20,57 @@ import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 
 const supabase = createClient();
 
-const AESTHETIC_GRADIENTS = [
-  "from-indigo-500 to-purple-600",
-  "from-emerald-500 to-teal-600",
-  "from-pink-500 to-rose-600",
-  "from-amber-500 to-orange-600",
-  "from-cyan-500 to-blue-600",
-  "from-violet-500 to-indigo-600",
-];
 
-const getGradientClass = (id: string) => {
-  if (!id) return AESTHETIC_GRADIENTS[0];
+
+const getAestheticColor = (id: string, category?: string) => {
+  const cat = (category || "").toLowerCase();
+  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) {
+    return "bg-[#8b5cf6] shadow-md shadow-purple-500/10";
+  }
+  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) {
+    return "bg-[#3b82f6] shadow-md shadow-blue-500/10";
+  }
+  if (cat.includes("vlsi") || cat.includes("semiconductor") || cat.includes("hardware") || cat.includes("engineering") || cat.includes("embedded")) {
+    if (cat.includes("vlsi")) {
+      return "bg-[#ff2d55] shadow-md shadow-rose-500/10";
+    }
+    return "bg-[#10b981] shadow-md shadow-emerald-500/10";
+  }
+  
+  const colors = [
+    "bg-[#3b82f6] shadow-md shadow-blue-500/10",
+    "bg-[#ff2d55] shadow-md shadow-rose-500/10",
+    "bg-[#10b981] shadow-md shadow-emerald-500/10",
+    "bg-[#8b5cf6] shadow-md shadow-purple-500/10",
+    "bg-[#f59e0b] shadow-md shadow-amber-500/10",
+  ];
+  if (!id) return colors[0];
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = id.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % AESTHETIC_GRADIENTS.length;
-  return AESTHETIC_GRADIENTS[index];
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
 };
 
-const getCourseIcon = (category: string) => {
+const getCourseIcon = (category?: string) => {
   const cat = (category || "").toLowerCase();
-  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) return <Layout className="w-5.5 h-5.5 text-white" />;
-  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) return <BarChart2 className="w-5.5 h-5.5 text-white" />;
-  if (cat.includes("code") || cat.includes("programming") || cat.includes("web") || cat.includes("software")) return <Code className="w-5.5 h-5.5 text-white" />;
-  if (cat.includes("brain") || cat.includes("mental") || cat.includes("health")) return <Brain className="w-5.5 h-5.5 text-white" />;
-  if (cat.includes("vlsi") || cat.includes("semiconductor") || cat.includes("hardware") || cat.includes("engineering")) return <Cpu className="w-5.5 h-5.5 text-white" />;
-  return <BookOpen className="w-5.5 h-5.5 text-white" />;
+  if (cat.includes("design") || cat.includes("ux") || cat.includes("ui")) {
+    return <Layout className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
+  }
+  if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) {
+    return <BarChart2 className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
+  }
+  if (cat.includes("code") || cat.includes("programming") || cat.includes("web") || cat.includes("software")) {
+    return <Code className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
+  }
+  if (cat.includes("brain") || cat.includes("mental") || cat.includes("health")) {
+    return <Brain className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
+  }
+  if (cat.includes("vlsi") || cat.includes("semiconductor") || cat.includes("hardware") || cat.includes("engineering") || cat.includes("embedded")) {
+    return <Cpu className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
+  }
+  return <BookOpen className="w-5.5 h-5.5 text-white" strokeWidth={2.2} />;
 };
 
 export interface ExtendedLesson {
@@ -363,6 +387,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        setCourses(mentorCoursesCatalog.map(l5));
         setLoading(false);
         return;
       }
@@ -800,7 +825,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden -mx-6 md:-mx-8 min-h-[92vh]">
+    <div className="flex flex-col h-full relative overflow-hidden min-h-[92vh]">
       <AnimatePresence mode="wait">
         {!selectedCourseId ? (
           // SCREEN 1: Course list manager screen matching decompiled bD catalog view
@@ -811,33 +836,29 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             exit={{ opacity: 0, y: -15 }}
             className="flex-1 flex flex-col h-full overflow-y-auto"
           >
-            {/* Premium Emerald Header Panel */}
-            <div className="bg-slate-900 px-6 pt-12 pb-8 md:px-8 text-white relative shadow-xl shadow-slate-900/10 overflow-hidden">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -translate-y-24 translate-x-12"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl translate-y-16 -translate-x-16"></div>
-              
-              <div className="flex items-center justify-between mb-8 relative z-10">
+            {/* Transparent Header Panel matching other screens */}
+            <div className="flex flex-col gap-5 pt-6 md:pt-8 pb-4 shrink-0 relative overflow-hidden">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {onClose && (
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={onClose}
-                      className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white shadow-lg backdrop-blur-sm mr-1 shrink-0"
+                      className="w-10 h-10 rounded-xl bg-white hover:bg-slate-100 active:scale-95 border border-slate-200/50 text-slate-600 shadow-xs mr-1 shrink-0"
                     >
-                      <ArrowLeft className="w-5 h-5 text-white" />
+                      <ArrowLeft className="w-4 h-4 text-slate-600" />
                     </Button>
                   )}
-                  <div className="w-12 h-12 bg-white/10 p-2.5 rounded-2xl backdrop-blur-md border border-white/10 flex items-center justify-center">
-                    <GraduationCap className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-emerald-50 border border-emerald-100/50 p-2 rounded-xl flex items-center justify-center text-emerald-600">
+                    <GraduationCap className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-medium tracking-tight tracking-tight leading-tight">Course Architect</h2>
-                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-widest mt-1">Design & Guide Curriculum</p>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Course Architect</h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Design & Guide Curriculum</p>
                   </div>
                 </div>
                 <Button 
-                  size="icon"
                   onClick={() => {
                     const newId = `c-${Date.now()}`;
                     const newCourse: ExtendedCourse = {
@@ -858,212 +879,28 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                     setCourses(prev => [newCourse, ...prev]);
                     setSelectedCourseId(newId);
                   }}
-                  className="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/10 text-white shadow-lg backdrop-blur-sm"
+                  className="h-10 rounded-xl bg-[#0f172a] hover:bg-slate-800 active:scale-95 text-white shadow-sm shrink-0 text-xs font-bold px-4 flex items-center gap-1.5"
                 >
-                  <Plus className="w-5 h-5" strokeWidth={2.5} />
+                  <Plus className="w-4 h-4" /> Create Custom Path
                 </Button>
-              </div>
-
-              <div className="mt-5 mb-4 flex items-center gap-3 relative z-10">
-                <span className="text-xs text-white/60 font-semibold shrink-0">Student:</span>
-                <select
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-300 backdrop-blur-md cursor-pointer flex-1 md:flex-initial"
-                >
-                  <option value="all" className="text-slate-900 font-semibold">General Course Templates</option>
-                  {assignedStudents.map((s) => (
-                    <option key={s.id} value={s.id} className="text-slate-900 font-semibold">
-                      {s.name || s.email?.split('@')[0]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex bg-white/5 backdrop-blur-md p-1.5 rounded-2xl relative z-10 border border-white/5">
-                <button
-                  onClick={() => setActiveTab("builder")}
-                  className={cn(
-                    "flex-1 py-3 text-center text-xs font-black uppercase tracking-[0.1em] rounded-xl transition-all",
-                    activeTab === "builder" ? "bg-white text-slate-900 shadow-lg" : "text-slate-400 hover:text-white"
-                  )}
-                >
-                  Syllabus Builder
-                </button>
-                <button
-                  onClick={() => setActiveTab("queue")}
-                  className={cn(
-                    "flex-1 py-3 text-center text-xs font-black uppercase tracking-[0.1em] rounded-xl transition-all",
-                    activeTab === "queue" ? "bg-white text-slate-900 shadow-lg" : "text-slate-400 hover:text-white"
-                  )}
-                >
-                  Review Queue {reviewQueue.filter(r => r.status === 'Pending' && (selectedStudentId === 'all' || r.student_id === selectedStudentId)).length > 0 && <span className="ml-1.5 w-5 h-5 bg-emerald-500 text-white rounded-full inline-flex items-center justify-center text-[10px] shadow-sm">{reviewQueue.filter(r => r.status === 'Pending' && (selectedStudentId === 'all' || r.student_id === selectedStudentId)).length}</span>}
-                </button>
               </div>
             </div>
 
-            {/* Courses list matching mobile styling exactly */}
-            {activeTab === "builder" && (
-              <div className="px-6 py-6 md:px-8 space-y-3 flex-1 overflow-y-auto">
-                {selectedStudentId !== "all" ? (
-                  // STUDENT CUSTOMIZED LEARNING PATHS (Image 2 style)
-                  <div className="space-y-5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 bg-white p-5 rounded-[1.5rem] border border-slate-100/80 shadow-xs">
-                      <div>
-                        <h3 className="text-base font-black uppercase tracking-wider text-slate-900">My Learning Paths</h3>
-                        <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                          Track {assignedStudents.find(s => s.id === selectedStudentId)?.name || "student"}'s progress and tailor their curriculum.
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => setIsCatalogModalOpen(true)}
-                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-4 rounded-xl shadow-xs flex items-center gap-1.5 self-start md:self-auto"
-                      >
-                        <Plus className="w-4 h-4" /> Browse Catalog
-                      </Button>
-                    </div>
-
-                    {loading ? (
-                      <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
-                        <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
-                        <p className="text-xs font-semibold">Loading student paths...</p>
-                      </div>
-                    ) : studentEnrollments.length === 0 ? (
-                      <div className="bg-white rounded-[2rem] border border-slate-100 p-10 flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4">
-                          <BookOpen className="w-8 h-8" />
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-900">No Learning Paths Assigned</h4>
-                        <p className="text-xs text-slate-500 max-w-xs mt-1.5 mb-6">Assign expert-designed courses or customize a syllabus to begin guiding this student.</p>
-                        <Button
-                          onClick={() => setIsCatalogModalOpen(true)}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl"
-                        >
-                          Assign First Course
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {studentEnrollments.map((enrollment, idx) => {
-                          const course = enrollment.course;
-                          if (!course) return null;
-
-                          const courseModules = course.modules || [];
-                          const totalLessons = courseModules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0);
-                          const completedLessons = Array.isArray(enrollment.progress) ? enrollment.progress.length : 0;
-                          const progressPct = enrollment.progress_pct ?? (totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0);
-
-                          const nextUpLesson = courseModules
-                            .flatMap((m: any) => m.lessons || [])
-                            .find((l: any) => l.enabled && !(enrollment.progress || []).includes(l.id))?.title || "Course Completed!";
-
-                          const bgGradient = getGradientClass(course.id);
-
-                          return (
-                            <motion.div
-                              key={enrollment.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: idx * 0.04 }}
-                              className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 p-6 relative overflow-hidden group"
-                            >
-                              <div className="flex items-start gap-4">
-                                <div className={`w-14 h-14 rounded-2.5xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm`}>
-                                  {getCourseIcon(course.category)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{course.category || "General"}</span>
-                                    <span className="bg-slate-50 text-slate-600 text-[10px] font-semibold border border-slate-200/60 rounded-lg px-2 py-0.5 uppercase tracking-wider shrink-0">
-                                      {course.difficulty || "Beginner"}
-                                    </span>
-                                  </div>
-                                  <h4 className="text-[16px] font-bold text-slate-900 truncate mt-1">
-                                    {course.title}
-                                  </h4>
-                                </div>
-                              </div>
-
-                              <p className="text-[13px] text-slate-500 font-medium leading-relaxed mt-4 line-clamp-2">
-                                {course.description || "Master core concepts and build practical projects step by step."}
-                              </p>
-
-                              {/* Progress Section */}
-                              <div className="mt-5 space-y-2">
-                                <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
-                                  <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-slate-400" /> Course Progress</span>
-                                  <span className="text-slate-900 font-bold">{progressPct}%</span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                  <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
-                                </div>
-                                <div className="flex justify-between items-center text-[11px] font-medium text-slate-400 pt-1">
-                                  <span>{courseModules.filter((m: any) => m.enabled).length} modules</span>
-                                  <span>{completedLessons}/{totalLessons} lessons</span>
-                                </div>
-                              </div>
-
-                              {/* Next Lesson Box */}
-                              <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4 mt-5 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                  <Play className="w-3.5 h-3.5 text-slate-500 fill-slate-500" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Next Up</p>
-                                  <p className="text-xs font-bold text-slate-700 truncate mt-0.5">{nextUpLesson}</p>
-                                </div>
-                              </div>
-
-                              {/* Actions */}
-                              <div className="flex gap-2.5 mt-5">
-                                <Button
-                                  onClick={() => {
-                                    setSelectedCourseId(course.id);
-                                    setActiveEnrollmentId(enrollment.id);
-                                    setIsEditingCourse(true);
-                                  }}
-                                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" /> Customize Course
-                                </Button>
-                                <Button
-                                  onClick={async () => {
-                                    if (confirm("Are you sure you want to unassign this course for this student?")) {
-                                      const { error } = await supabase.from('enrollments')
-                                        .update({ status: 'Inactive' })
-                                        .eq('id', enrollment.id);
-                                      if (error) {
-                                        alert("Error: " + error.message);
-                                      } else {
-                                        alert("Course unassigned successfully.");
-                                        fetchStudentEnrollments(selectedStudentId);
-                                      }
-                                    }
-                                  }}
-                                  variant="outline"
-                                  className="h-11 px-4 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 border border-slate-200/60"
-                                >
-                                  Unassign
-                                </Button>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // GENERAL COURSE CATALOG (Image 1 style)
-                  loading ? (
-                    <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
-                      <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
-                      <p className="text-xs font-semibold">Loading curriculum path...</p>
-                    </div>
-                  ) : (
-                    courses.map((course, idx) => {
+            {/* Courses list */}
+            <div className="space-y-5 pt-4 flex-1">
+              {loading ? (
+                <div className="py-20 flex flex-col items-center gap-3 text-slate-400">
+                  <div className="w-8 h-8 border-3 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                  <p className="text-xs font-semibold">Loading curriculum path...</p>
+                </div>
+              ) : (
+                <div className="space-y-4 pb-10">
+                  {courses
+                    .filter(c => c.status !== 'Custom')
+                    .map((course, idx) => {
                       const activeModCount = course.modules.filter(m => m.enabled).length;
                       const totalLessonCount = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
-                      const bgGradient = getGradientClass(course.id);
+                      const iconBgClass = getAestheticColor(course.id, course.category);
 
                       return (
                         <motion.div
@@ -1071,11 +908,11 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: idx * 0.04 }}
-                          className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col group p-5 relative"
+                          className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 p-6 relative overflow-hidden group"
                         >
                           <div className="flex items-start gap-4">
                             {/* Accent Icon Container */}
-                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${bgGradient} text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-300`}>
+                            <div className={`w-12 h-12 rounded-[1.25rem] ${iconBgClass} text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform duration-300`}>
                               {getCourseIcon(course.category)}
                             </div>
                             
@@ -1092,142 +929,62 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                             </div>
                           </div>
 
-                          {/* Body Content */}
-                          <div className="flex-1 flex flex-col justify-between gap-4 mt-4">
-                            <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">
-                              {course.description || "Master core concepts and build practical projects step by step."}
-                            </p>
+                          <p className="text-[13px] text-slate-500 font-medium leading-relaxed mt-4 line-clamp-2">
+                            {course.description || "Master core concepts and build practical projects step by step."}
+                          </p>
 
-                            <div className="flex items-center gap-4 text-[11.5px] font-semibold text-slate-400 pt-1">
-                              <span className="flex items-center gap-1"><Layers className="w-3.5 h-3.5 text-slate-300" /> {activeModCount} modules</span>
-                              <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-slate-300" /> {totalLessonCount} lessons</span>
+                          {/* Modules and Lessons Box */}
+                          <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-4 mt-5 flex items-center justify-around gap-4 text-center">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modules</p>
+                              <p className="text-base font-bold text-slate-800 mt-0.5">{activeModCount}</p>
                             </div>
+                            <div className="w-px h-8 bg-slate-200" />
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lessons</p>
+                              <p className="text-base font-bold text-slate-800 mt-0.5">{totalLessonCount}</p>
+                            </div>
+                          </div>
 
-                            {/* Actions */}
-                            <div className="flex gap-2.5 pt-2">
-                              <Button 
-                                onClick={() => {
-                                  setSelectedCourseId(course.id);
-                                  setIsEditingCourse(false);
-                                }}
-                                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
-                              >
-                                <Eye className="w-4 h-4" /> View Details
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  setAssigningCourse(course);
-                                  setAssignStep("selectStudent");
-                                }}
-                                className="h-11 px-5 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-all active:scale-[0.98]"
-                              >
-                                Assign to Mentee
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  setSelectedCourseId(course.id);
-                                  setIsEditingCourse(true);
-                                }}
-                                size="icon"
-                                variant="outline"
-                                className="w-11 h-11 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shrink-0"
-                                title="Edit Syllabus"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                            </div>
+                          {/* Actions */}
+                          <div className="flex gap-2.5 mt-5">
+                            <Button 
+                              onClick={() => {
+                                setSelectedCourseId(course.id);
+                                setIsEditingCourse(false);
+                              }}
+                              className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                            >
+                              <Eye className="w-4 h-4" /> View Details
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setAssigningCourse(course);
+                                setAssignStep("selectStudent");
+                              }}
+                              className="h-11 px-5 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-all active:scale-[0.98]"
+                            >
+                              Assign to Mentee
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setSelectedCourseId(course.id);
+                                setIsEditingCourse(true);
+                              }}
+                              size="icon"
+                              variant="outline"
+                              className="w-11 h-11 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shrink-0 flex items-center justify-center"
+                              title="Edit Syllabus"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
                           </div>
                         </motion.div>
                       );
-                    })
-                  )
-                )}
-              </div>
-            )}
-
-            {activeTab === "queue" && (
-              <div className="px-6 py-6 md:px-8 space-y-3.5 flex-1 overflow-y-auto">
-                {reviewQueue.length === 0 ? (
-                  <div className="py-20 text-center text-slate-400">
-                    <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-2" />
-                    <p className="text-sm font-medium">Review queue is empty!</p>
-                    <p className="text-xs text-slate-400 mt-1">Students haven't submitted capstones yet.</p>
-                  </div>
-                ) : (
-                  reviewQueue.map((item, index) => {
-                    const studentName = item.student?.name || item.student?.email?.split('@')[0] || "Student";
-                    const isPending = item.status === "Pending" || item.status === "pending";
-
-                    return (
-                      <div key={item.id} className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-12 translate-x-12"></div>
-                        
-                        <div className="flex items-start justify-between relative z-10">
-                          <div className="min-w-0 flex-1">
-                            <span className={cn(
-                              "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] shadow-3xs",
-                              isPending ? "bg-amber-50 text-amber-600 border border-amber-100" :
-                              item.status === "Approved" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                              "bg-rose-50 text-rose-600 border border-rose-100"
-                            )}>
-                              {item.status}
-                            </span>
-                            <h4 className="text-[16px] font-medium text-slate-900 mt-3 truncate">{item.project_title}</h4>
-                            <div className="flex items-center gap-2 mt-1.5">
-                               <div className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-400 uppercase">
-                                 {studentName.substring(0, 2)}
-                               </div>
-                               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{studentName}</p>
-                            </div>
-                          </div>
-                          
-                          {item.submission_link && (
-                            <a
-                              href={item.submission_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] text-indigo-600 hover:text-indigo-700 font-black uppercase tracking-wider flex items-center gap-1.5 bg-indigo-50/50 border border-indigo-100/50 px-3 py-2 rounded-xl shrink-0 transition-all active:scale-95 shadow-3xs"
-                            >
-                              View <ArrowRight className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
-
-                        {item.feedback && (
-                          <div className="mt-5 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl relative z-10">
-                            <p className="text-[9px] text-slate-400 uppercase font-black tracking-[0.15em] mb-2">Mentor Feedback</p>
-                            <p className="text-[13px] font-medium text-slate-700 leading-relaxed italic">"{item.feedback}"</p>
-                            {item.rating && (
-                              <div className="flex gap-1 mt-3 text-amber-500">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star key={i} className={`w-3 h-3 ${i < item.rating ? "fill-amber-500" : "text-slate-200"}`} />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {isPending && (
-                          <div className="flex gap-2 border-t border-slate-50 pt-5 mt-5 relative z-10">
-                            <Button
-                              onClick={() => {
-                                setSelectedSubmission(item);
-                                setSubmissionFeedback("");
-                                setSubmissionRating(5);
-                                setIsSubmitReviewOpen(true);
-                              }}
-                              className="flex-1 py-6 text-[12px] font-black uppercase tracking-wider text-white bg-slate-900 hover:bg-slate-800 rounded-2xl shadow-lg shadow-slate-900/10 active:scale-95 transition-all"
-                            >
-                              Review Submission
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
+                    })}
+                </div>
+              )}
+            </div>
           </motion.div>
         ) : !isEditingCourse ? (
           <motion.div
@@ -1236,7 +993,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
-            className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50"
+            className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 rounded-[2rem] border border-slate-100 shadow-sm"
           >
             <CourseDetailsScreen 
               course={activeCourse!} 
@@ -1258,7 +1015,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "tween", duration: 0.3 }}
-            className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50"
+            className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 rounded-[2rem] border border-slate-100 shadow-sm"
           >
             {/* Header with Save progress bar status */}
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-5 text-white shrink-0 shadow-md">
@@ -1769,7 +1526,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                       <div key={course.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex gap-3 min-w-0">
-                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${getGradientClass(course.id)} flex items-center justify-center shrink-0`}>
+                            <div className={`w-10 h-10 rounded-[0.85rem] ${getAestheticColor(course.id, course.category)} flex items-center justify-center shrink-0`}>
                               {getCourseIcon(course.category)}
                             </div>
                             <div className="min-w-0">

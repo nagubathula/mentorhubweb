@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
@@ -41,6 +42,76 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [studentEnrollment, setStudentEnrollment] = useState<any>(null);
   const [isCourseCatalogOpen, setIsCourseCatalogOpen] = useState(false);
+  
+  // Video Call Modal States
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [videoProvider, setVideoProvider] = useState<"meet" | "jitsi" | "custom">("meet");
+  const [customVideoUrl, setCustomVideoUrl] = useState("");
+  const [videoMessage, setVideoMessage] = useState("Hey! Let's connect for our mentoring session. 🎥 Here is our video call link:");
+  const [isSendingVideoLink, setIsSendingVideoLink] = useState(false);
+  const [videoSendSuccess, setVideoSendSuccess] = useState(false);
+
+  // Helper to generate a Google Meet room code
+  const generateMeetCode = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyz";
+    const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    return `${part1}-${part2}-${part3}`;
+  };
+
+  const handleSendVideoLink = async () => {
+    if (!selectedStudent) return;
+    setIsSendingVideoLink(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("You must be logged in to send video call links.");
+        return;
+      }
+
+      let meetingUrl = "";
+      if (videoProvider === "meet") {
+        meetingUrl = `https://meet.google.com/${generateMeetCode()}`;
+      } else if (videoProvider === "jitsi") {
+        meetingUrl = `https://meet.jit.si/mentorhub-session-${Math.random().toString(36).substring(2, 11)}`;
+      } else {
+        meetingUrl = customVideoUrl.trim();
+        if (!meetingUrl) {
+          alert("Please enter a custom video URL.");
+          setIsSendingVideoLink(false);
+          return;
+        }
+        if (!/^https?:\/\//i.test(meetingUrl)) {
+          meetingUrl = "https://" + meetingUrl;
+        }
+      }
+
+      const { error } = await supabase.from('messages').insert({
+        from_user_id: session.user.id,
+        to_user_id: selectedStudent.id,
+        body: `🎥 **Video Call Link**: ${meetingUrl}\n\n${videoMessage}`,
+        sender_name: "Mentor",
+        is_read: false
+      } as any);
+
+      if (error) {
+        alert("Failed to send video call link: " + error.message);
+      } else {
+        setVideoSendSuccess(true);
+        setTimeout(() => {
+          setVideoSendSuccess(false);
+          setIsVideoModalOpen(false);
+          // Reset states
+          setCustomVideoUrl("");
+        }, 1500);
+      }
+    } catch (e: any) {
+      alert("Unexpected error: " + e.message);
+    } finally {
+      setIsSendingVideoLink(false);
+    }
+  };
   
   // Course Customizer States
   const [customizingCourse, setCustomizingCourse] = useState<any>(null);
@@ -805,7 +876,11 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
               <Button className="flex-1 bg-slate-900 text-white py-6 rounded-2xl text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-[0.98]">
                 <MessageSquare className="w-4.5 h-4.5 fill-white/20"/> Message
               </Button>
-              <Button variant="outline" className="flex-1 py-6 rounded-2xl text-[14px] font-medium flex items-center justify-center gap-2 border-slate-100 bg-white hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsVideoModalOpen(true)}
+                className="flex-1 py-6 rounded-2xl text-[14px] font-medium flex items-center justify-center gap-2 border-slate-100 bg-white hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]"
+              >
                 <Video className="w-4.5 h-4.5 text-indigo-500"/> Call
               </Button>
             </div>
@@ -1109,6 +1184,124 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Video Call Link Sharing Dialog Modal */}
+          {isVideoModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200">
+              <div 
+                className="relative bg-white/95 rounded-[2rem] border border-slate-100 shadow-2xl w-full max-w-sm overflow-hidden flex flex-col p-6 space-y-5 animate-in zoom-in-95 duration-300"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between pb-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-3xs">
+                      <Video className="w-4.5 h-4.5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-[14px]">Send Video Call Link</h3>
+                      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Connect with {selectedStudent.name}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsVideoModalOpen(false)}
+                    className="w-7 h-7 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Provider Tabs selector */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Video Call Provider</label>
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                    <button
+                      onClick={() => setVideoProvider("meet")}
+                      className={`text-[11px] py-1.5 rounded-lg font-bold transition-all ${
+                        videoProvider === "meet" 
+                          ? "bg-white text-indigo-600 shadow-3xs border border-slate-100" 
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Google Meet
+                    </button>
+                    <button
+                      onClick={() => setVideoProvider("jitsi")}
+                      className={`text-[11px] py-1.5 rounded-lg font-bold transition-all ${
+                        videoProvider === "jitsi" 
+                          ? "bg-white text-indigo-600 shadow-3xs border border-slate-100" 
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Jitsi Meet
+                    </button>
+                    <button
+                      onClick={() => setVideoProvider("custom")}
+                      className={`text-[11px] py-1.5 rounded-lg font-bold transition-all ${
+                        videoProvider === "custom" 
+                          ? "bg-white text-indigo-600 shadow-3xs border border-slate-100" 
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Custom URL
+                    </button>
+                  </div>
+                </div>
+
+                {/* Link details / Preview */}
+                {videoProvider !== "custom" ? (
+                  <div className="bg-indigo-50/30 border border-indigo-100/50 p-3.5 rounded-xl space-y-1">
+                    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-indigo-400 block">Link Generation</span>
+                    <span className="text-[12px] font-bold text-indigo-700 block leading-tight truncate">
+                      {videoProvider === "meet" ? "https://meet.google.com/xxx-xxxx-xxx" : "https://meet.jit.si/mentorhub-session-xxxxxxxxx"}
+                    </span>
+                    <p className="text-[10px] text-slate-400 font-semibold leading-normal mt-1">A unique meeting link will be automatically generated upon sending.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Custom Meeting URL</label>
+                    <Input 
+                      value={customVideoUrl}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomVideoUrl(e.target.value)}
+                      placeholder="e.g. zoom.us/j/... or google meet link"
+                      className="bg-slate-50/50 hover:bg-slate-50 border-slate-200 text-xs h-10 px-3.5 rounded-xl transition-colors focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </div>
+                )}
+
+                {/* Message Invitation Input */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Invitation Message</label>
+                  <textarea 
+                    value={videoMessage}
+                    onChange={(e) => setVideoMessage(e.target.value)}
+                    placeholder="Provide a friendly call invitation message..."
+                    rows={3}
+                    className="w-full text-xs text-slate-800 placeholder-slate-300 bg-slate-50 hover:bg-slate-100/50 focus:bg-white rounded-xl px-3.5 py-2.5 outline-none border border-slate-250 resize-none transition-all focus:ring-2 focus:ring-indigo-100"
+                  />
+                </div>
+
+                {/* Action button */}
+                <div className="pt-2">
+                  {videoSendSuccess ? (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11.5px] font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-3xs animate-in zoom-in-95 duration-200">
+                      <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                      Link shared in chat successfully!
+                    </div>
+                  ) : (
+                    <Button 
+                      onClick={handleSendVideoLink}
+                      disabled={isSendingVideoLink || (videoProvider === "custom" && !customVideoUrl.trim())}
+                      className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-50 shadow-sm"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      {isSendingVideoLink ? "Sending Invitation..." : `Send Video Link to ${selectedStudent.name}`}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
