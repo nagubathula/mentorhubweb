@@ -81,6 +81,7 @@ export interface ExtendedCourse {
   enrolled: boolean;
   progress: number;
   modules: ExtendedModule[];
+  status?: string;
 }
 
 // Helper to map and inject enabled: true property to modules/lessons to match decompiler 'l5' exactly
@@ -117,6 +118,7 @@ function l5(c: any): ExtendedCourse {
     duration: finalSource.duration || "10 hours",
     enrolled: finalSource.enrolled ?? false,
     progress: finalSource.progress || 0,
+    status: finalSource.status || "Active",
     color: finalSource.color || "text-emerald-600",
     bgColor: finalSource.bgColor || "bg-emerald-500",
     icon: finalSource.icon || <BookOpen className="w-5 h-5" />,
