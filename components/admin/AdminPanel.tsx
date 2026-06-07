@@ -888,7 +888,7 @@ function CoursesPage({ data, setSelectedCourse, setCourseViewMode, onEdit }: {
 
 
 // ─── Mentors ──────────────────────────────────────────────────────────────────
-function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) => void }) {
+function MentorsPage({ data, openModal, onDelete }: { data: any; openModal: (m: ModalKey) => void; onDelete: (userId: string, userNameOrEmail: string) => void }) {
   const { mentors = [], mapping = [] } = data;
   const [q, setQ] = useState("");
 
@@ -952,7 +952,15 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                   <span className={cn("text-[12px] font-semibold", m.status==="Active"?"text-emerald-600":"text-amber-600")}>{m.status}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button className="text-[13px] text-blue-500 hover:text-blue-700 font-medium">View</button>
+                  <div className="flex items-center justify-end gap-3">
+                    <button className="text-[13px] text-blue-500 hover:text-blue-700 font-medium">View</button>
+                    <button 
+                      onClick={() => onDelete(m.id, m.name || m.email)}
+                      className="text-[13px] text-red-500 hover:text-red-700 font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -968,7 +976,7 @@ function MentorsPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
 }
 
 // ─── Mentees ──────────────────────────────────────────────────────────────────
-function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) => void }) {
+function MenteesPage({ data, openModal, onDelete }: { data: any; openModal: (m: ModalKey) => void; onDelete: (userId: string, userNameOrEmail: string) => void }) {
   const { students = [], courses = [], enrollments = [] } = data;
   const [q, setQ] = useState("");
 
@@ -1035,7 +1043,15 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button className="text-[13px] text-blue-500 hover:text-blue-700 font-medium">View</button>
+                  <div className="flex items-center justify-end gap-3">
+                    <button className="text-[13px] text-blue-500 hover:text-blue-700 font-medium">View</button>
+                    <button 
+                      onClick={() => onDelete(s.id, s.name || s.email)}
+                      className="text-[13px] text-red-500 hover:text-red-700 font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -1051,7 +1067,7 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
 }
 
 // ─── Registrations ────────────────────────────────────────────────────────────
-function RegistrationsPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
+function RegistrationsPage({ data, fetchAll, onDelete }: { data: any; fetchAll: () => void; onDelete: (userId: string, userNameOrEmail: string) => void }) {
   const { students = [], mentors = [], unassigned = [], studentQuiz = [], mentorQuiz = [] } = data;
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all"|"students"|"mentors"|"unassigned">("all");
@@ -1183,42 +1199,7 @@ function RegistrationsPage({ data, fetchAll }: { data: any; fetchAll: () => void
                     <button className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
                       <CheckCircle className="w-3 h-3" />View All
                     </button>
-                    <button onClick={async () => {
-                      if (confirm(`Are you sure you want to delete the registration for ${p.name || p.email} completely from the database?`)) {
-                        const dependentTables = [
-                          { name: "mapping", query: supabase.from("mapping").delete().or(`student_id.eq.${p.id},mentor_id.eq.${p.id}`) },
-                          { name: "enrollments", query: supabase.from("enrollments").delete().eq("student_id", p.id) },
-                          { name: "reviews", query: supabase.from("reviews").delete().or(`reviewer_id.eq.${p.id},reviewee_id.eq.${p.id}`) },
-                          { name: "messages", query: supabase.from("messages").delete().or(`from_user_id.eq.${p.id},to_user_id.eq.${p.id}`) },
-                          { name: "student_quiz_responses", query: supabase.from("student_quiz_responses").delete().eq("student_id", p.id) },
-                          { name: "mentor_quiz_responses", query: supabase.from("mentor_quiz_responses").delete().eq("mentor_id", p.id) },
-                          { name: "sessions", query: supabase.from("sessions").delete().or(`student_id.eq.${p.id},mentor_id.eq.${p.id}`) },
-                          { name: "circles", query: supabase.from("circles").delete().eq("mentor_id", p.id) },
-                          { name: "registrations", query: supabase.from("registrations").delete().eq("user_id", p.id) },
-                          { name: "onboarding_answers", query: supabase.from("onboarding_answers").delete().eq("user_id", p.id) },
-                          { name: "games", query: supabase.from("games").delete().eq("user_id", p.id) },
-                          { name: "quiz_results", query: supabase.from("quiz_results").delete().eq("user_id", p.id) },
-                          { name: "inspirations", query: supabase.from("inspirations").delete().eq("mentor_id", p.id) },
-                          { name: "inspiration_reads", query: supabase.from("inspiration_reads").delete().eq("student_id", p.id) },
-                          { name: "gratitude_messages", query: supabase.from("gratitude_messages").delete().eq("sender_id", p.id) }
-                        ];
-                        
-                        await Promise.all(dependentTables.map(async (t) => {
-                          try {
-                            await t.query;
-                          } catch (err) {
-                            console.error(`Error deleting from ${t.name}:`, err);
-                          }
-                        }));
-
-                        const { error } = await supabase.from("profiles").delete().eq('id', p.id);
-                        if (error) {
-                          alert("Error: " + error.message);
-                        } else {
-                          fetchAll();
-                        }
-                      }
-                    }} className="text-slate-400 hover:text-red-500">
+                     <button onClick={() => onDelete(p.id, p.name || p.email)} className="text-slate-400 hover:text-red-500">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -2806,6 +2787,69 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
   const supabase = createClient();
 
+  const handleDeleteUser = async (userId: string, userNameOrEmail: string) => {
+    if (!confirm(`Are you sure you want to delete ${userNameOrEmail} completely from the database?`)) {
+      return;
+    }
+    
+    let deletedCompletely = false;
+    try {
+      const { data: rpcData, error: rpcError } = await (supabase as any).rpc('delete_user_profile', { target_user_id: userId });
+      if (!rpcError) {
+        deletedCompletely = true;
+      } else {
+        console.error("RPC delete failed:", rpcError);
+      }
+    } catch (e) {
+      console.log("RPC delete_user_profile not available, falling back to manual client delete");
+    }
+
+    if (!deletedCompletely) {
+      const dependentTables = [
+        { name: "mapping", query: supabase.from("mapping").delete().or(`student_id.eq.${userId},mentor_id.eq.${userId}`) },
+        { name: "enrollments", query: supabase.from("enrollments").delete().eq("student_id", userId) },
+        { name: "reviews", query: supabase.from("reviews").delete().or(`reviewer_id.eq.${userId},reviewee_id.eq.${userId}`) },
+        { name: "messages", query: supabase.from("messages").delete().or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`) },
+        { name: "student_quiz_responses", query: supabase.from("student_quiz_responses").delete().eq("student_id", userId) },
+        { name: "mentor_quiz_responses", query: supabase.from("mentor_quiz_responses").delete().eq("mentor_id", userId) },
+        { name: "sessions", query: supabase.from("sessions").delete().or(`student_id.eq.${userId},mentor_id.eq.${userId}`) },
+        { name: "circles", query: supabase.from("circles").delete().eq("mentor_id", userId) },
+        { name: "registrations", query: supabase.from("registrations").delete().eq("user_id", userId) },
+        { name: "onboarding_answers", query: supabase.from("onboarding_answers").delete().eq("user_id", userId) },
+        { name: "games", query: supabase.from("games").delete().eq("user_id", userId) },
+        { name: "quiz_results", query: supabase.from("quiz_results").delete().eq("user_id", userId) },
+        { name: "inspirations", query: supabase.from("inspirations").delete().eq("mentor_id", userId) },
+        { name: "inspiration_reads", query: supabase.from("inspiration_reads").delete().eq("student_id", userId) },
+        { name: "gratitude_messages", query: supabase.from("gratitude_messages").delete().eq("sender_id", userId) }
+      ];
+      
+      await Promise.all(dependentTables.map(async (t) => {
+        try {
+          await t.query;
+        } catch (err) {
+          console.error(`Error deleting from ${t.name}:`, err);
+        }
+      }));
+
+      // Try deleting the main profile
+      const { error } = await supabase.from("profiles").delete().eq('id', userId);
+      
+      // Fallback: If delete does not error but row is not removed due to RLS,
+      // update the profile to mark it as deleted so that it disappears immediately.
+      const { data: checkData } = await supabase.from("profiles").select("id").eq("id", userId).single();
+      if (checkData) {
+        await supabase.from("profiles").update({
+          name: "Deleted User",
+          role: null,
+          email: `deleted-${userId}@example.com`,
+          preferences: { deleted: true, roles: ["DELETED"] }
+        }).eq("id", userId);
+      }
+    }
+
+    fetchAll();
+  };
+
   const fetchAll = useCallback(async () => {
     const q = async (fn: () => any): Promise<any[]> => {
       try { const { data: rows } = await fn(); return rows || []; } catch { return []; }
@@ -2844,7 +2888,15 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
         avatar_url: p.preferences?.avatar_url ?? p.avatar_url ?? null
       };
     };
-    const activeProfiles = profilesList.filter((p: any) => p.name !== 'Deleted User' && !p.preferences?.deleted);
+    const activeProfiles = profilesList.filter((p: any) => {
+      if (!p) return false;
+      const isDeleted = 
+        p.name === 'Deleted User' || 
+        p.preferences?.deleted === true || 
+        (p.email && p.email.toLowerCase().includes('deleted-')) ||
+        (p.preferences?.roles && p.preferences.roles.includes('DELETED'));
+      return !isDeleted;
+    });
     const students = activeProfiles
       .filter((p: any) => p.role === "STUDENT" || p.preferences?.roles?.includes("STUDENT"))
       .map((p: any) => mapProfile(p, "STUDENT"));
@@ -3026,9 +3078,9 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
           setCourseViewMode={setCourseViewMode}
           onEdit={(c) => { setSelectedCourse(c); setCourseViewMode("edit"); }}
         />;
-      case "mentors":        return <MentorsPage data={data} openModal={openModal} />;
-      case "mentees":        return <MenteesPage data={data} openModal={openModal} />;
-      case "registrations":  return <RegistrationsPage data={data} fetchAll={fetchAll} />;
+      case "mentors":        return <MentorsPage data={data} openModal={openModal} onDelete={handleDeleteUser} />;
+      case "mentees":        return <MenteesPage data={data} openModal={openModal} onDelete={handleDeleteUser} />;
+      case "registrations":  return <RegistrationsPage data={data} fetchAll={fetchAll} onDelete={handleDeleteUser} />;
       case "mapping":        return <MappingPage data={data} openModal={openModal} />;
       case "enrollments":    return <EnrollmentsPage data={data} openModal={openModal} />;
       case "games":          return <GamesPage data={data} fetchAll={fetchAll} />;
