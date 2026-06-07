@@ -130,6 +130,39 @@ const getGradientClass = (id: string) => {
   return AESTHETIC_GRADIENTS[index];
 };
 
+const renderMessageBody = (text: string, isMe: boolean) => {
+  const urlRegex = /(https?:\/\/[^\s\)\>]+)/g;
+  const parts = text.split(urlRegex);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.match(urlRegex)) {
+          return (
+            <a 
+              key={index} 
+              href={part} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={`underline break-all font-semibold ${isMe ? 'text-blue-200 hover:text-blue-100' : 'text-indigo-600 hover:text-indigo-800'}`}
+            >
+              {part}
+            </a>
+          );
+        }
+        
+        const boldRegex = /\*\*([^*]+)\*\*/g;
+        const subParts = part.split(boldRegex);
+        return subParts.map((subPart, subIndex) => {
+          if (subIndex % 2 === 1) {
+            return <strong key={subIndex} className="font-bold">{subPart}</strong>;
+          }
+          return subPart;
+        });
+      })}
+    </>
+  );
+};
+
 export default function OnboardingFlow() {
   const [state, setState] = useState<FlowState>("WELCOME");
   const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS"].includes(state);
@@ -2950,44 +2983,7 @@ export default function OnboardingFlow() {
                           <div className="flex items-center gap-2 max-w-[85%]">
                             {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
                             <div className={`px-5 py-3.5 rounded-[1.5rem] text-[14.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-lg shadow-slate-900/5' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-sm'}`}>
-                              <div>{msg.body}</div>
-                              {hasLink && (
-                                <div 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setState("RESOURCES");
-                                  }}
-                                  className={`mt-3 p-3.5 rounded-xl border flex flex-col gap-2.5 transition-all duration-200 cursor-pointer text-left shadow-3xs ${
-                                    isMe 
-                                      ? "bg-white/10 hover:bg-white/15 border-white/20 text-white" 
-                                      : "bg-indigo-50/50 hover:bg-indigo-50 border-indigo-100/60 text-slate-800"
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-2.5">
-                                    <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center shadow-3xs bg-white text-indigo-600`}>
-                                      <BookOpen className="w-4 h-4" />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-[12.5px] font-bold leading-tight truncate">
-                                        {resourceTitle}
-                                      </p>
-                                      <p className={`text-[10px] font-semibold mt-0.5 leading-normal truncate ${
-                                        isMe ? "text-white/60" : "text-slate-400"
-                                      }`}>
-                                        {hasLink[0]}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-2 border-t border-dashed pt-2.5 border-slate-100/20">
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                                      isMe ? "text-white/70" : "text-indigo-600"
-                                    }`}>
-                                      Open in Resource Hub 🚀
-                                    </span>
-                                    <ExternalLink className={`w-3 h-3 ${isMe ? "text-white/75" : "text-indigo-600"}`} />
-                                  </div>
-                                </div>
-                              )}
+                              <div>{renderMessageBody(msg.body, isMe)}</div>
                             </div>
                             {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
                           </div>
@@ -3120,37 +3116,7 @@ export default function OnboardingFlow() {
                                   <div className="flex items-center gap-2 max-w-[85%]">
                                     {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
                                     <div className={`px-4 py-2.5 rounded-[1.25rem] text-[13.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-sm shadow-slate-900/5' : 'bg-slate-50 text-slate-700 border border-slate-100/60 rounded-tl-none shadow-xs'}`}>
-                                      <div>{msg.body}</div>
-                                      {hasLink && (
-                                        <div 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setState("RESOURCES");
-                                          }}
-                                          className={`mt-2.5 p-3 rounded-xl border flex flex-col gap-2 transition-all duration-200 cursor-pointer text-left shadow-3xs ${
-                                            isMe 
-                                              ? "bg-white/10 hover:bg-white/15 border-white/20 text-white" 
-                                              : "bg-indigo-50/50 hover:bg-indigo-50 border-indigo-100/60 text-slate-800"
-                                          }`}
-                                        >
-                                          <div className="flex items-start gap-2">
-                                            <div className="p-1.5 rounded-md shrink-0 flex items-center justify-center bg-white text-indigo-600 shadow-3xs">
-                                              <BookOpen className="w-3.5 h-3.5" />
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                              <p className="text-[11.5px] font-bold leading-tight truncate">
-                                                {resourceTitle}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center justify-between gap-2 border-t border-dashed pt-2 border-slate-100/10">
-                                            <span className="text-[9px] font-bold uppercase tracking-wider">
-                                              Open in Resource Hub 🚀
-                                            </span>
-                                            <ExternalLink className="w-2.5 h-2.5" />
-                                          </div>
-                                        </div>
-                                      )}
+                                      <div>{renderMessageBody(msg.body, isMe)}</div>
                                     </div>
                                     {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity shrink-0 animate-in fade-in" title="Delete Message"><Trash2 className="w-3.5 h-3.5" /></button>}
                                   </div>

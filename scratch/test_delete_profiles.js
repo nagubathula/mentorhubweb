@@ -1,15 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+const supabase = createClient(
+  'https://vhrmcfwlkjgepdcyhmnw.supabase.co',
+  'sb_publishable_ydTHzAWqcxh5309HHs-tCQ_RjOBCzFe'
+);
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function testDelete() {
-  const { data, error, count } = await supabase
+async function run() {
+  const { data, error } = await supabase
     .from('profiles')
     .delete()
-    .eq('id', 'test-dup-sdle4v');
-  console.log('Result:', { data, error, count });
+    .neq('id', '00000000-0000-0000-0000-000000000000');
+  
+  if (error) {
+    console.error("Delete failed with error:", error);
+  } else {
+    console.log("Delete succeeded:", data);
+  }
 }
-testDelete();
+
+run();

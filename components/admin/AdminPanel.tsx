@@ -1051,7 +1051,7 @@ function MenteesPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
 }
 
 // ─── Registrations ────────────────────────────────────────────────────────────
-function RegistrationsPage({ data }: { data: any }) {
+function RegistrationsPage({ data, fetchAll }: { data: any; fetchAll: () => void }) {
   const { students = [], mentors = [], unassigned = [], studentQuiz = [], mentorQuiz = [] } = data;
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all"|"students"|"mentors"|"unassigned">("all");
@@ -1184,15 +1184,39 @@ function RegistrationsPage({ data }: { data: any }) {
                       <CheckCircle className="w-3 h-3" />View All
                     </button>
                     <button onClick={async () => {
-                      if (confirm(`Are you sure you want to delete/reset the registration for ${p.name || p.email}?`)) {
-                        const { error } = await supabase.from("profiles").update({
-                          name: 'Deleted User',
-                          email: `deleted-${p.id}@example.com`,
-                          role: null,
-                          expertise: null,
-                          preferences: { roles: ['DELETED'], deleted: true }
-                        }).eq('id', p.id);
-                        if (error) alert("Error: " + error.message);
+                      if (confirm(`Are you sure you want to delete the registration for ${p.name || p.email} completely from the database?`)) {
+                        const dependentTables = [
+                          { name: "mapping", query: supabase.from("mapping").delete().or(`student_id.eq.${p.id},mentor_id.eq.${p.id}`) },
+                          { name: "enrollments", query: supabase.from("enrollments").delete().eq("student_id", p.id) },
+                          { name: "reviews", query: supabase.from("reviews").delete().or(`reviewer_id.eq.${p.id},reviewee_id.eq.${p.id}`) },
+                          { name: "messages", query: supabase.from("messages").delete().or(`from_user_id.eq.${p.id},to_user_id.eq.${p.id}`) },
+                          { name: "student_quiz_responses", query: supabase.from("student_quiz_responses").delete().eq("student_id", p.id) },
+                          { name: "mentor_quiz_responses", query: supabase.from("mentor_quiz_responses").delete().eq("mentor_id", p.id) },
+                          { name: "sessions", query: supabase.from("sessions").delete().or(`student_id.eq.${p.id},mentor_id.eq.${p.id}`) },
+                          { name: "circles", query: supabase.from("circles").delete().eq("mentor_id", p.id) },
+                          { name: "registrations", query: supabase.from("registrations").delete().eq("user_id", p.id) },
+                          { name: "onboarding_answers", query: supabase.from("onboarding_answers").delete().eq("user_id", p.id) },
+                          { name: "games", query: supabase.from("games").delete().eq("user_id", p.id) },
+                          { name: "quiz_results", query: supabase.from("quiz_results").delete().eq("user_id", p.id) },
+                          { name: "inspirations", query: supabase.from("inspirations").delete().eq("mentor_id", p.id) },
+                          { name: "inspiration_reads", query: supabase.from("inspiration_reads").delete().eq("student_id", p.id) },
+                          { name: "gratitude_messages", query: supabase.from("gratitude_messages").delete().eq("sender_id", p.id) }
+                        ];
+                        
+                        await Promise.all(dependentTables.map(async (t) => {
+                          try {
+                            await t.query;
+                          } catch (err) {
+                            console.error(`Error deleting from ${t.name}:`, err);
+                          }
+                        }));
+
+                        const { error } = await supabase.from("profiles").delete().eq('id', p.id);
+                        if (error) {
+                          alert("Error: " + error.message);
+                        } else {
+                          fetchAll();
+                        }
                       }
                     }} className="text-slate-400 hover:text-red-500">
                       <X className="w-3 h-3" />
@@ -1211,7 +1235,11 @@ function RegistrationsPage({ data }: { data: any }) {
                           : ["STUDENT"]
                       };
                       const { error } = await supabase.from("profiles").update({ role: "STUDENT", preferences: updatedPrefs }).eq("id", p.id);
-                      if (error) alert("Error: " + error.message);
+                      if (error) {
+                        alert("Error: " + error.message);
+                      } else {
+                        fetchAll();
+                      }
                     }} className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md transition-colors">
                       Make Student
                     </button>
@@ -1224,7 +1252,11 @@ function RegistrationsPage({ data }: { data: any }) {
                           : ["MENTOR"]
                       };
                       const { error } = await supabase.from("profiles").update({ role: "MENTOR", preferences: updatedPrefs }).eq("id", p.id);
-                      if (error) alert("Error: " + error.message);
+                      if (error) {
+                        alert("Error: " + error.message);
+                      } else {
+                        fetchAll();
+                      }
                     }} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md transition-colors">
                       Make Mentor
                     </button>
@@ -2812,13 +2844,14 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
         avatar_url: p.preferences?.avatar_url ?? p.avatar_url ?? null
       };
     };
-    const students = profilesList
+    const activeProfiles = profilesList.filter((p: any) => p.name !== 'Deleted User' && !p.preferences?.deleted);
+    const students = activeProfiles
       .filter((p: any) => p.role === "STUDENT" || p.preferences?.roles?.includes("STUDENT"))
       .map((p: any) => mapProfile(p, "STUDENT"));
-    const mentors = profilesList
+    const mentors = activeProfiles
       .filter((p: any) => p.role === "MENTOR" || p.preferences?.roles?.includes("MENTOR"))
       .map((p: any) => mapProfile(p, "MENTOR"));
-    const unassigned = profilesList
+    const unassigned = activeProfiles
       .filter((p: any) => !p.role && (!p.preferences?.roles || p.preferences.roles.length === 0))
       .map((p: any) => mapProfile(p, "UNASSIGNED"));
  
@@ -2995,7 +3028,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
         />;
       case "mentors":        return <MentorsPage data={data} openModal={openModal} />;
       case "mentees":        return <MenteesPage data={data} openModal={openModal} />;
-      case "registrations":  return <RegistrationsPage data={data} />;
+      case "registrations":  return <RegistrationsPage data={data} fetchAll={fetchAll} />;
       case "mapping":        return <MappingPage data={data} openModal={openModal} />;
       case "enrollments":    return <EnrollmentsPage data={data} openModal={openModal} />;
       case "games":          return <GamesPage data={data} fetchAll={fetchAll} />;
