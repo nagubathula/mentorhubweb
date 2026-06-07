@@ -2415,6 +2415,7 @@ function FeaturesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
     if (error) alert("Error: " + error.message);
     else {
       fetchAll();
+      window.dispatchEvent(new CustomEvent('mentorhub_feature_flags_changed'));
       window.dispatchEvent(new Event('storage'));
     }
     setIsSaving(false);
@@ -2435,6 +2436,7 @@ function FeaturesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
       setShowAddModal(false);
       setNewFeature({ key: '', title: '', category: 'student' });
       fetchAll();
+      window.dispatchEvent(new CustomEvent('mentorhub_feature_flags_changed'));
       window.dispatchEvent(new Event('storage'));
     }
   };
@@ -2579,9 +2581,19 @@ function SettingsPage() {
 
   useEffect(() => {
     fetchFlags();
+    const interval = setInterval(fetchFlags, 3000);
+    const handleCustomChange = () => {
+      fetchFlags();
+    };
+    window.addEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+    };
   }, []);
 
   const toggleFeature = async (flag: any) => {
+    setIsSaving(true);
     const updatedStatus = !flag.is_enabled;
     const updatedFlags = flags.map(f => f.key === flag.key ? { ...f, is_enabled: updatedStatus } : f);
     setFlags(updatedFlags);
@@ -2599,7 +2611,8 @@ function SettingsPage() {
     }
     setIsSaving(false);
     
-    // Broadcast event to sync local tabs
+    // Broadcast event to sync same-tab and other-tab contexts instantly
+    window.dispatchEvent(new CustomEvent('mentorhub_feature_flags_changed'));
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -2725,9 +2738,16 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       q(() => supabase.from("feature_flags").select("*").limit(200)),
     ]);
 
-    const students = profilesList.filter((p: any) => p.role === "STUDENT");
-    const mentors = profilesList.filter((p: any) => p.role === "MENTOR");
-    const unassigned = profilesList.filter((p: any) => !p.role);
+    const mapProfile = (p: any) => ({
+      ...p,
+      coins: p.coins ?? p.preferences?.coins ?? 0,
+      streak: p.streak ?? p.preferences?.streak ?? 1,
+      xp: p.xp ?? p.preferences?.xp ?? 10,
+      avatar_url: p.avatar_url ?? p.preferences?.avatar_url ?? null
+    });
+    const students = profilesList.filter((p: any) => p.role === "STUDENT").map(mapProfile);
+    const mentors = profilesList.filter((p: any) => p.role === "MENTOR").map(mapProfile);
+    const unassigned = profilesList.filter((p: any) => !p.role).map(mapProfile);
  
     const mappedCourses = courses.map((c: any) => {
       let mapped = { ...c };
@@ -2761,7 +2781,45 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       games, studentQuiz, mentorQuiz, feature_flags });
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+
+    const channel = supabase
+      .channel('admin-realtime-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          fetchAll();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'student_quiz_responses' },
+        () => {
+          fetchAll();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'mentor_quiz_responses' },
+        () => {
+          fetchAll();
+        }
+      )
+      .subscribe();
+
+    const interval = setInterval(fetchAll, 4000); // Poll all tables every 4 seconds to sync admin panel dashboard
+    const handleCustomChange = () => {
+      fetchAll();
+    };
+    window.addEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+      window.removeEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+    };
+  }, [fetchAll, supabase]);
 
   useEffect(() => {
     setPage(initialPage);

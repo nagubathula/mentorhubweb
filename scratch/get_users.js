@@ -1,18 +1,29 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+const supabase = createClient(
+  'https://vhrmcfwlkjgepdcyhmnw.supabase.co',
+  'sb_publishable_ydTHzAWqcxh5309HHs-tCQ_RjOBCzFe'
+);
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function getUsers() {
-  const { data: profiles, error } = await supabase.from('profiles').select('id, name, email, role');
-  if (error) {
-    console.error("Error reading profiles:", error);
+async function checkUsers() {
+  const { data: profiles, error: err1 } = await supabase
+    .from('profiles')
+    .select('*');
+  console.log('--- PROFILES ---');
+  if (err1) {
+    console.error(err1);
   } else {
-    console.log("Registered Profiles:", JSON.stringify(profiles, null, 2));
+    console.log(profiles);
+  }
+
+  const { data: registrations, error: err2 } = await supabase
+    .from('registrations')
+    .select('*');
+  console.log('--- REGISTRATIONS ---');
+  if (err2) {
+    console.error(err2);
+  } else {
+    console.log(registrations);
   }
 }
 
-getUsers();
+checkUsers();

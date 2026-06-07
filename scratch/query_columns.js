@@ -30,12 +30,11 @@ const req = https.request(options, res => {
   res.on('end', () => {
     try {
       const schema = JSON.parse(data);
-      if (schema.definitions && schema.definitions.enrollments) {
-        console.log('Enrollments properties in Supabase database:');
-        console.log(Object.keys(schema.definitions.enrollments.properties));
+       if (schema.definitions && schema.definitions.profiles) {
+        console.log('Profiles properties in Supabase database:');
+        console.log(Object.keys(schema.definitions.profiles.properties));
       } else {
-        console.log('Schema properties mismatch. Schema keys:', Object.keys(schema));
-        console.log('Schema full body:', data.slice(0, 1000));
+        console.log('Schema properties mismatch. Body:', data);
       }
     } catch (e) {
       console.error('Error parsing schema:', e);

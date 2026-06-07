@@ -29,10 +29,12 @@ export async function GET(request: Request) {
               name,
               email: user.email,
               role: null,
-              coins: 0,
-              streak: 1,
-              xp: 10,
-              avatar_url: avatarUrl
+              preferences: {
+                coins: 0,
+                streak: 1,
+                xp: 10,
+                avatar_url: avatarUrl
+              }
             })
           }
         }

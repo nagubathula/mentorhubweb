@@ -418,6 +418,15 @@ export default function OnboardingFlow() {
     };
     window.addEventListener('storage', handleStorageChange);
 
+    // Listen for same-tab custom events
+    const handleCustomChange = () => {
+      fetchFlags();
+    };
+    window.addEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+
+    // 3-second database polling interval fallback for instant real-time sync across devices/sessions
+    const interval = setInterval(fetchFlags, 3000);
+
     // Subscribe to Postgres realtime updates on feature_flags table
     const channel = supabase
       .channel('realtime-feature-flags')
@@ -432,6 +441,8 @@ export default function OnboardingFlow() {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('mentorhub_feature_flags_changed', handleCustomChange);
+      clearInterval(interval);
       channel.unsubscribe();
     };
   }, []);
@@ -459,13 +470,15 @@ export default function OnboardingFlow() {
         .maybeSingle();
 
       if (profile) {
+        const prefs = (profile.preferences as any) || {};
+        const lastState = profile.last_state || prefs.last_state;
+
         setName(profile.name || "");
         setRole(profile.role as any);
-        setCoinsCount(profile.coins || 0);
-        setStreakCount(profile.streak || 0);
+        setCoinsCount(profile.coins ?? prefs.coins ?? 0);
+        setStreakCount(profile.streak ?? prefs.streak ?? 0);
         
         // Check database profile preferences / answers for 20% questionnaire completion
-        const prefs = (profile.preferences as any) || {};
         const screeningPrefs: Record<string, any> = {};
         
         let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
@@ -474,11 +487,11 @@ export default function OnboardingFlow() {
         const didRedirect = checkAndRedirectToDashboard(profile.role as "STUDENT" | "MENTOR" | null, selectionsToUse, screeningSelectionsToUse);
         
         // Restore last known state if available and didn't redirect via 20% rule
-        if (!didRedirect && profile.last_state) {
-          if (profile.last_state === "MENTOR_MATCHING" && prefs.has_seen_matching) {
+        if (!didRedirect && lastState) {
+          if (lastState === "MENTOR_MATCHING" && prefs.has_seen_matching) {
             setState("MENTOR_DASHBOARD");
           } else {
-            setState(profile.last_state as any);
+            setState(lastState as any);
           }
         }
         
@@ -525,18 +538,16 @@ export default function OnboardingFlow() {
             .select('student_id')
             .eq('mentor_id', session.user.id);
           
-          const prefs = (profile.preferences as any) || {};
           if ((mappings && mappings.length > 0) || prefs.has_seen_matching) {
              // If already has students or has seen matching, dashboard is the better default
-             if (!profile.last_state || profile.last_state === "MENTOR_MATCHING") {
+             if (!lastState || lastState === "MENTOR_MATCHING") {
                setState("MENTOR_DASHBOARD");
              }
           }
         }
 
         // Auto-redirect based on role if still in auth screens and no saved state
-        if (!didRedirect && ["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !profile.last_state) {
-          const prefs = (profile.preferences as any) || {};
+        if (!didRedirect && ["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !lastState) {
           if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
             setState('MENTOR_DASHBOARD');
           } else {
@@ -561,8 +572,11 @@ export default function OnboardingFlow() {
       
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        const { data: profile } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).maybeSingle();
+        const currentPrefs = (profile?.preferences as any) || {};
+        
         await supabase.from('profiles').update({
-          last_state: state
+          preferences: { ...currentPrefs, last_state: state }
         }).eq('id', session.user.id);
       }
     };
@@ -660,11 +674,10 @@ export default function OnboardingFlow() {
           .maybeSingle();
         
         const currentPrefs = (profile?.preferences as any) || {};
-        const newPrefs = { ...currentPrefs, has_seen_matching: true };
+        const newPrefs = { ...currentPrefs, has_seen_matching: true, last_state: "MENTOR_DASHBOARD" };
         
         await supabase.from('profiles').update({
-          preferences: newPrefs,
-          last_state: "MENTOR_DASHBOARD"
+          preferences: newPrefs
         }).eq('id', session.user.id);
 
         if (selectedStudents.length > 0) {
@@ -1401,10 +1414,12 @@ export default function OnboardingFlow() {
               name: fullName,
               email: session.user.email,
               role: null,
-              coins: 0,
-              streak: 1,
-              xp: 10,
-              avatar_url: avatarUrl
+              preferences: {
+                coins: 0,
+                streak: 1,
+                xp: 10,
+                avatar_url: avatarUrl
+              }
             });
             if (profileError) {
               console.error("Error creating profile in checkActiveSession:", profileError);
@@ -1423,14 +1438,19 @@ export default function OnboardingFlow() {
     setCoinsCount(newCoins);
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { data: profile } = await supabase.from('profiles').select('xp').eq('id', session.user.id).maybeSingle();
-      const currentXp = profile?.xp || 0;
+      const { data: profile } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).maybeSingle();
+      const currentPrefs = (profile?.preferences as any) || {};
+      const currentXp = currentPrefs.xp || 0;
       const currentCoins = coinsCount;
       const coinDelta = newCoins - currentCoins;
+      const nextXp = currentXp + (coinDelta > 0 ? coinDelta * 10 : 0);
 
       await supabase.from('profiles').update({
-        coins: newCoins,
-        xp: currentXp + (coinDelta > 0 ? coinDelta * 10 : 0) // earn 10 XP for every new coin
+        preferences: {
+          ...currentPrefs,
+          coins: newCoins,
+          xp: nextXp
+        }
       }).eq('id', session.user.id);
     }
   };
@@ -1463,17 +1483,21 @@ export default function OnboardingFlow() {
       }
 
       // 3. Increment streak and award XP for completing the game
-      const { data: profile } = await supabase.from('profiles').select('streak, xp').eq('id', session.user.id).maybeSingle();
+      const { data: profile } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).maybeSingle();
       if (profile) {
-        const currentStreak = profile.streak ?? 1;
-        const currentXp = profile.xp ?? 0;
+        const currentPrefs = (profile.preferences as any) || {};
+        const currentStreak = currentPrefs.streak ?? 1;
+        const currentXp = currentPrefs.xp ?? 0;
 
         const nextXp = currentXp + 50; // Award flat 50 XP for finishing a game!
         const nextStreak = currentStreak + 1;
 
         await supabase.from('profiles').update({
-          xp: nextXp,
-          streak: nextStreak
+          preferences: {
+            ...currentPrefs,
+            xp: nextXp,
+            streak: nextStreak
+          }
         }).eq('id', session.user.id);
       }
     } catch (e) {
@@ -2021,6 +2045,87 @@ export default function OnboardingFlow() {
             answers: combinedAnswers
           });
           if (answersError) console.error("Supabase onboarding_answers Save Error:", answersError);
+
+          // Save to student_quiz_responses
+          try {
+            const getVal = (val: string | string[] | undefined | null): string | null => {
+              if (!val) return null;
+              if (Array.isArray(val)) return val.join(", ");
+              return val;
+            };
+
+            const quizPayload = {
+              student_id: userId,
+              college: getVal(selections.q1),
+              branch: getVal(selections.q2),
+              mother_tongue: getVal(selections.q3),
+              inspiration_source: getVal(selections.q5),
+              admired_personality: getVal(selections.q6),
+              curiosity_answer: getVal(screeningSelections.b1),
+              exploration_frequency: getVal(screeningSelections.b2),
+            };
+
+            const { data: existing } = await supabase
+              .from('student_quiz_responses')
+              .select('id')
+              .eq('student_id', userId)
+              .maybeSingle();
+
+            if (existing) {
+              const { error: updateErr } = await supabase
+                .from('student_quiz_responses')
+                .update(quizPayload)
+                .eq('student_id', userId);
+              if (updateErr) console.error("Supabase student_quiz_responses Update Error:", updateErr);
+            } else {
+              const { error: insertErr } = await supabase
+                .from('student_quiz_responses')
+                .insert([quizPayload]);
+              if (insertErr) console.error("Supabase student_quiz_responses Insert Error:", insertErr);
+            }
+          } catch (quizErr) {
+            console.error("Error saving student quiz responses:", quizErr);
+          }
+        }
+
+        // Save to mentor_quiz_responses table for MENTOR
+        if (userRole === "MENTOR") {
+          try {
+            const getVal = (val: string | string[] | undefined | null): string | null => {
+              if (!val) return null;
+              if (Array.isArray(val)) return val.join(", ");
+              return val;
+            };
+
+            const quizPayload = {
+              mentor_id: userId,
+              current_company: getVal(selections.q101),
+              college: getVal(selections.q102),
+              branch: getVal(selections.q103),
+              mother_tongue: getVal(selections.q104),
+            };
+
+            const { data: existing } = await supabase
+              .from('mentor_quiz_responses')
+              .select('id')
+              .eq('mentor_id', userId)
+              .maybeSingle();
+
+            if (existing) {
+              const { error: updateErr } = await supabase
+                .from('mentor_quiz_responses')
+                .update(quizPayload)
+                .eq('mentor_id', userId);
+              if (updateErr) console.error("Supabase mentor_quiz_responses Update Error:", updateErr);
+            } else {
+              const { error: insertErr } = await supabase
+                .from('mentor_quiz_responses')
+                .insert([quizPayload]);
+              if (insertErr) console.error("Supabase mentor_quiz_responses Insert Error:", insertErr);
+            }
+          } catch (quizErr) {
+            console.error("Error saving mentor quiz responses:", quizErr);
+          }
         }
       }
     } catch (e) {
