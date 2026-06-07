@@ -470,33 +470,12 @@ export default function OnboardingFlow() {
         .maybeSingle();
 
       if (profile) {
-        const prefs = (profile.preferences as any) || {};
-        const lastState = profile.last_state || prefs.last_state;
-
         setName(profile.name || "");
-        setRole(profile.role as any);
-        setCoinsCount(profile.coins ?? prefs.coins ?? 0);
-        setStreakCount(profile.streak ?? prefs.streak ?? 0);
-        
-        // Check database profile preferences / answers for 20% questionnaire completion
-        const screeningPrefs: Record<string, any> = {};
-        
-        let selectionsToUse = Object.keys(selections).length > 0 ? selections : prefs;
-        let screeningSelectionsToUse = Object.keys(screeningSelections).length > 0 ? screeningSelections : screeningPrefs;
-        
-        const didRedirect = checkAndRedirectToDashboard(profile.role as "STUDENT" | "MENTOR" | null, selectionsToUse, screeningSelectionsToUse);
-        
-        // Restore last known state if available and didn't redirect via 20% rule
-        if (!didRedirect && lastState) {
-          if (lastState === "MENTOR_MATCHING" && prefs.has_seen_matching) {
-            setState("MENTOR_DASHBOARD");
-          } else {
-            setState(lastState as any);
-          }
-        }
-        
+        setRole(null);
+        setState("ROLE");
+
         // Fetch enrollments for student
-        if (profile.role === "STUDENT") {
+        if (true) {
           const { data: enrolls } = await supabase
             .from('enrollments')
             .select('*, course:courses(*)')
@@ -531,28 +510,12 @@ export default function OnboardingFlow() {
           if (dbTodos) setCustomTodos(dbTodos);
         }
 
-        // Fetch assigned students for mentor to determine landing page
-        if (profile.role === "MENTOR") {
+        // Fetch assigned students for mentor
+        if (true) {
           const { data: mappings } = await supabase
             .from('mapping')
             .select('student_id')
             .eq('mentor_id', session.user.id);
-          
-          if ((mappings && mappings.length > 0) || prefs.has_seen_matching) {
-             // If already has students or has seen matching, dashboard is the better default
-             if (!lastState || lastState === "MENTOR_MATCHING") {
-               setState("MENTOR_DASHBOARD");
-             }
-          }
-        }
-
-        // Auto-redirect based on role if still in auth screens and no saved state
-        if (!didRedirect && ["WELCOME", "MENTOR_WELCOME", "STUDENT_WELCOME", "SIGNIN", "SIGNUP", "ROLE"].includes(state) && !lastState) {
-          if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-            setState('MENTOR_DASHBOARD');
-          } else {
-            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
-          }
         }
       } else {
         // No profile? Send to role selection
@@ -562,6 +525,70 @@ export default function OnboardingFlow() {
       }
     } catch (e) {
       console.error("Session sync error:", e);
+    }
+  };
+
+  const handleRoleSelection = async (selectedRole: "STUDENT" | "MENTOR") => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const userId = session.user.id;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profile) {
+        const currentPrefs = (profile.preferences as any) || {};
+        const currentRoles = Array.isArray(currentPrefs.roles) ? currentPrefs.roles : [];
+        const updatedRoles = currentRoles.includes(selectedRole)
+          ? currentRoles
+          : [...currentRoles, selectedRole];
+
+        const updatedPrefs = {
+          ...currentPrefs,
+          roles: updatedRoles,
+        };
+
+        if (selectedRole === 'STUDENT') {
+          if (!updatedPrefs.student) {
+            updatedPrefs.student = {
+              coins: 0,
+              streak: 1,
+              xp: 10,
+              last_state: 'DASHBOARD_MAIN'
+            };
+          }
+          setCoinsCount(updatedPrefs.student.coins ?? 0);
+          setStreakCount(updatedPrefs.student.streak ?? 1);
+        } else {
+          if (!updatedPrefs.mentor) {
+            updatedPrefs.mentor = {
+              coins: 0,
+              streak: 1,
+              xp: 10,
+              last_state: 'MENTOR_DASHBOARD'
+            };
+          }
+          setCoinsCount(updatedPrefs.mentor.coins ?? 0);
+          setStreakCount(updatedPrefs.mentor.streak ?? 1);
+        }
+
+        await supabase
+          .from('profiles')
+          .update({
+            role: selectedRole,
+            preferences: updatedPrefs
+          })
+          .eq('id', userId);
+
+        setRole(selectedRole);
+        setState(selectedRole === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
+      }
+    } catch (e) {
+      console.error("Error handling role selection:", e);
     }
   };
 
@@ -1399,11 +1426,7 @@ export default function OnboardingFlow() {
               setCoinsCount(prefs.coins);
             }
             if (profile.role) {
-              if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-                setState('MENTOR_DASHBOARD');
-              } else {
-                setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
-              }
+              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
             } else {
               setState("ROLE");
             }
@@ -1440,16 +1463,24 @@ export default function OnboardingFlow() {
     if (session) {
       const { data: profile } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).maybeSingle();
       const currentPrefs = (profile?.preferences as any) || {};
-      const currentXp = currentPrefs.xp || 0;
+      
+      const roleKey = role === "MENTOR" ? "mentor" : "student";
+      const rolePrefs = currentPrefs[roleKey] || {};
+      const currentXp = rolePrefs.xp || 0;
       const currentCoins = coinsCount;
       const coinDelta = newCoins - currentCoins;
       const nextXp = currentXp + (coinDelta > 0 ? coinDelta * 10 : 0);
 
+      const updatedRolePrefs = {
+        ...rolePrefs,
+        coins: newCoins,
+        xp: nextXp
+      };
+
       await supabase.from('profiles').update({
         preferences: {
           ...currentPrefs,
-          coins: newCoins,
-          xp: nextXp
+          [roleKey]: updatedRolePrefs
         }
       }).eq('id', session.user.id);
     }
@@ -1486,17 +1517,24 @@ export default function OnboardingFlow() {
       const { data: profile } = await supabase.from('profiles').select('preferences').eq('id', session.user.id).maybeSingle();
       if (profile) {
         const currentPrefs = (profile.preferences as any) || {};
-        const currentStreak = currentPrefs.streak ?? 1;
-        const currentXp = currentPrefs.xp ?? 0;
+        const roleKey = role === "MENTOR" ? "mentor" : "student";
+        const rolePrefs = currentPrefs[roleKey] || {};
+        const currentStreak = rolePrefs.streak ?? 1;
+        const currentXp = rolePrefs.xp ?? 0;
 
         const nextXp = currentXp + 50; // Award flat 50 XP for finishing a game!
         const nextStreak = currentStreak + 1;
 
+        const updatedRolePrefs = {
+          ...rolePrefs,
+          xp: nextXp,
+          streak: nextStreak
+        };
+
         await supabase.from('profiles').update({
           preferences: {
             ...currentPrefs,
-            xp: nextXp,
-            streak: nextStreak
+            [roleKey]: updatedRolePrefs
           }
         }).eq('id', session.user.id);
       }
@@ -1967,12 +2005,7 @@ export default function OnboardingFlow() {
           if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
           if (profile.role) {
             setRole(profile.role as "STUDENT" | "MENTOR");
-            const prefs = (profile.preferences as any) || {};
-            if (profile.role === 'MENTOR' && prefs.has_seen_matching) {
-              setState('MENTOR_DASHBOARD');
-            } else {
-              setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_MATCHING');
-            }
+            setState(profile.role === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
           } else {
             setState(userRole ? (userRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") : "ROLE");
           }
@@ -2132,7 +2165,7 @@ export default function OnboardingFlow() {
       console.error("Save profile caught error", e);
     }
     
-    setState(userRole === 'STUDENT' ? 'DASHBOARD_AWAITING' : 'MENTOR_MATCHING');
+    setState(userRole === 'STUDENT' ? 'DASHBOARD_AWAITING' : 'MENTOR_DASHBOARD');
   };
 
   const nextQuizStep = () => {
@@ -2475,7 +2508,7 @@ export default function OnboardingFlow() {
                   ))}
                 </div>
                 <div className="mt-auto shrink-0">
-                  <Button disabled={!role} onClick={() => { setState(role === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE") }} className={`w-full h-[54px] rounded-2xl text-[15px] font-medium transition-all shadow-md active:scale-98 ${role ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400"}`}>
+                  <Button disabled={!role} onClick={() => { if (role) handleRoleSelection(role as "STUDENT" | "MENTOR"); }} className={`w-full h-[54px] rounded-2xl text-[15px] font-medium transition-all shadow-md active:scale-98 ${role ? "bg-[#0f172a] text-white hover:bg-[#1e293b]" : "bg-slate-100 text-slate-400"}`}>
                     Continue <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
                 </div>
@@ -4202,6 +4235,15 @@ export default function OnboardingFlow() {
                      </CardContent>
                   </Card>
                   
+                  {/* Switch Role Option */}
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleRoleSelection("MENTOR")} 
+                    className="w-full mt-6 bg-indigo-50/50 hover:bg-indigo-100/70 text-indigo-600 hover:text-indigo-700 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-indigo-100 transition-colors shadow-sm"
+                  >
+                    <RotateCcw className="w-[18px] h-[18px]" strokeWidth={2.5}/> Switch to Mentor Profile
+                  </Button>
+
                   {/* Log Out Option */}
                   <Button variant="destructive" onClick={handleSignOut} className="w-full mt-6 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-rose-100 transition-colors shadow-sm">
                     <LogOut className="w-[18px] h-[18px]" strokeWidth={2.5}/> Log Out
@@ -4692,7 +4734,7 @@ export default function OnboardingFlow() {
               </div>
             )}
 
-            {state === "MENTOR_MATCHING" && (
+            {false /* MENTOR_MATCHING screen removed - handled on Admin panel */ && (
               <motion.div key="mentor_matching" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-white overflow-y-auto hidden-scrollbar pb-[calc(12rem+env(safe-area-inset-bottom))] px-6 md:px-8 items-center">
                 <div className="w-full max-w-2xl flex flex-col gap-5 pt-8">
                   
@@ -4908,7 +4950,7 @@ export default function OnboardingFlow() {
                   {state === "MENTOR_COURSES" && featureFlags.mentor_courses !== false && <MentorCourses />}
                   {state === "MENTOR_NOTES" && featureFlags.mentor_sessions !== false && <MentorNotes />}
                   {state === "MENTOR_CIRCLE" && featureFlags.mentor_circle !== false && <MentorCircle />}
-                  {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && <MentorProfile onSignOut={handleSignOut} />}
+                  {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && <MentorProfile onSignOut={handleSignOut} onSwitchRole={() => handleRoleSelection("STUDENT")} />}
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}

@@ -838,7 +838,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
           >
             {/* Transparent Header Panel matching other screens */}
             <div className="flex flex-col gap-5 pt-6 md:pt-8 pb-4 shrink-0 relative overflow-hidden">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 items-start sm:items-center">
                 <div className="flex items-center gap-3">
                   {onClose && (
                     <Button
@@ -879,7 +879,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
                     setCourses(prev => [newCourse, ...prev]);
                     setSelectedCourseId(newId);
                   }}
-                  className="h-10 rounded-xl bg-[#0f172a] hover:bg-slate-800 active:scale-95 text-white shadow-sm shrink-0 text-xs font-bold px-4 flex items-center gap-1.5"
+                  className="h-10 rounded-xl bg-[#0f172a] hover:bg-slate-800 active:scale-95 text-white shadow-sm shrink-0 text-xs font-bold px-4 flex items-center gap-1.5 w-full sm:w-auto justify-center"
                 >
                   <Plus className="w-4 h-4" /> Create Custom Path
                 </Button>

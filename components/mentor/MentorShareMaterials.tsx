@@ -47,8 +47,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
   
   const [activeTab, setActiveTab] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>(" ");
-  const [customTitle, setCustomTitle] = useState<string>("");
-  const [customUrl, setCustomUrl] = useState<string>("");
+  const [customUrl, setCustomUrl] = useState<string>(" ");
   const [isSending, setIsSending] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -180,20 +179,6 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
     }
   };
 
-  const handleSendCustomResource = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customTitle.trim() || !customUrl.trim()) return;
-
-    let formattedUrl = customUrl.trim();
-    if (!/^https?:\/\//i.test(formattedUrl)) {
-      formattedUrl = "https://" + formattedUrl;
-    }
-
-    await handleQuickSend(customTitle.trim(), formattedUrl);
-    setCustomTitle("");
-    setCustomUrl("");
-  };
-
   const filteredResources = curatedResources.filter(res => {
     const matchesTab = activeTab === "All" || res.category === activeTab;
     const matchesSearch = searchQuery.trim() === "" || 
@@ -201,9 +186,6 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
       res.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
-
-  const selectedStudent = assignedStudents.find(s => s.id === selectedStudentId);
-  const studentName = selectedStudent?.name || selectedStudent?.email?.split('@')[0] || "student";
 
   return (
     <motion.div 
@@ -215,7 +197,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
     >
       {/* Header Bar */}
       <div className="bg-white border-b border-slate-100 px-6 py-4 md:px-8 flex items-center justify-between shrink-0 shadow-3xs">
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3.5 min-w-0">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -224,26 +206,19 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h2 className="text-slate-900 font-bold text-[15px] leading-tight">Share Materials & Resources</h2>
-            <p className="text-[11px] text-slate-400 font-semibold tracking-wide uppercase mt-0.5">Encourage student learning</p>
+          <div className="min-w-0">
+            <h2 className="text-slate-900 font-bold text-[15px] leading-tight truncate">Share Materials</h2>
+            <p className="text-[11px] text-slate-400 font-semibold tracking-wide uppercase mt-0.5 hidden sm:block">Encourage student learning</p>
           </div>
         </div>
-      </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 max-w-xl mx-auto w-full pb-20">
-        
-        {/* Recipient Selector Banner */}
-        <div className="bg-gradient-to-r from-indigo-50/50 to-violet-50/50 border border-indigo-100/40 p-4.5 rounded-[1.25rem] flex items-center justify-between gap-4 shadow-3xs">
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Sharing With</p>
-            <h3 className="text-slate-800 font-bold text-[13.5px] mt-1 truncate">Sending directly to {studentName}</h3>
-          </div>
+        {/* Subtle recipient selector in the header */}
+        <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 rounded-xl px-2.5 py-1.5 shadow-2xs shrink-0">
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0 hidden xs:inline">Send to:</span>
           <select
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="bg-white border border-indigo-100 text-indigo-600 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-100 shadow-3xs cursor-pointer"
+            className="bg-transparent border-0 text-slate-700 text-xs font-semibold focus:ring-0 focus:outline-none cursor-pointer p-0"
           >
             {assignedStudents.map(student => (
               <option key={student.id} value={student.id}>
@@ -252,7 +227,11 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
             ))}
           </select>
         </div>
+      </div>
 
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 max-w-xl mx-auto w-full pb-20 space-y-6">
+        
         {/* Global Toast Success Message */}
         {successMessage && (
           <motion.div 
@@ -266,47 +245,45 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
           </motion.div>
         )}
 
-        {/* Custom Resource Link Builder Card */}
-        <div className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-3xs space-y-4">
-          <div className="flex items-center gap-2">
-            <Plus className="w-4.5 h-4.5 text-indigo-500" />
-            <h4 className="font-bold text-slate-800 text-[13px] uppercase tracking-wide">Share a Custom Material Link</h4>
-          </div>
-          <form onSubmit={handleSendCustomResource} className="space-y-3.5">
-            <div>
-              <Input 
-                value={customTitle}
-                onChange={(e) => setCustomTitle(e.target.value)}
-                placeholder="Resource Title (e.g. Recommended Syllabus Guide)"
-                required
-                className="bg-slate-50/50 hover:bg-slate-50 border-slate-200 text-xs h-10 px-3.5 rounded-xl transition-colors focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <Input 
-                value={customUrl}
-                onChange={(e) => setCustomUrl(e.target.value)}
-                placeholder="URL / Link Address (e.g. github.com/...)"
-                required
-                className="bg-slate-50/50 hover:bg-slate-50 border-slate-200 text-xs h-10 px-3.5 rounded-xl transition-colors focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
-              />
-            </div>
+        {/* Custom Resource Link Builder Input */}
+        <div className="space-y-2">
+          <h3 className="font-bold text-slate-900 text-[11px] uppercase tracking-wider px-1">Share a Custom Link</h3>
+          <div className="flex gap-2">
+            <Input 
+              value={customUrl === " " ? "" : customUrl}
+              onChange={(e) => setCustomUrl(e.target.value)}
+              placeholder="Paste any article, document, or video link..."
+              className="flex-1 bg-white border-slate-200 text-xs h-10 px-3.5 rounded-xl transition-all shadow-3xs focus:ring-2 focus:ring-indigo-100/50 focus:border-indigo-500"
+            />
             <Button 
-              type="submit"
-              disabled={isSending || !customTitle.trim() || !customUrl.trim()}
-              className="w-full h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-50"
+              onClick={async () => {
+                if (!customUrl.trim()) return;
+                let formattedUrl = customUrl.trim();
+                if (!/^https?:\/\//i.test(formattedUrl)) {
+                  formattedUrl = "https://" + formattedUrl;
+                }
+                let title = "Custom Link";
+                try {
+                  const urlObj = new URL(formattedUrl);
+                  title = urlObj.hostname.replace("www.", "");
+                } catch(e) {}
+                await handleQuickSend(title, formattedUrl);
+                setCustomUrl("");
+              }}
+              disabled={isSending || !customUrl.trim()}
+              className="h-10 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 active:scale-98 transition-all shrink-0 shadow-sm"
             >
               <Send className="w-3.5 h-3.5" />
-              Quick-Send Custom Resource
+              Send
             </Button>
-          </form>
+          </div>
         </div>
 
         {/* Curated Resources Directory Header & Search */}
-        <div className="space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-[13px] uppercase tracking-wider">Browse Curated Resources</h3>
-            <span className="text-[11px] text-slate-400 font-semibold">{filteredResources.length} available</span>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="font-bold text-slate-900 text-[11px] uppercase tracking-wider">Browse Curated Resources</h3>
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{filteredResources.length} available</span>
           </div>
 
           {/* Search Box */}
@@ -316,17 +293,17 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
               value={searchQuery === " " ? "" : searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search guides, docs, primers..."
-              className="pl-9 bg-white border-slate-200 text-xs h-10 rounded-xl transition-all shadow-3xs hover:border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+              className="pl-9 bg-white border-slate-200 text-xs h-10 rounded-xl transition-all shadow-3xs hover:border-slate-300 focus:ring-2 focus:ring-indigo-100/50 focus:border-indigo-500"
             />
           </div>
 
           {/* Category Filter Tabs */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1.5 hidden-scrollbar">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 hidden-scrollbar">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveTab(cat)}
-                className={`text-[11.5px] px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all border ${
+                className={`text-[11px] px-3.5 py-1.5 rounded-full font-bold shrink-0 transition-all border ${
                   activeTab === cat 
                     ? "bg-indigo-600 border-indigo-600 text-white shadow-3xs" 
                     : "bg-white border-slate-100 hover:border-slate-200 text-slate-500"
@@ -339,7 +316,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
         </div>
 
         {/* Resources Feed */}
-        <div className="space-y-3.5">
+        <div className="space-y-2.5">
           {filteredResources.length === 0 ? (
             <div className="py-12 text-center bg-white rounded-3xl border border-slate-100 shadow-3xs">
               <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -349,49 +326,44 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
             filteredResources.map(res => (
               <div 
                 key={res.id} 
-                className="bg-white p-4.5 rounded-[1.5rem] border border-slate-100 hover:border-indigo-100 transition-all shadow-3xs group flex flex-col justify-between gap-4"
+                className="bg-white p-3 px-4 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all flex items-center justify-between gap-3 shadow-3xs group"
               >
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 shadow-3xs">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
                     {res.icon}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-slate-800 text-[13px] leading-tight truncate group-hover:text-indigo-600 transition-colors">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-bold text-slate-800 text-[12.5px] truncate group-hover:text-indigo-600 transition-colors">
                         {res.title}
                       </h4>
-                      <span className="bg-slate-100 text-slate-500 text-[9.5px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">
+                      <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
                         {res.category}
                       </span>
                     </div>
-                    <p className="text-[11.5px] text-slate-400 font-semibold truncate mt-1">
-                      {res.url}
-                    </p>
-                    <p className="text-[12px] text-slate-500 leading-normal font-medium mt-2">
+                    <p className="text-[11px] text-slate-400 font-semibold truncate mt-0.5">
                       {res.description}
                     </p>
                   </div>
                 </div>
-
-                {/* Actions Row */}
-                <div className="border-t border-slate-100/60 pt-3.5 flex items-center justify-between gap-3">
+                
+                <div className="flex items-center gap-1.5 shrink-0">
                   <a 
                     href={res.url} 
                     target="_blank" 
                     rel="noreferrer"
-                    className="text-[11px] text-indigo-500 hover:text-indigo-600 font-bold flex items-center gap-1 hover:underline"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-650 hover:bg-slate-50 transition-all"
+                    title="Open Link"
                   >
-                    View Resource
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
-                  
                   <Button 
                     onClick={() => handleQuickSend(res.title, res.url)}
                     disabled={isSending}
-                    className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-[11px] h-8 px-3 rounded-full flex items-center gap-1.5 active:scale-95 transition-all shadow-3xs border border-indigo-50"
+                    className="bg-indigo-50 hover:bg-indigo-100 text-indigo-650 font-bold text-[10.5px] h-7 px-3 rounded-lg flex items-center gap-1 active:scale-95 transition-all shadow-3xs border border-indigo-50"
                   >
-                    <Send className="w-3 h-3" />
-                    Quick-Send to {studentName}
+                    <Send className="w-3.5 h-3.5" />
+                    Send
                   </Button>
                 </div>
               </div>

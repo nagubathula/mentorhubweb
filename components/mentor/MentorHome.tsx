@@ -766,28 +766,30 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
               const isSuccess = sendSuccessMap[targetStudentId] || false;
 
               return (
-                <div className="flex flex-col gap-3.5 py-1.5 animate-in fade-in duration-300">
+                <div className="flex flex-col gap-3 py-1.5 animate-in fade-in duration-300">
                   <p className="text-slate-500 text-[12.5px] font-medium leading-normal bg-indigo-50/40 p-3 rounded-2xl border border-indigo-50/60">
                     👋 No messages yet from your students. Choose a student below to reach out and say hello!
                   </p>
                   
-                  <div className="flex flex-col gap-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-100/60">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11.5px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Reach out to:</span>
-                      <select
-                        value={targetStudentId}
-                        onChange={(e) => setOutreachStudentId(e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 transition-colors shadow-3xs cursor-pointer min-w-[140px]"
-                      >
-                        {assignedStudents.map(student => (
-                          <option key={student.id} value={student.id}>
-                            {student.name || student.email?.split('@')[0]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="flex flex-col gap-2.5">
+                    {!isSuccess && (
+                      <div className="flex items-center gap-1.5 px-1">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">To:</span>
+                        <select
+                          value={targetStudentId}
+                          onChange={(e) => setOutreachStudentId(e.target.value)}
+                          className="bg-transparent border-0 text-slate-700 text-xs font-semibold focus:ring-0 focus:outline-none cursor-pointer hover:text-slate-900 transition-colors p-0"
+                        >
+                          {assignedStudents.map(student => (
+                            <option key={student.id} value={student.id}>
+                              {student.name || student.email?.split('@')[0]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
-                    <div className="mt-1">
+                    <div>
                       {isSuccess ? (
                         <div className="text-[11.5px] text-emerald-600 font-medium flex items-center gap-1.5 bg-emerald-50/80 p-2.5 px-3.5 rounded-xl border border-emerald-100 animate-in fade-in slide-in-from-top-1">
                           <Check className="w-3.5 h-3.5" strokeWidth={3.5} /> Message sent to {studentName} successfully!
@@ -798,7 +800,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                             value={currentInput}
                             onChange={(e) => setReplyInputs(prev => ({ ...prev, [targetStudentId]: e.target.value }))}
                             onKeyDown={(e) => e.key === 'Enter' && currentInput.trim() && handleReply(targetStudentId, studentName)}
-                            placeholder={`Type a friendly message to ${studentName}...`}
+                            placeholder="Paste links or type a message to share..."
                             disabled={isSending}
                             className="flex-1 bg-white hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
                           />
@@ -812,7 +814,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                               const link = `https://meet.google.com/${part1}-${part2}-${part3}`;
                               setReplyInputs(prev => ({ 
                                 ...prev, 
-                                [targetStudentId]: (prev[targetStudentId] || "") + (prev[targetStudentId] ? " " : "") + `🎥 Video Call Link: ${link}`
+                                [targetStudentId]: (prev[targetStudentId] || "") + (prev[targetStudentId] ? " " : "") + link
                               }));
                             }}
                             className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all shrink-0 shadow-sm active:scale-95"
@@ -889,7 +891,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                           value={studentReplyInput}
                           onChange={(e) => setReplyInputs(prev => ({ ...prev, [msg.from_user_id]: e.target.value }))}
                           onKeyDown={(e) => e.key === 'Enter' && handleReply(msg.from_user_id, msg.sender_name)}
-                          placeholder={`Reply to ${msg.sender_name}...`}
+                          placeholder={`Reply to ${msg.sender_name} or share links...`}
                           disabled={isSending}
                           className="flex-1 bg-white/95 hover:bg-white hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100/50 text-[12.5px] transition-all disabled:opacity-50 h-9.5 px-3.5 rounded-xl border-slate-200 shadow-3xs"
                         />
@@ -903,7 +905,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                             const link = `https://meet.google.com/${part1}-${part2}-${part3}`;
                             setReplyInputs(prev => ({ 
                               ...prev, 
-                              [msg.from_user_id]: (prev[msg.from_user_id] || "") + (prev[msg.from_user_id] ? " " : "") + `🎥 Video Call Link: ${link}`
+                              [msg.from_user_id]: (prev[msg.from_user_id] || "") + (prev[msg.from_user_id] ? " " : "") + link
                             }));
                           }}
                           className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-650 transition-all shrink-0 shadow-sm active:scale-95"

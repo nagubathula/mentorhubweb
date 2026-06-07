@@ -479,6 +479,20 @@ function CreateMappingModal({ onClose, students, mentors, circles }: { onClose: 
     if (error) {
       alert("Error mapping student: " + error.message);
     } else {
+      const studentProfile = students.find((s: any) => s.id === student);
+      if (studentProfile && !studentProfile.role) {
+        const currentPrefs = studentProfile.preferences || {};
+        const updatedPrefs = {
+          ...currentPrefs,
+          roles: Array.isArray(currentPrefs.roles) 
+            ? (currentPrefs.roles.includes("STUDENT") ? currentPrefs.roles : [...currentPrefs.roles, "STUDENT"])
+            : ["STUDENT"]
+        };
+        await supabase
+          .from("profiles")
+          .update({ role: "STUDENT", preferences: updatedPrefs })
+          .eq("id", student);
+      }
       alert("Student mapped successfully!");
       onClose();
     }
@@ -1041,6 +1055,7 @@ function RegistrationsPage({ data }: { data: any }) {
   const { students = [], mentors = [], unassigned = [], studentQuiz = [], mentorQuiz = [] } = data;
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all"|"students"|"mentors"|"unassigned">("all");
+  const supabase = createClient();
 
   const allProfiles = [
     ...students.map((s: any) => ({ ...s, _role: "Student" })),
@@ -1121,52 +1136,100 @@ function RegistrationsPage({ data }: { data: any }) {
           const bg = initialsColor(p.name);
           const pct = Math.round((p.quizFields / p.totalFields) * 100);
           return (
-            <Card key={p.id} className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={cn("w-11 h-11 rounded-full flex items-center justify-center text-[15px] font-medium text-white shrink-0", bg)}>
-                    {initials(p.name)}
+            <Card key={p.id} className="p-5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("w-11 h-11 rounded-full flex items-center justify-center text-[15px] font-medium text-white shrink-0", bg)}>
+                      {initials(p.name)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium text-slate-900 truncate">{p.name || "—"}</p>
+                      <p className="text-[12px] text-slate-400 truncate">{p.email || "—"}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-medium text-slate-900 truncate">{p.name || "—"}</p>
-                    <p className="text-[12px] text-slate-400 truncate">{p.email || "—"}</p>
-                  </div>
+                  <Pill color={p._role === "Student" ? "green" : p._role === "Mentor" ? "blue" : "amber"}>{p._role}</Pill>
                 </div>
-                <Pill color={p._role === "Student" ? "green" : p._role === "Mentor" ? "blue" : "amber"}>{p._role}</Pill>
-              </div>
 
-              {p.interests.length > 0 && (
-                <p className="text-[12px] text-slate-600 mb-2">{p.interests.slice(0,3).join(", ")}</p>
-              )}
-
-              <div className="flex flex-wrap gap-1 mb-3">
-                {[p.college, p.branch, p.lang].filter((t) => t && t !== "—").map((tag) => (
-                  <span key={tag} className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">{tag}</span>
-                ))}
-                {p.company && (
-                  <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">{p.company}</span>
+                {p.interests.length > 0 && (
+                  <p className="text-[12px] text-slate-600 mb-2">{p.interests.slice(0,3).join(", ")}</p>
                 )}
+
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {[p.college, p.branch, p.lang].filter((t) => t && t !== "—").map((tag) => (
+                    <span key={tag} className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">{tag}</span>
+                  ))}
+                  {p.company && (
+                    <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">{p.company}</span>
+                  )}
+                </div>
+
+                <div className="mb-3">
+                  <div className="flex justify-between text-[11px] text-slate-500 mb-1">
+                    <span>Quiz: {p.quizFields}/{p.totalFields} answered</span>
+                    <span className="font-semibold">{pct || 100}%</span>
+                  </div>
+                  <PBar value={pct || 100} color="bg-emerald-500" height="h-1" />
+                </div>
               </div>
 
-              <div className="mb-3">
-                <div className="flex justify-between text-[11px] text-slate-500 mb-1">
-                  <span>Quiz: {p.quizFields}/{p.totalFields} answered</span>
-                  <span className="font-semibold">{pct || 100}%</span>
+              <div>
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{p.created_at ? timeAgo(p.created_at) : "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" />View All
+                    </button>
+                    <button onClick={async () => {
+                      if (confirm(`Are you sure you want to delete/reset the registration for ${p.name || p.email}?`)) {
+                        const { error } = await supabase.from("profiles").update({
+                          name: 'Deleted User',
+                          email: `deleted-${p.id}@example.com`,
+                          role: null,
+                          expertise: null,
+                          preferences: { roles: ['DELETED'], deleted: true }
+                        }).eq('id', p.id);
+                        if (error) alert("Error: " + error.message);
+                      }
+                    }} className="text-slate-400 hover:text-red-500">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
-                <PBar value={pct || 100} color="bg-emerald-500" height="h-1" />
-              </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  <span>{p.created_at ? timeAgo(p.created_at) : "—"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="text-blue-500 hover:text-blue-700 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />View All
-                  </button>
-                  <button className="text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
-                </div>
+                {p._role === "Unassigned" && (
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100 justify-end">
+                    <button onClick={async () => {
+                      const currentPrefs = p.preferences || {};
+                      const updatedPrefs = {
+                        ...currentPrefs,
+                        roles: Array.isArray(currentPrefs.roles) 
+                          ? (currentPrefs.roles.includes("STUDENT") ? currentPrefs.roles : [...currentPrefs.roles, "STUDENT"])
+                          : ["STUDENT"]
+                      };
+                      const { error } = await supabase.from("profiles").update({ role: "STUDENT", preferences: updatedPrefs }).eq("id", p.id);
+                      if (error) alert("Error: " + error.message);
+                    }} className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md transition-colors">
+                      Make Student
+                    </button>
+                    <button onClick={async () => {
+                      const currentPrefs = p.preferences || {};
+                      const updatedPrefs = {
+                        ...currentPrefs,
+                        roles: Array.isArray(currentPrefs.roles) 
+                          ? (currentPrefs.roles.includes("MENTOR") ? currentPrefs.roles : [...currentPrefs.roles, "MENTOR"])
+                          : ["MENTOR"]
+                      };
+                      const { error } = await supabase.from("profiles").update({ role: "MENTOR", preferences: updatedPrefs }).eq("id", p.id);
+                      if (error) alert("Error: " + error.message);
+                    }} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md transition-colors">
+                      Make Mentor
+                    </button>
+                  </div>
+                )}
               </div>
             </Card>
           );
@@ -1181,12 +1244,12 @@ function RegistrationsPage({ data }: { data: any }) {
 
 // ─── Mapping ──────────────────────────────────────────────────────────────────
 function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) => void }) {
-  const { students = [], mentors = [], mapping = [], courses = [], enrollments = [] } = data;
+  const { students = [], unassigned = [], mentors = [], mapping = [], courses = [], enrollments = [] } = data;
   const [tab, setTab] = useState<"overview"|"awaiting"|"available"|"all">("overview");
   const [q, setQ] = useState("");
 
   const mappedStudentIds = new Set(mapping.map((m: any) => m.student_id));
-  const awaitingStudents = students.filter((s: any) => !mappedStudentIds.has(s.id)).map((s: any) => {
+  const awaitingStudents = [...students, ...unassigned].filter((s: any) => !mappedStudentIds.has(s.id)).map((s: any) => {
     const enrollment = enrollments.find((e: any) => e.student_id === s.id);
     const course = enrollment ? courses.find((c: any) => c.id === enrollment.course_id) : null;
     return { ...s, courseName: course?.title || "General" };
@@ -2738,16 +2801,26 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       q(() => supabase.from("feature_flags").select("*").limit(200)),
     ]);
 
-    const mapProfile = (p: any) => ({
-      ...p,
-      coins: p.coins ?? p.preferences?.coins ?? 0,
-      streak: p.streak ?? p.preferences?.streak ?? 1,
-      xp: p.xp ?? p.preferences?.xp ?? 10,
-      avatar_url: p.avatar_url ?? p.preferences?.avatar_url ?? null
-    });
-    const students = profilesList.filter((p: any) => p.role === "STUDENT").map(mapProfile);
-    const mentors = profilesList.filter((p: any) => p.role === "MENTOR").map(mapProfile);
-    const unassigned = profilesList.filter((p: any) => !p.role).map(mapProfile);
+    const mapProfile = (p: any, targetRole: "STUDENT" | "MENTOR" | "UNASSIGNED") => {
+      const roleKey = targetRole === "MENTOR" ? "mentor" : "student";
+      const rolePrefs = p.preferences?.[roleKey] || {};
+      return {
+        ...p,
+        coins: rolePrefs.coins ?? p.preferences?.coins ?? p.coins ?? 0,
+        streak: rolePrefs.streak ?? p.preferences?.streak ?? p.streak ?? 1,
+        xp: rolePrefs.xp ?? p.preferences?.xp ?? p.xp ?? 10,
+        avatar_url: p.preferences?.avatar_url ?? p.avatar_url ?? null
+      };
+    };
+    const students = profilesList
+      .filter((p: any) => p.role === "STUDENT" || p.preferences?.roles?.includes("STUDENT"))
+      .map((p: any) => mapProfile(p, "STUDENT"));
+    const mentors = profilesList
+      .filter((p: any) => p.role === "MENTOR" || p.preferences?.roles?.includes("MENTOR"))
+      .map((p: any) => mapProfile(p, "MENTOR"));
+    const unassigned = profilesList
+      .filter((p: any) => !p.role && (!p.preferences?.roles || p.preferences.roles.length === 0))
+      .map((p: any) => mapProfile(p, "UNASSIGNED"));
  
     const mappedCourses = courses.map((c: any) => {
       let mapped = { ...c };
@@ -2964,7 +3037,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       {modal === "send-inspiration"  && <SendInspirationModal onClose={closeModal} students={data.students} mentors={data.mentors} />}
       {modal === "create-enrollment" && <CreateEnrollmentModal onClose={closeModal} students={data.students} courses={data.courses} circles={data.circles} />}
       {modal === "create-circle"     && <CreateCircleModal onClose={closeModal} mentors={data.mentors} />}
-      {modal === "create-mapping"    && <CreateMappingModal onClose={closeModal} students={data.students} mentors={data.mentors} circles={data.circles} />}
+      {modal === "create-mapping"    && <CreateMappingModal onClose={closeModal} students={[...data.students, ...data.unassigned]} mentors={data.mentors} circles={data.circles} />}
     </div>
   );
 }
