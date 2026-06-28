@@ -191,6 +191,7 @@ export default function OnboardingFlow() {
     student_gratitude: true,
     student_notes: true,
     student_facts: true,
+    student_inspiration: true,
     mentor_dashboard: true,
     mentor_students: true,
     mentor_courses: true,
@@ -564,7 +565,12 @@ export default function OnboardingFlow() {
   const handleRoleSelection = async (selectedRole: "STUDENT" | "MENTOR") => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        // Fallback for mock/offline session
+        setRole(selectedRole);
+        setState(selectedRole === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
+        return;
+      }
 
       const userId = session.user.id;
       const { data: profile } = await supabase
@@ -576,52 +582,51 @@ export default function OnboardingFlow() {
       if (profile) {
         const currentPrefs = (profile.preferences as any) || {};
         const currentRoles = Array.isArray(currentPrefs.roles) ? currentPrefs.roles : [];
-        const updatedRoles = currentRoles.includes(selectedRole)
-          ? currentRoles
-          : [...currentRoles, selectedRole];
+        const hasCompletedTargetOnboarding = currentRoles.includes(selectedRole);
 
-        const updatedPrefs = {
-          ...currentPrefs,
-          roles: updatedRoles,
-        };
-
-        if (selectedRole === 'STUDENT') {
-          if (!updatedPrefs.student) {
-            updatedPrefs.student = {
-              coins: 0,
-              streak: 1,
-              xp: 10,
-              last_state: 'DASHBOARD_MAIN'
-            };
+        if (hasCompletedTargetOnboarding) {
+          // Restore role-specific details
+          const rolePrefs = currentPrefs[selectedRole === 'STUDENT' ? 'student' : 'mentor'] || {};
+          if (rolePrefs.name) setName(rolePrefs.name);
+          if (rolePrefs.email) setEmail(rolePrefs.email);
+          if (selectedRole === 'MENTOR') {
+            if (rolePrefs.expertise) setMentorExpertise(rolePrefs.expertise);
           }
-          setCoinsCount(updatedPrefs.student.coins ?? 0);
-          setStreakCount(updatedPrefs.student.streak ?? 1);
+          
+          setCoinsCount(rolePrefs.coins ?? 0);
+          setStreakCount(rolePrefs.streak ?? 1);
+
+          // Update active role column in database
+          await supabase
+            .from('profiles')
+            .update({ role: selectedRole })
+            .eq('id', userId);
+
+          setRole(selectedRole);
+          setState(selectedRole === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
         } else {
-          if (!updatedPrefs.mentor) {
-            updatedPrefs.mentor = {
-              coins: 0,
-              streak: 1,
-              xp: 10,
-              last_state: 'MENTOR_DASHBOARD'
-            };
+          // Needs onboarding/registration for this role
+          setRole(selectedRole);
+          setName(session.user.user_metadata?.full_name || profile.name || "");
+          setEmail(session.user.email || profile.email || "");
+          if (selectedRole === 'MENTOR') {
+            setMentorExpertise("");
           }
-          setCoinsCount(updatedPrefs.mentor.coins ?? 0);
-          setStreakCount(updatedPrefs.mentor.streak ?? 1);
+          setState(selectedRole === 'STUDENT' ? 'STUDENT_PROFILE' : 'MENTOR_PROFILE');
         }
-
-        await supabase
-          .from('profiles')
-          .update({
-            role: selectedRole,
-            preferences: updatedPrefs
-          })
-          .eq('id', userId);
-
+      } else {
+        // Profile row is not found in database but session exists, start onboarding
         setRole(selectedRole);
-        setState(selectedRole === 'STUDENT' ? 'DASHBOARD_MAIN' : 'MENTOR_DASHBOARD');
+        setName(session.user.user_metadata?.full_name || 'Google User');
+        setEmail(session.user.email || '');
+        if (selectedRole === 'MENTOR') setMentorExpertise("");
+        setState(selectedRole === 'STUDENT' ? 'STUDENT_PROFILE' : 'MENTOR_PROFILE');
       }
     } catch (e) {
       console.error("Error handling role selection:", e);
+      // Absolute fallback
+      setRole(selectedRole);
+      setState(selectedRole === 'STUDENT' ? 'STUDENT_PROFILE' : 'MENTOR_PROFILE');
     }
   };
 
@@ -2086,17 +2091,50 @@ export default function OnboardingFlow() {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       if (userId) {
-        const profileData = {
-          id: userId,
+        // Fetch existing profile to merge preferences and preserve existing records
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+
+        const currentPrefs = (existingProfile?.preferences as any) || {};
+        const currentRoles = Array.isArray(currentPrefs.roles) ? currentPrefs.roles : [];
+        const updatedRoles = currentRoles.includes(userRole)
+          ? currentRoles
+          : [...currentRoles, userRole];
+
+        // Prepare role-specific data block
+        const roleKey = userRole === "STUDENT" ? "student" : "mentor";
+        const rolePrefs = currentPrefs[roleKey] || {};
+        const roleData = {
           name,
           email,
-          role: userRole,
-          expertise: mentorExpertise,
-          preferences: Object.keys(selections).length > 0 ? selections : screeningSelections,
-          coins: 0,
-          streak: 1,
-          xp: 10
+          bio: userRole === "MENTOR" ? mentorExpertise : (selections.q5 || selections.bio || ""),
+          expertise: userRole === "MENTOR" ? mentorExpertise : undefined,
+          coins: rolePrefs.coins ?? 0,
+          streak: rolePrefs.streak ?? 1,
+          xp: rolePrefs.xp ?? 10,
+          last_state: userRole === "STUDENT" ? "DASHBOARD_MAIN" : "MENTOR_DASHBOARD"
         };
+
+        const updatedPrefs = {
+          ...currentPrefs,
+          roles: updatedRoles,
+          [roleKey]: roleData,
+          ...selections,
+          ...screeningSelections
+        };
+
+        const profileData = {
+          id: userId,
+          name: name || existingProfile?.name,
+          email: email || existingProfile?.email,
+          role: userRole,
+          expertise: userRole === "MENTOR" ? mentorExpertise : existingProfile?.expertise,
+          preferences: updatedPrefs
+        };
+
         const { error } = await supabase.from('profiles').upsert(profileData);
         if (error) console.error("Supabase Profile Save Error:", error);
 
@@ -2762,7 +2800,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_AWAITING" && (
-              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-6 md:px-8 overflow-y-auto hidden-scrollbar pb-[calc(8rem+env(safe-area-inset-bottom))] items-center">
+              <motion.div key="dashboard_awaiting" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col pt-0 bg-white px-6 md:px-8 overflow-y-auto hidden-scrollbar pb-[calc(5rem+env(safe-area-inset-bottom))] items-center">
                 <div className="w-full max-w-2xl flex flex-col gap-5 pt-8">
                   {/* Header */}
                   <div className="w-full relative flex items-center justify-between gap-4 shrink-0 border-b border-slate-100 pb-5 mb-1">
@@ -2920,7 +2958,7 @@ export default function OnboardingFlow() {
 
              {(state === "DASHBOARD_MAIN" || state === "STUDENT_COURSES" || state === "COURSE_DETAILS" || state === "GAMES" || state === "NOTES" || state === "PROFILE" || state === "PORTFOLIO" || state === "WELLNESS" || state === "FACTS" || state === "GRATITUDE_WALL" || state === "MESSAGES" || state === "RESOURCES" || state === "ALL_TASKS") && (
                 <motion.div key="student_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative">
-                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                 <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
             
             {state === "MESSAGES" && featureFlags.student_messages !== false && (
               <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
@@ -3029,7 +3067,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "DASHBOARD_MAIN" && (
-              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter">
+              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-6 font-inter">
                 <div className="w-full max-w-2xl flex flex-col gap-4">
 
                 
@@ -3490,47 +3528,51 @@ export default function OnboardingFlow() {
                   )}
 
                   {/* Interesting Facts card */}
-                  <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.25rem] border border-[#fde047]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
-                     <div className="flex items-center justify-between relative z-10 mb-3">
-                       <div className="flex items-center gap-3">
-                         <div className="text-amber-600 group-hover:scale-110 transition-transform shrink-0"><Lightbulb className="w-6 h-6" strokeWidth={2.2} /></div>
-                         <div>
-                           <div className="flex items-center gap-2">
-                             <p className="text-[14.5px] font-medium text-amber-900">Interesting Facts</p>
-                             <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
+                  {featureFlags.student_facts !== false && (
+                    <div className="bg-gradient-to-r from-[#fefce8] to-[#fffbeb] rounded-[1.25rem] border border-[#fde047]/30 p-4 flex flex-col shadow-sm cursor-pointer relative overflow-hidden group hover:shadow-md transition-all active:scale-99" onClick={() => setState("FACTS")}>
+                       <div className="flex items-center justify-between relative z-10 mb-3">
+                         <div className="flex items-center gap-3">
+                           <div className="text-amber-600 group-hover:scale-110 transition-transform shrink-0"><Lightbulb className="w-6 h-6" strokeWidth={2.2} /></div>
+                           <div>
+                             <div className="flex items-center gap-2">
+                               <p className="text-[14.5px] font-medium text-amber-900">Interesting Facts</p>
+                               <span className="bg-amber-100 text-amber-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
+                             </div>
+                             <p className="text-[12px] text-amber-700/70 font-semibold leading-relaxed mt-0.5">Small facts. Big inspiration.</p>
                            </div>
-                           <p className="text-[12px] text-amber-700/70 font-semibold leading-relaxed mt-0.5">Small facts. Big inspiration.</p>
                          </div>
+                         <ChevronRight className="w-4 h-4 text-amber-500/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
                        </div>
-                       <ChevronRight className="w-4 h-4 text-amber-500/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                     </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-amber-800/60 relative z-10 px-1">
-                        <span className="flex items-center gap-1">
-                          <Brain className="w-3 h-3 text-amber-600/70" /> Brain & Learning
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Code className="w-3 h-3 text-amber-600/70" /> Tech & Code
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Trophy className="w-3 h-3 text-amber-600/70" /> Challenges
-                        </span>
-                      </div>
-                  </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-amber-800/60 relative z-10 px-1">
+                          <span className="flex items-center gap-1">
+                            <Brain className="w-3 h-3 text-amber-600/70" /> Brain & Learning
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Code className="w-3 h-3 text-amber-600/70" /> Tech & Code
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Trophy className="w-3 h-3 text-amber-600/70" /> Challenges
+                          </span>
+                        </div>
+                    </div>
+                  )}
 
                   {/* Mentor's Thought of the Day */}
-                  <div className="bg-slate-100/50 rounded-[1.25rem] p-4.5 mt-4 border border-slate-100/50 flex flex-col gap-3">
-                    <div className="flex items-center justify-between text-slate-700 font-semibold text-[13px]">
-                      <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-orange-500 animate-spin-slow" /> Mentor's Thought of the Day</span>
-                      <span className="text-[10.5px] text-slate-400 font-medium flex items-center gap-1"><Flame className="w-3.5 h-3.5 text-orange-400" /> {streakCount}-day streak</span>
+                  {featureFlags.student_inspiration !== false && (
+                    <div className="bg-slate-100/50 rounded-[1.25rem] p-4.5 mt-4 border border-slate-100/50 flex flex-col gap-3">
+                      <div className="flex items-center justify-between text-slate-700 font-semibold text-[13px]">
+                        <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-orange-500 animate-spin-slow" /> Mentor's Thought of the Day</span>
+                        <span className="text-[10.5px] text-slate-400 font-medium flex items-center gap-1"><Flame className="w-3.5 h-3.5 text-orange-400" /> {streakCount}-day streak</span>
+                      </div>
+                      <p className="text-[13.5px] italic text-slate-600 leading-relaxed font-medium px-1">
+                        "Consistency beats intensity. Practice a little every day."
+                        <span className="text-[11px] text-slate-400 not-italic ml-2 font-medium uppercase tracking-wider">— Pradeep K.</span>
+                      </p>
+                      <button className="w-full bg-rose-50/50 hover:bg-rose-50 text-rose-600 border border-rose-100/40 py-2.5 rounded-xl font-semibold text-[12.5px] flex gap-2 items-center justify-center transition-all active:scale-98 h-10 cursor-pointer">
+                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> Read & Reflect (+5 XP)
+                      </button>
                     </div>
-                    <p className="text-[13.5px] italic text-slate-600 leading-relaxed font-medium px-1">
-                      "Consistency beats intensity. Practice a little every day."
-                      <span className="text-[11px] text-slate-400 not-italic ml-2 font-medium uppercase tracking-wider">— Pradeep K.</span>
-                    </p>
-                    <button className="w-full bg-rose-50/50 hover:bg-rose-50 text-rose-600 border border-rose-100/40 py-2.5 rounded-xl font-semibold text-[12.5px] flex gap-2 items-center justify-center transition-all active:scale-98 h-10 cursor-pointer">
-                      <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> Read & Reflect (+5 XP)
-                    </button>
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer Stats Row */}
@@ -3552,7 +3594,7 @@ export default function OnboardingFlow() {
                 </div>
 
                 {/* Final Quote */}
-                <div className="text-center pb-[calc(8rem+env(safe-area-inset-bottom))] flex flex-col gap-1 items-center mb-4">
+                <div className="text-center pb-4 flex flex-col gap-1 items-center mb-4">
                    <p className="text-slate-400/80 italic text-[13px] relative flex gap-2"><Quote className="w-4 h-4 shrink-0 text-slate-300" /> "You're doing great, keep pushing!"</p>
                    <p className="text-slate-300 text-[12px] font-medium ml-6">— Pradeep K.</p>
                 </div>
@@ -3561,7 +3603,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "STUDENT_COURSES" && featureFlags.student_courses !== false && (
-              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-32 font-inter animate-in fade-in duration-300">
+              <div className="flex flex-col pt-6 md:pt-8 relative w-full items-center pb-6 font-inter animate-in fade-in duration-300">
                 <div className="w-full max-w-2xl flex flex-col gap-4">
                   
                   {/* Premium Header */}
@@ -3732,7 +3774,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "GAMES" && featureFlags.student_games !== false && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-6 -mx-6 md:-mx-8 px-0 overflow-hidden">
                 <StudentGames
                   userName={name || "Student"}
                   userCoins={coinsCount}
@@ -3783,7 +3825,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "ALL_TASKS" && (
-              <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8 font-inter">
+              <div className="flex flex-col pt-0 bg-slate-50 pb-6 relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8 font-inter">
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-0 mx-0 flex justify-between items-center border-b border-slate-100 mb-6">
                   <div className="flex items-center gap-3">
@@ -3852,7 +3894,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "NOTES" && featureFlags.student_notes !== false && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-6 relative min-h-[85vh] -mx-6 md:-mx-8 px-6 md:px-8">
                 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-50/95 backdrop-blur-md pt-5 pb-4 z-30 px-0 mx-0 flex justify-between items-center border-b border-slate-100 mb-4">
@@ -4030,7 +4072,7 @@ export default function OnboardingFlow() {
             )}
 
             {state === "PROFILE" && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-[calc(8rem+env(safe-area-inset-bottom))] -mx-6 md:-mx-8 px-0 overflow-hidden">
+               <div className="flex flex-col pt-0 bg-slate-50 pb-6 -mx-6 md:-mx-8 px-0 overflow-hidden">
                 
                 {/* Purple Top Block */}
                 <div className="bg-[#0f172a] pt-8 pb-16 px-6 md:px-8 relative">
@@ -4878,7 +4920,7 @@ export default function OnboardingFlow() {
 
              {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
                 <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative font-inter">
-                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
                    
                    {/* Mentor Portal Shared Header (only for main dashboard) */}
                    {state === "MENTOR_DASHBOARD" && (

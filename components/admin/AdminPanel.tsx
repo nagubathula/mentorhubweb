@@ -16,6 +16,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { mentorCoursesCatalog, MentorCourse } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "./CourseDetailsScreen";
 import { CourseCustomizer } from "./CourseCustomizer";
@@ -2786,6 +2787,39 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
   const [qViewMode, setQViewMode] = useState<"list" | "detail" | "edit">("list");
 
   const supabase = createClient();
+  const router = useRouter();
+
+  const handleNavigate = (targetPage: AdminPage) => {
+    const pageRoutes: Record<AdminPage, string> = {
+      dashboard: "/admin/dashboard",
+      courses: "/admin/courses",
+      mentors: "/admin/mentors",
+      mentees: "/admin/mentees",
+      registrations: "/admin/registrations",
+      mapping: "/admin/mapping",
+      enrollments: "/admin/enrollments",
+      games: "/admin/games-quizzes",
+      questionnaires: "/admin/questionnaires",
+      circles: "/admin/circles",
+      sessions: "/admin/sessions",
+      reviews: "/admin/reviews",
+      inspiration: "/admin/inspiration",
+      messages: "/admin/messages",
+      "gratitude-wall": "/admin/gratitude-wall",
+      notes: "/admin/notes",
+      "csr-sponsors": "/admin/csr-sponsors",
+      features: "/admin/features",
+      settings: "/admin/settings",
+      feedback: "/admin/feedback"
+    };
+
+    const route = pageRoutes[targetPage];
+    if (route) {
+      router.push(route);
+    } else {
+      setPage(targetPage);
+    }
+  };
 
   const handleDeleteUser = async (userId: string, userNameOrEmail: string) => {
     if (!confirm(`Are you sure you want to delete ${userNameOrEmail} completely from the database?`)) {
@@ -2882,6 +2916,10 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       const rolePrefs = p.preferences?.[roleKey] || {};
       return {
         ...p,
+        name: rolePrefs.name ?? p.name,
+        email: rolePrefs.email ?? p.email,
+        bio: rolePrefs.bio ?? p.preferences?.bio ?? p.bio ?? "",
+        expertise: roleKey === "mentor" ? (rolePrefs.expertise ?? p.expertise) : p.expertise,
         coins: rolePrefs.coins ?? p.preferences?.coins ?? p.coins ?? 0,
         streak: rolePrefs.streak ?? p.preferences?.streak ?? p.streak ?? 1,
         xp: rolePrefs.xp ?? p.preferences?.xp ?? p.xp ?? 10,
@@ -2988,7 +3026,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
   const renderPage = () => {
     switch (page) {
-      case "dashboard":      return <DashboardPage data={data} onNavigate={setPage} openModal={openModal} />;
+      case "dashboard":      return <DashboardPage data={data} onNavigate={handleNavigate} openModal={openModal} />;
       case "courses":        
         if (courseViewMode === "detail" && selectedCourse) {
           return <CourseDetailsScreen 
