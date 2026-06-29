@@ -88,12 +88,48 @@ const getGradientClass = (id: string) => {
   return AESTHETIC_GRADIENTS[index];
 };
 
+const STUDENT_AESTHETIC_GRADIENTS = [
+  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
+  "from-violet-50 to-violet-100/80 text-violet-600 border-violet-200/40",
+  "from-fuchsia-50 to-fuchsia-100/80 text-fuchsia-600 border-fuchsia-200/40",
+  "from-pink-50 to-pink-100/80 text-pink-600 border-pink-200/40",
+  "from-rose-50 to-rose-100/80 text-rose-600 border-rose-200/40",
+  "from-amber-50 to-amber-100/80 text-amber-600 border-amber-200/40",
+  "from-emerald-50 to-emerald-100/80 text-emerald-600 border-emerald-200/40",
+  "from-cyan-50 to-cyan-100/80 text-cyan-600 border-cyan-200/40",
+];
+
+const getStudentAestheticGradient = (id: string) => {
+  if (!id) return STUDENT_AESTHETIC_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % STUDENT_AESTHETIC_GRADIENTS.length;
+  return STUDENT_AESTHETIC_GRADIENTS[index];
+};
+
+const getInitials = (name: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+  return parts[0].charAt(0).toUpperCase();
+};
+
+const getProgressStyles = (pct: number) => {
+  return { stroke: "#3b82f6", bg: "bg-[#3b82f6]", text: "text-[#3b82f6]" };
+};
+
 interface MentorHomeProps {
   featureFlags?: Record<string, boolean>;
   onSelectStudent?: (studentId: string) => void;
+  mentorEmail?: string;
+  mentorName?: string;
 }
 
-export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomeProps) {
+export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, mentorName: mentorNameProp }: MentorHomeProps) {
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
@@ -111,7 +147,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
   
   const [messages, setMessages] = useState<any[]>([]);
   const [mentorId, setMentorId] = useState<string | null>(null);
-  const [mentorName, setMentorName] = useState("Mentor");
+  const [mentorName, setMentorName] = useState(mentorNameProp || "Mentor");
   const [showPlaybook, setShowPlaybook] = useState(false);
   const [showInspiration, setShowInspiration] = useState(false);
   const [showCircle, setShowCircle] = useState(false);
@@ -126,6 +162,8 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
   const [outreachStudentId, setOutreachStudentId] = useState<string>("");
   const [showShareMaterials, setShowShareMaterials] = useState(false);
   const [selectedStudentForSharing, setSelectedStudentForSharing] = useState<string>("");
+  const [activeFact, setActiveFact] = useState<any>(null);
+  const [factCopied, setFactCopied] = useState(false);
 
   // Student joined date edit states
   const [isEditingJoinedDate, setIsEditingJoinedDate] = useState(false);
@@ -143,6 +181,28 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
         ...(student.preferences || {}),
         joined_date: editJoinedDateValue
       };
+
+      if (activeRoadmapStudentId.startsWith("mock-student-")) {
+        // Mock save
+        setTimeout(() => {
+          setAssignedStudents(prev => prev.map(s => {
+            if (s.id === activeRoadmapStudentId) {
+              const createdDate = new Date(editJoinedDateValue);
+              const diffTime = Math.abs(Date.now() - createdDate.getTime());
+              const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+              return {
+                ...s,
+                preferences: updatedPrefs,
+                daysJoined: diffDays
+              };
+            }
+            return s;
+          }));
+          setIsEditingJoinedDate(false);
+          setIsSavingJoinedDate(false);
+        }, 500);
+        return;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -200,6 +260,35 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     }
     setIsScheduling(true);
     const scheduledAtStr = `${schedDate}T${schedTime}:00`;
+
+    if (schedStudentId.startsWith("mock-student-")) {
+      setTimeout(() => {
+        setIsScheduling(false);
+        setIsScheduleOpen(false);
+        setSchedTitle("");
+        setSchedNotes("");
+        setSchedDate("");
+        setSchedTime("");
+        setSchedDuration("30");
+        
+        const targetStudent = assignedStudents.find(s => s.id === schedStudentId);
+        const newSession = {
+          id: `mock-session-${Date.now()}`,
+          mentor_id: mentorId,
+          student_id: schedStudentId,
+          title: schedTitle.trim(),
+          notes: schedNotes.trim() || null,
+          scheduled_at: scheduledAtStr,
+          duration_minutes: Number(schedDuration),
+          status: 'Scheduled',
+          student: targetStudent
+        };
+        setSessions(prev => [...prev, newSession].sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()));
+        alert("Session scheduled successfully (Mock Mode)!");
+      }, 500);
+      return;
+    }
+
     try {
       const { error } = await supabase.from('sessions').insert({
         mentor_id: mentorId,
@@ -220,7 +309,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
         setSchedDate("");
         setSchedTime("");
         setSchedDuration("30");
-        fetchAllMentorData(mentorId, true);
+        fetchAllMentorData(mentorId, true, mentorEmail);
         alert("Session scheduled successfully!");
       }
     } catch (e) {
@@ -230,11 +319,20 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     }
   };
 
-  const fetchAllMentorData = async (currentUserId: string, isMounted: boolean) => {
+  const fetchAllMentorData = async (currentUserId: string, isMounted: boolean, userEmail?: string) => {
+    // Check if the user is a guest mentor
+    let isGuest = userEmail === "guest.mentor@kindmentor.com";
+    if (!userEmail) {
+      const { data: { session } } = await supabase.auth.getSession();
+      isGuest = session?.user?.email === "guest.mentor@kindmentor.com";
+    }
+
     // Fetch profile name
-    const { data: profile } = await supabase.from('profiles').select('name').eq('id', currentUserId).single();
-    if (profile?.name && isMounted) {
-      setMentorName(profile.name);
+    if (!isGuest) {
+      const { data: profile } = await supabase.from('profiles').select('name').eq('id', currentUserId).single();
+      if (profile?.name && isMounted) {
+        setMentorName(profile.name);
+      }
     }
 
     // Fetch assigned students
@@ -242,28 +340,65 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
       .select('student:profiles!mapping_student_id_fkey(*)')
       .eq('mentor_id', currentUserId);
     
-    const assigned = mappings?.map(m => m.student).filter(Boolean) || [];
+    let assigned = mappings?.map(m => m.student).filter(Boolean) || [];
+
+    if (isGuest) {
+      assigned = [
+        {
+          id: "mock-student-1",
+          name: "Aarav Mehta",
+          email: "aarav.mehta@gmail.com",
+          created_at: new Date(Date.now() - 18 * 86400000).toISOString(),
+          preferences: { joined_date: new Date(Date.now() - 18 * 86400000).toISOString().split('T')[0] },
+          avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav"
+        },
+        {
+          id: "mock-student-2",
+          name: "Ananya Iyer",
+          email: "ananya.iyer@gmail.com",
+          created_at: new Date(Date.now() - 8 * 86400000).toISOString(),
+          preferences: { joined_date: new Date(Date.now() - 8 * 86400000).toISOString().split('T')[0] },
+          avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya"
+        },
+        {
+          id: "mock-student-3",
+          name: "Kabir Sharma",
+          email: "kabir.sharma@gmail.com",
+          created_at: new Date(Date.now() - 32 * 86400000).toISOString(),
+          preferences: { joined_date: new Date(Date.now() - 32 * 86400000).toISOString().split('T')[0] },
+          avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kabir"
+        }
+      ] as any;
+    }
 
     // Load active enrollments progress for mapped students
     let enrichedStudents: any[] = [];
     if (assigned.length > 0) {
-      const { data: enrollments } = await supabase.from('enrollments')
-        .select('*, course:courses(*)')
-        .in('student_id', assigned.map(s => s.id))
-        .eq('status', 'Active');
-
       const enrollmentMap = new Map();
-      if (enrollments) {
-        enrollments.forEach(e => {
-          enrollmentMap.set(e.student_id, e);
-        });
+      if (!isGuest) {
+        const { data: enrollments } = await supabase.from('enrollments')
+          .select('*, course:courses(*)')
+          .in('student_id', assigned.map(s => s.id))
+          .eq('status', 'Active');
+
+        if (enrollments) {
+          enrollments.forEach(e => {
+            enrollmentMap.set(e.student_id, e);
+          });
+        }
       }
 
       enrichedStudents = assigned.map(p => {
-        const studentEnrollment = enrollmentMap.get(p.id);
-        const totalTopics = (studentEnrollment?.course?.content || []).reduce((acc: number, m: any) => acc + (m.topics?.length || m.lessons?.length || 0), 0);
-        const completedTopics = studentEnrollment?.progress?.length || 0;
-        const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+        let progressPercent = 0;
+        if (p.id === "mock-student-1") progressPercent = 65;
+        else if (p.id === "mock-student-2") progressPercent = 30;
+        else if (p.id === "mock-student-3") progressPercent = 90;
+        else {
+          const studentEnrollment = enrollmentMap.get(p.id);
+          const totalTopics = (studentEnrollment?.course?.content || []).reduce((acc: number, m: any) => acc + (m.topics?.length || m.lessons?.length || 0), 0);
+          const completedTopics = studentEnrollment?.progress?.length || 0;
+          progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+        }
 
         const prefs = (p.preferences as any) || {};
         const joinedDateStr = prefs.joined_date || p.created_at;
@@ -276,7 +411,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
           id: p.id,
           name: p.name || p.email?.split('@')[0] || 'Unknown Student',
           progress: progressPercent,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.id}`,
+          avatar: p.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.id}`,
           daysJoined: diffDays
         };
       });
@@ -294,7 +429,40 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
       .eq('to_user_id', currentUserId)
       .order('created_at', { ascending: false });
     
-    if (isMounted && msgs) setMessages(msgs);
+    let messagesList = msgs || [];
+    if (isGuest) {
+      const mockMessages = [
+        {
+          id: "mock-msg-1",
+          from_user_id: "mock-student-1",
+          to_user_id: currentUserId,
+          sender_name: "Aarav Mehta",
+          body: "Hey mentor! I finished the Week 2 coding challenges on React hooks. Could you review my portfolio repo when you get a chance? Here is the link: https://github.com/aaravmehta/my-portfolio",
+          created_at: new Date(Date.now() - 7200000).toISOString(),
+          is_read: false
+        },
+        {
+          id: "mock-msg-2",
+          from_user_id: "mock-student-2",
+          to_user_id: currentUserId,
+          sender_name: "Ananya Iyer",
+          body: "Hi, I'm having some trouble setting up Tailwind CSS with Next.js Turbopack. The dev server keeps reloading. Any tips on how to fix this?",
+          created_at: new Date(Date.now() - 18000000).toISOString(),
+          is_read: false
+        },
+        {
+          id: "mock-msg-3",
+          from_user_id: "mock-student-3",
+          to_user_id: currentUserId,
+          sender_name: "Kabir Sharma",
+          body: "Thanks for the feedback on my resume! I applied those changes and sent it to a recruiter today.",
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          is_read: true
+        }
+      ];
+      messagesList = [...mockMessages, ...messagesList] as any;
+    }
+    if (isMounted) setMessages(messagesList);
 
     // Fetch Scheduled Sessions
     const { data: sessData } = await supabase.from('sessions')
@@ -302,12 +470,64 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
       .eq('mentor_id', currentUserId)
       .order('scheduled_at', { ascending: true });
     
-    if (isMounted && sessData) {
-      setSessions(sessData);
+    let sessionsList = sessData || [];
+    if (isGuest) {
+      const mockSessions = [
+        {
+          id: "mock-session-1",
+          mentor_id: currentUserId,
+          student_id: "mock-student-1",
+          title: "Resume & LinkedIn Polish",
+          notes: "Review resume draft and edit profile section.",
+          scheduled_at: new Date(Date.now() + 86400000).toISOString(),
+          duration_minutes: 45,
+          status: 'Scheduled',
+          student: {
+            id: "mock-student-1",
+            name: "Aarav Mehta",
+            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav"
+          }
+        },
+        {
+          id: "mock-session-2",
+          mentor_id: currentUserId,
+          student_id: "mock-student-2",
+          title: "Next.js Coding Session & Topic Review",
+          notes: "Tailwind CSS issues, troubleshooting Next.js config.",
+          scheduled_at: new Date(Date.now() + 172800000).toISOString(),
+          duration_minutes: 60,
+          status: 'Scheduled',
+          student: {
+            id: "mock-student-2",
+            name: "Ananya Iyer",
+            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya"
+          }
+        },
+        {
+          id: "mock-session-3",
+          mentor_id: currentUserId,
+          student_id: "mock-student-3",
+          title: "Introduction & Goal Alignment",
+          notes: "Outline growth milestones and goals.",
+          scheduled_at: new Date(Date.now() - 259200000).toISOString(),
+          duration_minutes: 30,
+          status: 'Completed',
+          student: {
+            id: "mock-student-3",
+            name: "Kabir Sharma",
+            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kabir"
+          }
+        }
+      ];
+      sessionsList = [...mockSessions, ...sessionsList] as any;
+      sessionsList.sort((a, b) => new Date(a.scheduled_at as string).getTime() - new Date(b.scheduled_at as string).getTime());
+    }
+    if (isMounted) {
+      setSessions(sessionsList);
     }
 
     // Calculate completed sessions total hours
-    const completedSessions = sessData?.filter(s => s.status === 'Completed' || s.status === 'completed') || [];
+    const completedSessions = sessionsList.filter(s => s.status === 'Completed' || s.status === 'completed');
     const totalMinutes = completedSessions.reduce((sum, s) => sum + (s.duration_minutes || 30), 0);
     const totalHours = Math.round(totalMinutes / 60) || 0;
 
@@ -317,7 +537,9 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
       .eq('reviewee_id', currentUserId);
 
     let avgRating = 5.0;
-    if (reviewsReceived && reviewsReceived.length > 0) {
+    if (isGuest) {
+      avgRating = 4.9;
+    } else if (reviewsReceived && reviewsReceived.length > 0) {
       const rated = reviewsReceived.filter(r => r.rating !== null);
       if (rated.length > 0) {
         avgRating = Math.round((rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
@@ -333,16 +555,18 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     }
 
     // Generate/Fetch Pending Reviews (Completed sessions that don't have review feedback yet)
-    const { data: reviewsWritten } = await supabase.from('reviews')
-      .select('session_id')
-      .eq('reviewer_id', currentUserId);
+    let reviewedSessionIds = new Set();
+    if (!isGuest) {
+      const { data: reviewsWritten } = await supabase.from('reviews')
+        .select('session_id')
+        .eq('reviewer_id', currentUserId);
+      reviewedSessionIds = new Set(reviewsWritten?.map(r => r.session_id).filter(Boolean) || []);
+    }
 
-    const reviewedSessionIds = new Set(reviewsWritten?.map(r => r.session_id).filter(Boolean) || []);
-
-    const pendingReviewSessions = sessData?.filter(s => 
+    const pendingReviewSessions = sessionsList.filter(s => 
       (s.status === 'Completed' || s.status === 'completed' || (s.scheduled_at && new Date(s.scheduled_at) < new Date())) && 
       !reviewedSessionIds.has(s.id)
-    ) || [];
+    );
 
     const formattedPendingReviews = pendingReviewSessions.map(s => ({
       id: s.id,
@@ -371,34 +595,108 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     let channel: any;
     let isMounted = true;
 
+    const loadFact = async () => {
+      // 1. Try local storage first for admin-pushed facts (real-time sync)
+      const pushed = localStorage.getItem("pushed_fact_of_the_day");
+      if (pushed) {
+        try {
+          const parsed = JSON.parse(pushed);
+          if (isMounted) {
+            setActiveFact(parsed);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // 2. Try custom facts from localStorage next
+      const customFactsStr = localStorage.getItem("custom_interesting_facts");
+      if (customFactsStr) {
+        try {
+          const parsed = JSON.parse(customFactsStr);
+          const published = parsed.filter((f: any) => f.is_published);
+          if (published.length > 0) {
+            const active = published.find((f: any) => f.is_active_today) || published[0];
+            if (isMounted) {
+              setActiveFact(active);
+              return;
+            }
+          }
+        } catch (e) {}
+      }
+
+      try {
+        const { data: dbFacts } = await supabase
+          .from('interesting_facts' as any)
+          .select('*')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false }) as { data: any[] | null };
+
+        if (dbFacts && dbFacts.length > 0 && isMounted) {
+          const active = dbFacts.find(f => f.is_active_today) || dbFacts[0];
+          setActiveFact(active);
+        } else {
+          // Fallback static facts
+          const fallbackFacts = [
+            { id: "f1", content: "Sharks existed before trees first appeared on Earth—by nearly **50 million years**.", category: "world", emoji: "🌍" },
+            { id: "f2", content: "There are more possible chess games than atoms estimated in the observable universe.", category: "space", emoji: "🪐" },
+            { id: "f3", content: "A single lightning bolt can heat the surrounding air to **five times hotter than the Sun's surface**.", category: "world", emoji: "🌍" },
+            { id: "f4", content: "The world's oldest known tree is over **4,800 years old** and is still alive.", category: "world", emoji: "🌍" }
+          ];
+          const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 864e5);
+          if (isMounted) {
+            setActiveFact(fallbackFacts[dayOfYear % fallbackFacts.length]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load mentor fact", err);
+      }
+    };
+
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session || !isMounted) return;
+      const emailToCheck = session?.user?.email || mentorEmail;
+      const isGuest = emailToCheck === "guest.mentor@kindmentor.com";
+
+      if (!session && !isGuest) {
+        if (!isMounted) return;
+        return;
+      }
       
-      const currentUserId = session.user.id;
+      const currentUserId = session?.user?.id || "guest-mentor-id";
       setMentorId(currentUserId);
 
-      await fetchAllMentorData(currentUserId, isMounted);
+      if (mentorNameProp) {
+        setMentorName(mentorNameProp);
+      }
+
+      await fetchAllMentorData(currentUserId, isMounted, emailToCheck);
+
+      // Fetch Fact of the Day
+      loadFact();
 
       // Real-time message listener
-      channel = supabase.channel(`mentor-messages-${currentUserId}`);
-      channel
-        .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages', 
-          filter: `to_user_id=eq.${currentUserId}` 
-        }, (payload: any) => {
-          if (isMounted) setMessages(prev => [payload.new, ...prev]);
-        })
-        .subscribe();
+      if (session) {
+        channel = supabase.channel(`mentor-messages-${currentUserId}`);
+        channel
+          .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'messages', 
+            filter: `to_user_id=eq.${currentUserId}` 
+          }, (payload: any) => {
+            if (isMounted) setMessages(prev => [payload.new, ...prev]);
+          })
+          .subscribe();
+      }
     };
 
     init();
+    window.addEventListener("storage", loadFact);
 
     return () => {
       isMounted = false;
       if (channel) supabase.removeChannel(channel);
+      window.removeEventListener("storage", loadFact);
     };
   }, []);
 
@@ -407,6 +705,31 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     if (!text.trim() || !mentorId) return;
 
     setIsSending(true);
+
+    if (studentId.startsWith("mock-student-")) {
+      setTimeout(() => {
+        setIsSending(false);
+        setReplyInputs(prev => ({ ...prev, [studentId]: "" }));
+        setSendSuccessMap(prev => ({ ...prev, [studentId]: true }));
+        
+        const newMsg = {
+          id: `mock-reply-${Date.now()}`,
+          from_user_id: mentorId,
+          to_user_id: studentId,
+          body: text,
+          sender_name: "Mentor",
+          is_read: true,
+          created_at: new Date().toISOString()
+        };
+        setMessages(prev => [newMsg, ...prev]);
+        
+        setTimeout(() => {
+          setSendSuccessMap(prev => ({ ...prev, [studentId]: false }));
+        }, 3000);
+      }, 500);
+      return;
+    }
+
     const { error } = await supabase.from('messages').insert({
       from_user_id: mentorId,
       to_user_id: studentId,
@@ -429,6 +752,10 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
   };
 
   const handleDeleteMessage = async (msgId: string) => {
+    if (msgId.startsWith("mock-")) {
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+      return;
+    }
     const { error } = await supabase.from('messages').delete().eq('id', msgId);
     if (!error) {
       setMessages(prev => prev.filter(m => m.id !== msgId));
@@ -448,6 +775,18 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     if (!selectedReviewSession || !mentorId) return;
 
     setIsSubmittingReview(true);
+
+    if (selectedReviewSession.id.startsWith("mock-")) {
+      setTimeout(() => {
+        setIsSubmittingReview(false);
+        setIsReviewModalOpen(false);
+        setSelectedReviewSession(null);
+        setReviews(prev => prev.filter(r => r.id !== selectedReviewSession.id));
+        alert("Review submitted successfully (Mock Mode)!");
+      }, 500);
+      return;
+    }
+
     const { error } = await supabase.from('reviews').insert({
       session_id: selectedReviewSession.id,
       reviewer_id: mentorId,
@@ -462,7 +801,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
     } else {
       setIsReviewModalOpen(false);
       setSelectedReviewSession(null);
-      fetchAllMentorData(mentorId, true);
+      fetchAllMentorData(mentorId, true, mentorEmail);
     }
   };
 
@@ -694,7 +1033,159 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
           })()}
         </Card>
       </div>
-      
+
+      {/* 2 & 3. Today's Plan & Mentees Overview */}
+      {(featureFlags.mentor_students !== false || featureFlags.mentor_sessions !== false) && (
+        <Card className="p-5.5 shadow-sm h-auto flex flex-col gap-0">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
+            <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
+          </div>
+          <div className="flex gap-2">
+            <span className="bg-blue-50 text-blue-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
+            <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        {/* 3. Mentees */}
+        {featureFlags.mentor_students !== false && (
+          <>
+            <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold mb-2 uppercase">My Mentees</p>
+            <div className="flex gap-4.5 mb-1.5 overflow-x-auto pb-1 hidden-scrollbar">
+          {assignedStudents.length === 0 ? (
+            <div className="w-full py-6 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <Users className="w-8 h-8 text-slate-300 mb-2" />
+              <span className="text-[13px] text-slate-400 font-medium">No assigned mentees yet.</span>
+            </div>
+          ) : (
+            assignedStudents.map((stud, idx) => {
+              const progress = stud.progress || 0;
+              const avatarUrl = stud.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(stud.name || stud.id)}`;
+              const pStyle = getProgressStyles(progress);
+
+              return (
+                <div 
+                  key={stud.id} 
+                  onClick={() => onSelectStudent?.(stud.id)}
+                  className="flex flex-col items-center min-w-[85px] group cursor-pointer"
+                >
+                  <div className="relative flex items-center justify-center w-[76px] h-[76px]">
+                    {/* Circular Progress Ring with progress-dependent color */}
+                    <svg className="absolute w-[76px] h-[76px] transform -rotate-90">
+                      {/* Background circle */}
+                      <circle 
+                        cx="38" 
+                        cy="38" 
+                        r="33" 
+                        stroke="#f1f5f9" 
+                        strokeWidth="2" 
+                        fill="transparent"
+                      />
+                      {/* Active progress circle */}
+                      <circle 
+                        cx="38" 
+                        cy="38" 
+                        r="33" 
+                        stroke={pStyle.stroke} 
+                        strokeWidth="3.2" 
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 33}
+                        strokeDashoffset={2 * Math.PI * 33 - (progress / 100) * 2 * Math.PI * 33}
+                        strokeLinecap="round"
+                        className="transition-all duration-700 ease-out"
+                      />
+                    </svg>
+
+                    {/* Inner illustrated avatar circle */}
+                    <div className="w-[54px] h-[54px] rounded-full overflow-hidden border border-slate-100 shadow-sm bg-slate-50 flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105">
+                      <img 
+                        src={avatarUrl} 
+                        alt={stud.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Progress Badge Indicator pill overlapping bottom center */}
+                    <div className={`absolute bottom-[2px] ${pStyle.bg} text-white rounded-full flex items-center justify-center px-1.5 py-0.5 text-[8.5px] font-black z-20 shadow-xs border-2 border-white leading-none scale-95`}>
+                      {progress}%
+                    </div>
+                  </div>
+
+                  <span className="text-[12px] text-slate-900 mt-2 font-bold truncate max-w-[85px] group-hover:text-indigo-600 transition-colors">
+                    {stud.name?.split(" ")[0]}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+                    {progress}% Completed
+                  </span>
+                </div>
+              );
+            })
+          )}
+        </div>
+          </>
+        )}
+
+        {featureFlags.mentor_sessions !== false && (
+          <>
+            <div className="border-t border-slate-100/60 my-2.5"></div>
+
+            {/* Sessions */}
+        <div className="flex items-center justify-between mb-3.5">
+          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold uppercase">Upcoming Sessions</p>
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => {
+              if (assignedStudents.length > 0) {
+                setSchedStudentId(assignedStudents[0].id);
+              }
+              const d = new Date();
+              setSchedDate(d.toISOString().split('T')[0]);
+              setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+              setIsScheduleOpen(true);
+            }}
+            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-semibold h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
+          >
+            + New Session
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {sessions.length === 0 ? (
+            <p className="text-[12.5px] text-slate-400 font-medium py-1.5 pl-1">No upcoming sessions scheduled yet.</p>
+          ) : (
+            sessions.map((sess) => {
+              const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
+              const schedDate = sess.scheduled_at ? new Date(sess.scheduled_at) : null;
+              const timeStr = schedDate ? schedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Flexible";
+              const dateStr = schedDate ? schedDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
+
+              return (
+                <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                    <span className="text-[13px] font-medium leading-none">{timeStr.split(' ')[0]}</span>
+                    <span className="text-[9px] font-semibold uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[14px] font-medium truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900'}`}>{sess.title}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{sess.student?.name || "Student"}</span>
+                      <span className="text-slate-200 text-[10px]">|</span>
+                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{dateStr}</span>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-xl font-medium text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                    {sess.duration_minutes || 30}M
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+          </>
+        )}
+      </Card>
+      )}
+
       {/* 14. New Student Notifications (Real Data) - Premium Light Theme */}
       {featureFlags.mentor_students !== false && showNotification && assignedStudents.length > 0 && (
         <div className="bg-indigo-50/70 border border-indigo-100/50 px-5 py-3.5 mx-1 mt-6 rounded-[1.25rem] flex items-center justify-between gap-3 text-indigo-700 shadow-3xs relative overflow-hidden">
@@ -718,8 +1209,6 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
           </Button>
         </div>
       )}
-
-
 
       {/* 1. Student Messages (Real Data) */}
       {featureFlags.mentor_messages !== false && (
@@ -817,7 +1306,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                                 [targetStudentId]: (prev[targetStudentId] || "") + (prev[targetStudentId] ? " " : "") + link
                               }));
                             }}
-                            className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all shrink-0 shadow-sm active:scale-95"
+                            className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-650 transition-all shrink-0 shadow-sm active:scale-95"
                             size="icon"
                             title="Insert Google Meet Link"
                           >
@@ -908,7 +1397,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
                               [msg.from_user_id]: (prev[msg.from_user_id] || "") + (prev[msg.from_user_id] ? " " : "") + link
                             }));
                           }}
-                          className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-650 transition-all shrink-0 shadow-sm active:scale-95"
+                          className="w-9.5 h-9.5 rounded-xl flex items-center justify-center border border-slate-100 bg-white text-indigo-500 hover:bg-indigo-50/50 hover:text-indigo-655 transition-all shrink-0 shadow-sm active:scale-95"
                           size="icon"
                           title="Insert Google Meet Link"
                         >
@@ -959,130 +1448,54 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
       </Card>
       )}
 
-      {/* 2 & 3. Today's Plan & Mentees Overview */}
-      {(featureFlags.mentor_students !== false || featureFlags.mentor_sessions !== false) && (
-        <Card className="p-5.5 shadow-sm h-auto flex flex-col gap-0">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
-            <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
-          </div>
-          <div className="flex gap-2">
-            <span className="bg-blue-50 text-blue-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
-            <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
 
-        {/* 3. Mentees */}
-        {featureFlags.mentor_students !== false && (
-          <>
-            <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold mb-2 uppercase">My Mentees</p>
-            <div className="flex gap-4.5 mb-1.5 overflow-x-auto pb-1 hidden-scrollbar">
-          {assignedStudents.length === 0 ? (
-            <div className="w-full py-6 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-              <Users className="w-8 h-8 text-slate-300 mb-2" />
-              <span className="text-[13px] text-slate-400 font-medium">No assigned mentees yet.</span>
-            </div>
-          ) : (
-            assignedStudents.map((stud, idx) => (
-              <div 
-                key={stud.id} 
-                onClick={() => onSelectStudent?.(stud.id)}
-                className="flex flex-col items-center min-w-[70px] group cursor-pointer"
-              >
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-[22px] overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 group-hover:shadow-md group-hover:border-slate-200/50 transition-all duration-300 group-active:scale-95 flex items-center justify-center relative">
-                    {stud.avatar_url ? (
-                      <img 
-                        className="w-full h-full object-cover" 
-                        src={stud.avatar_url} 
-                        alt={stud.name}
-                      />
-                    ) : (
-                      <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(stud.id)} flex items-center justify-center text-white font-black text-xl uppercase tracking-tight shadow-inner`}>
-                        {stud.name ? stud.name.trim().charAt(0).toUpperCase() : '?'}
-                      </div>
-                    )}
-                  </div>
-                  {idx === 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white rounded-full border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-bold leading-none z-10">
-                      {stud.daysJoined || 1}
-                    </div>
-                  )}
-                </div>
-                <span className="text-[12px] text-slate-900 mt-2 font-medium truncate max-w-[75px] group-hover:text-indigo-600 transition-colors">
-                  {stud.name?.split(" ")[0]}
+
+
+
+      {/* 10. Interesting Fact of the Day (Clipboard Share Helper) */}
+      {featureFlags.mentor_facts !== false && activeFact && (
+        <div className="px-1 mt-6">
+          <div className="bg-gradient-to-r from-violet-50/60 to-indigo-50/40 rounded-3xl p-5 border border-violet-100/50 relative overflow-hidden group shadow-sm flex flex-col gap-3">
+            <div className="flex items-center justify-between text-indigo-950 font-bold text-[13px] relative z-10">
+              <span className="flex items-center gap-1.5">
+                <span className="text-base animate-bounce-slow">{activeFact.emoji || "💡"}</span> 
+                Interesting Fact of the Day
+                <span className="bg-violet-100 text-violet-750 text-[8.5px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full ml-1.5">
+                  {activeFact.category}
                 </span>
-              </div>
-            ))
-          )}
+              </span>
+            </div>
+            <p 
+              className="text-[13px] text-indigo-900 leading-relaxed font-semibold px-1 relative z-10"
+              dangerouslySetInnerHTML={{ __html: activeFact.content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }}
+            />
+            <div className="flex gap-2 relative z-10 mt-1">
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`Hey! Did you know? ${activeFact.content.replace(/\*\*/g, '')}`);
+                  setFactCopied(true);
+                  setTimeout(() => setFactCopied(false), 2000);
+                }}
+                className={`flex-1 py-2.5 rounded-xl font-bold text-[12px] flex gap-2 items-center justify-center transition-all active:scale-98 border h-9.5 cursor-pointer ${
+                  factCopied 
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                    : "bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50/50"
+                }`}
+              >
+                {factCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" /> Copied to Share!
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5" /> Share in Chat / Session
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-          </>
-        )}
-
-        {featureFlags.mentor_sessions !== false && (
-          <>
-            <div className="border-t border-slate-100/60 my-2.5"></div>
-
-            {/* Sessions */}
-        <div className="flex items-center justify-between mb-3.5">
-          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold uppercase">Upcoming Sessions</p>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => {
-              if (assignedStudents.length > 0) {
-                setSchedStudentId(assignedStudents[0].id);
-              }
-              const d = new Date();
-              setSchedDate(d.toISOString().split('T')[0]);
-              setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
-              setIsScheduleOpen(true);
-            }}
-            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-semibold h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
-          >
-            + New Session
-          </Button>
-        </div>
-        <div className="space-y-3">
-          {sessions.length === 0 ? (
-            <p className="text-[12.5px] text-slate-400 font-medium py-1.5 pl-1">No upcoming sessions scheduled yet.</p>
-          ) : (
-            sessions.map((sess) => {
-              const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
-              const schedDate = sess.scheduled_at ? new Date(sess.scheduled_at) : null;
-              const timeStr = schedDate ? schedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Flexible";
-              const dateStr = schedDate ? schedDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
-
-              return (
-                <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
-                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                    <span className="text-[13px] font-medium leading-none">{timeStr.split(' ')[0]}</span>
-                    <span className="text-[9px] font-semibold uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[14px] font-medium truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900'}`}>{sess.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{sess.student?.name || "Student"}</span>
-                      <span className="text-slate-200 text-[10px]">|</span>
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{dateStr}</span>
-                    </div>
-                  </div>
-                  <div className={`px-3 py-1.5 rounded-xl font-medium text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
-                    {sess.duration_minutes || 30}M
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-          </>
-        )}
-      </Card>
       )}
-
-
-
-
 
       {/* 11. Resources & Community Grid */}
       <div className="px-1 mt-6">
@@ -1220,7 +1633,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent }: MentorHomePro
             defaultStudentId={selectedStudentForSharing}
             onClose={() => {
               setShowShareMaterials(false);
-              if (mentorId) fetchAllMentorData(mentorId, true);
+              if (mentorId) fetchAllMentorData(mentorId, true, mentorEmail);
             }}
           />
         )}

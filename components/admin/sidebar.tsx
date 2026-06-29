@@ -23,7 +23,8 @@ import {
   Handshake,
   Settings,
   ChevronLeft,
-  StickyNote
+  StickyNote,
+  Lightbulb
 } from "lucide-react";
 
 const mainNavItems = [
@@ -43,6 +44,7 @@ const othersNavItems = [
   { name: "Sessions", href: "/admin/sessions", icon: CalendarDays },
   { name: "Reviews", href: "/admin/reviews", icon: Star },
   { name: "Inspiration", href: "/admin/inspiration", icon: Sparkles },
+  { name: "Interesting Facts", href: "/admin/facts", icon: Lightbulb },
   { name: "Messages", href: "/admin/messages", icon: MessageCircle },
   { name: "Gratitude Wall", href: "/admin/gratitude-wall", icon: Heart },
   { name: "Running Notes", href: "/admin/notes", icon: StickyNote },

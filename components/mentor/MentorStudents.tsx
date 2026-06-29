@@ -29,12 +29,48 @@ const getGradientClass = (id: string) => {
   return AESTHETIC_GRADIENTS[index];
 };
 
+const STUDENT_AESTHETIC_GRADIENTS = [
+  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
+  "from-violet-50 to-violet-100/80 text-violet-600 border-violet-200/40",
+  "from-fuchsia-50 to-fuchsia-100/80 text-fuchsia-600 border-fuchsia-200/40",
+  "from-pink-50 to-pink-100/80 text-pink-600 border-pink-200/40",
+  "from-rose-50 to-rose-100/80 text-rose-600 border-rose-200/40",
+  "from-amber-50 to-amber-100/80 text-amber-600 border-amber-200/40",
+  "from-emerald-50 to-emerald-100/80 text-emerald-600 border-emerald-200/40",
+  "from-cyan-50 to-cyan-100/80 text-cyan-600 border-cyan-200/40",
+];
+
+const getStudentAestheticGradient = (id: string) => {
+  if (!id) return STUDENT_AESTHETIC_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % STUDENT_AESTHETIC_GRADIENTS.length;
+  return STUDENT_AESTHETIC_GRADIENTS[index];
+};
+
+const getInitials = (name: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+  return parts[0].charAt(0).toUpperCase();
+};
+
+const getProgressStyles = (pct: number) => {
+  return { stroke: "#3b82f6", bg: "bg-[#3b82f6]", text: "text-[#3b82f6]" };
+};
+
 interface MentorStudentsProps {
   activeStudentId?: string | null;
   onSelectStudent?: (studentId: string | null) => void;
+  mentorEmail?: string;
+  mentorName?: string;
 }
 
-export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStudentsProps) {
+export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, mentorName }: MentorStudentsProps) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
@@ -345,6 +381,73 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
   const fetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    const emailToCheck = session?.user?.email || mentorEmail;
+    const isGuest = emailToCheck === "guest.mentor@kindmentor.com";
+
+    if (isGuest) {
+      const mockStudents = [
+        {
+          id: "mock-student-aarav",
+          name: "Aarav Mehta",
+          email: "aarav.mehta@example.com",
+          avatar: null,
+          avatar_url: null,
+          status: "Enrolled",
+          course: "Full-Stack Web Development",
+          progress: 65,
+          streak: 8,
+          preferences: {
+            interests: ["React", "Node.js", "Tailwind CSS"],
+            style: "Hands-on projects",
+            inspiration: "Building modern web apps",
+            movie: "Interstellar",
+            location: "Mumbai, India"
+          },
+          created_at: new Date().toISOString()
+        },
+        {
+          id: "mock-student-ananya",
+          name: "Ananya Iyer",
+          email: "ananya.iyer@example.com",
+          avatar: null,
+          avatar_url: null,
+          status: "Enrolled",
+          course: "UI/UX Design Masterclass",
+          progress: 30,
+          streak: 3,
+          preferences: {
+            interests: ["Figma", "Wireframing", "Color Theory"],
+            style: "Visual learning",
+            inspiration: "Design thinking",
+            movie: "Spirited Away",
+            location: "Bengaluru, India"
+          },
+          created_at: new Date().toISOString()
+        },
+        {
+          id: "mock-student-kabir",
+          name: "Kabir Sharma",
+          email: "kabir.sharma@example.com",
+          avatar: null,
+          avatar_url: null,
+          status: "Enrolled",
+          course: "Data Science & Python",
+          progress: 90,
+          streak: 15,
+          preferences: {
+            interests: ["Python", "Pandas", "Machine Learning"],
+            style: "Problem solving",
+            inspiration: "Solving real-world puzzles",
+            movie: "The Imitation Game",
+            location: "New Delhi, India"
+          },
+          created_at: new Date().toISOString()
+        }
+      ];
+      setStudents(mockStudents);
+      return;
+    }
+
     if (!session) return;
 
     const { data: mappings } = await supabase.from('mapping')
@@ -468,6 +571,100 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
 
   useEffect(() => {
     if (selectedStudent) {
+      if (selectedStudent.id.startsWith("mock-student-")) {
+        let mockCourseTitle = selectedStudent.course;
+        let mockProgressPct = selectedStudent.progress;
+        
+        let mockModules = [];
+        let completedLessons = [];
+        
+        if (selectedStudent.id === "mock-student-aarav") {
+          mockModules = [
+            {
+              id: "m1",
+              title: "Module 1: Frontend Basics",
+              lessons: [
+                { id: "l1", title: "HTML5 semantic structure", duration: "15 min", type: "video" },
+                { id: "l2", title: "CSS Flexbox & Grid layouts", duration: "25 min", type: "video" },
+                { id: "l3", title: "Introduction to JavaScript ES6", duration: "20 min", type: "video" }
+              ]
+            },
+            {
+              id: "m2",
+              title: "Module 2: React Core Concepts",
+              lessons: [
+                { id: "l4", title: "Components & Props", duration: "30 min", type: "video" },
+                { id: "l5", title: "useState & useEffect hooks", duration: "35 min", type: "exercise" },
+                { id: "l6", title: "Fetching data from APIs", duration: "40 min", type: "project" }
+              ]
+            }
+          ];
+          completedLessons = ["l1", "l2", "l3", "l4"];
+        } else if (selectedStudent.id === "mock-student-ananya") {
+          mockModules = [
+            {
+              id: "m1",
+              title: "Module 1: Figma & UI Basics",
+              lessons: [
+                { id: "l1", title: "Introduction to Figma tools", duration: "20 min", type: "video" },
+                { id: "l2", title: "Grid systems & layouts", duration: "15 min", type: "video" },
+                { id: "l3", title: "Typography & Color palettes", duration: "30 min", type: "video" }
+              ]
+            },
+            {
+              id: "m2",
+              title: "Module 2: UX Research",
+              lessons: [
+                { id: "l4", title: "User Persona creation", duration: "45 min", type: "exercise" },
+                { id: "l5", title: "Wireframing & Prototyping", duration: "50 min", type: "project" }
+              ]
+            }
+          ];
+          completedLessons = ["l1", "l2"];
+        } else {
+          mockModules = [
+            {
+              id: "m1",
+              title: "Module 1: Python Essentials",
+              lessons: [
+                { id: "l1", title: "Python Syntax & variables", duration: "10 min", type: "video" },
+                { id: "l2", title: "Lists, Dicts & Loops", duration: "20 min", type: "video" },
+                { id: "l3", title: "Functions & Error handling", duration: "25 min", type: "exercise" }
+              ]
+            },
+            {
+              id: "m2",
+              title: "Module 2: Data Analysis",
+              lessons: [
+                { id: "l4", title: "Intro to Numpy & Pandas", duration: "35 min", type: "video" },
+                { id: "l5", title: "Data cleaning & prep", duration: "40 min", type: "exercise" },
+                { id: "l6", title: "Matplotlib visualization project", duration: "50 min", type: "project" }
+              ]
+            }
+          ];
+          completedLessons = ["l1", "l2", "l3", "l4", "l5"];
+        }
+        
+        setStudentEnrollment({
+          id: `mock-enr-${selectedStudent.id}`,
+          student_id: selectedStudent.id,
+          course_id: `mock-course-${selectedStudent.id}`,
+          status: 'Active',
+          created_at: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
+          progress: completedLessons,
+          progress_pct: mockProgressPct,
+          course: {
+            title: mockCourseTitle,
+            description: `This learning path is customized for ${selectedStudent.name} to master the foundational skills and complete practical exercises.`,
+            duration: selectedStudent.id === "mock-student-kabir" ? "15 hours" : "12 hours",
+            difficulty: selectedStudent.id === "mock-student-kabir" ? "Advanced" : "Intermediate",
+            modules: mockModules,
+            content: mockModules
+          }
+        });
+        return;
+      }
+
       const fetchEnrollment = async () => {
         const { data: enrollment } = await supabase.from('enrollments')
           .select('*, course:courses(*)')
@@ -854,18 +1051,35 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-16 translate-x-12"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl translate-y-12 -translate-x-12"></div>
             
-            <div className="w-28 h-28 rounded-[2.2rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
-              {selectedStudent.avatar_url ? (
-                <img 
-                  src={selectedStudent.avatar_url} 
-                  className="w-full h-full object-cover" 
-                  alt={selectedStudent.name}
+            <div className="relative flex items-center justify-center w-28 h-28 shrink-0 relative z-10">
+              {/* Large SVG progress ring with custom progress coloring */}
+              <svg className="absolute w-28 h-28 transform -rotate-90">
+                <circle cx="56" cy="56" r="50" stroke="#f1f5f9" strokeWidth="3" fill="transparent" />
+                <circle 
+                  cx="56" 
+                  cy="56" 
+                  r="50" 
+                  stroke={getProgressStyles(progressPercent).stroke} 
+                  strokeWidth="4" 
+                  fill="transparent"
+                  strokeDasharray={2 * Math.PI * 50}
+                  strokeDashoffset={2 * Math.PI * 50 - (progressPercent / 100) * 2 * Math.PI * 50}
+                  strokeLinecap="round"
+                  className="transition-all duration-700 ease-out"
                 />
-              ) : (
-                <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(selectedStudent.id)} flex items-center justify-center text-white font-black text-3xl uppercase tracking-tight shadow-inner`}>
-                  {selectedStudent.name ? selectedStudent.name.trim().charAt(0).toUpperCase() : '?'}
-                </div>
-              )}
+              </svg>
+              {/* Inner illustrated avatar circle */}
+              <div className="w-[82px] h-[82px] rounded-full overflow-hidden border border-slate-100 shadow-md bg-slate-50 flex items-center justify-center relative z-10 transition-transform duration-500 group-hover:scale-105">
+                <img 
+                  src={selectedStudent.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(selectedStudent.name || selectedStudent.id)}`} 
+                  alt={selectedStudent.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Overlapping progress pill badge at bottom center */}
+              <div className={`absolute bottom-[2px] ${getProgressStyles(progressPercent).bg} text-white rounded-full flex items-center justify-center px-2 py-0.5 text-[9.5px] font-black z-20 shadow-xs border-2 border-white leading-none`}>
+                {progressPercent}%
+              </div>
             </div>
             <h3 className="text-xl font-medium tracking-tight text-slate-900 mt-6 relative z-10">{selectedStudent.name}</h3>
             <p className="text-[13px] text-slate-400 font-medium uppercase tracking-[0.15em] mt-2 relative z-10">
@@ -1335,22 +1549,33 @@ export function MentorStudents({ activeStudentId, onSelectStudent }: MentorStude
               className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all cursor-pointer group active:scale-[0.98]"
             >
               <div className="flex gap-4">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-[18px] overflow-hidden border border-slate-100/50 shadow-sm bg-slate-50 group-hover:shadow-md transition-all group-active:scale-95 flex items-center justify-center relative">
-                    {s.avatar_url ? (
-                      <img 
-                        className="w-full h-full object-cover" 
-                        src={s.avatar_url} 
-                        alt={s.name}
-                      />
-                    ) : (
-                      <div className={`w-full h-full bg-gradient-to-br ${getGradientClass(s.id)} flex items-center justify-center text-white font-black text-xl uppercase tracking-tight shadow-inner`}>
-                        {s.name ? s.name.trim().charAt(0).toUpperCase() : '?'}
-                      </div>
-                    )}
+                <div className="relative flex items-center justify-center w-16 h-16 shrink-0">
+                  {/* SVG progress ring with color matching progress level */}
+                  <svg className="absolute w-16 h-16 transform -rotate-90">
+                    <circle cx="32" cy="32" r="28" stroke="#f1f5f9" strokeWidth="2" fill="transparent" />
+                    <circle 
+                      cx="32" 
+                      cy="32" 
+                      r="28" 
+                      stroke={getProgressStyles(s.progress || 0).stroke} 
+                      strokeWidth="2.5" 
+                      fill="transparent"
+                      strokeDasharray={2 * Math.PI * 28}
+                      strokeDashoffset={2 * Math.PI * 28 - ((s.progress || 0) / 100) * 2 * Math.PI * 28}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  {/* Inner illustrated avatar circle */}
+                  <div className="w-[44px] h-[44px] rounded-full overflow-hidden border border-slate-100 shadow-sm bg-slate-50 flex items-center justify-center relative z-10">
+                    <img 
+                      src={s.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(s.name || s.id)}`} 
+                      alt={s.name} 
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm z-10">
-                    <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={3} />
+                  {/* Overlapping progress pill badge */}
+                  <div className={`absolute bottom-[1px] ${getProgressStyles(s.progress || 0).bg} text-white rounded-full flex items-center justify-center px-1.5 py-0.5 text-[8.5px] font-black z-20 shadow-xs border-2 border-white leading-none scale-90`}>
+                    {s.progress || 0}%
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">

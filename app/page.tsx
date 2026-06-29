@@ -226,6 +226,8 @@ export default function OnboardingFlow() {
   const [coinsCount, setCoinsCount] = useState(240);
   const [streakCount, setStreakCount] = useState(0);
   const [activeInspiration, setActiveInspiration] = useState<any>(null);
+  const [activeFact, setActiveFact] = useState<any>(null);
+  const [factClaimed, setFactClaimed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Messaging state
@@ -1102,6 +1104,82 @@ export default function OnboardingFlow() {
     window.addEventListener("storage", loadInspiration);
     return () => window.removeEventListener("storage", loadInspiration);
   }, [state]);
+
+  useEffect(() => {
+    const loadFact = async () => {
+      // 1. Try local storage first for admin-pushed facts (real-time sync)
+      const pushed = localStorage.getItem("pushed_fact_of_the_day");
+      if (pushed) {
+        try {
+          const parsed = JSON.parse(pushed);
+          setActiveFact(parsed);
+          const claimedKey = `fact_claimed_${parsed.id}`;
+          setFactClaimed(localStorage.getItem(claimedKey) === "true");
+          return;
+        } catch (e) {}
+      }
+
+      // 2. Try custom facts from localStorage next
+      const customFactsStr = localStorage.getItem("custom_interesting_facts");
+      if (customFactsStr) {
+        try {
+          const parsed = JSON.parse(customFactsStr);
+          const published = parsed.filter((f: any) => f.is_published);
+          if (published.length > 0) {
+            const active = published.find((f: any) => f.is_active_today) || published[0];
+            setActiveFact(active);
+            const claimedKey = `fact_claimed_${active.id}`;
+            setFactClaimed(localStorage.getItem(claimedKey) === "true");
+            return;
+          }
+        } catch (e) {}
+      }
+
+      try {
+        const { data: dbFacts } = await supabase
+          .from('interesting_facts' as any)
+          .select('*')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false }) as { data: any[] | null };
+
+        let fact = null;
+        if (dbFacts && dbFacts.length > 0) {
+          fact = dbFacts.find(f => f.is_active_today) || dbFacts[0];
+        } else {
+          // Fallback static facts
+          const fallbackFacts = [
+            { id: "f1", content: "The first computer programmer was Ada Lovelace in 1843 — over 100 years before modern computers existed.", category: "tech", emoji: "💻" },
+            { id: "f2", content: "The average smartphone today has more computing power than NASA had during the Apollo 11 moon landing.", category: "tech", emoji: "📱" },
+            { id: "f3", content: "Teaching others helps you remember concepts 90% longer than just reading about them.", category: "brain", emoji: "🧠" },
+            { id: "f4", content: "Honey never spoils — jars found in ancient Egyptian tombs are still edible after 3,000 years.", category: "science", emoji: "🍯" }
+          ];
+          const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 864e5);
+          fact = fallbackFacts[dayOfYear % fallbackFacts.length];
+        }
+        setActiveFact(fact);
+        if (fact) {
+          const claimedKey = `fact_claimed_${fact.id}`;
+          setFactClaimed(localStorage.getItem(claimedKey) === "true");
+        }
+      } catch (err) {
+        console.error("Failed to load fact of the day", err);
+      }
+    };
+    loadFact();
+    window.addEventListener("storage", loadFact);
+    return () => window.removeEventListener("storage", loadFact);
+  }, [state]);
+
+  const claimFactRewards = async () => {
+    if (!activeFact || factClaimed) return;
+    try {
+      await updateCoinsInDb(coinsCount + 5);
+      setFactClaimed(true);
+      localStorage.setItem(`fact_claimed_${activeFact.id}`, "true");
+    } catch (err) {
+      console.error("Failed to claim fact rewards", err);
+    }
+  };
 
   const dismissInspiration = async (id: string) => {
     try {
@@ -3573,6 +3651,45 @@ export default function OnboardingFlow() {
                       </button>
                     </div>
                   )}
+
+                  {/* Interesting Fact of the Day Widget */}
+                  {featureFlags.student_facts !== false && activeFact && (
+                    <div className="bg-gradient-to-r from-violet-50/70 to-indigo-50/40 rounded-[1.25rem] p-4.5 mt-4 border border-violet-100/50 flex flex-col gap-3 relative overflow-hidden group shadow-xs">
+                      <div className="flex items-center justify-between text-indigo-950 font-bold text-[13px] relative z-10">
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-base animate-bounce-slow">{activeFact.emoji || "💡"}</span> 
+                          Fact of the Day
+                          <span className="bg-violet-100 text-violet-750 text-[8.5px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full ml-1.5">
+                            {activeFact.category}
+                          </span>
+                        </span>
+                      </div>
+                      <p 
+                        className="text-[13px] text-indigo-900 leading-relaxed font-semibold px-1 relative z-10"
+                        dangerouslySetInnerHTML={{ __html: activeFact.content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }}
+                      />
+                      <button 
+                        onClick={claimFactRewards}
+                        disabled={factClaimed}
+                        className={cn(
+                          "w-full py-2.5 rounded-xl font-bold text-[12.5px] flex gap-2 items-center justify-center transition-all active:scale-98 h-10 cursor-pointer border relative z-10",
+                          factClaimed 
+                            ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                            : "bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm hover:shadow active:scale-97"
+                        )}
+                      >
+                        {factClaimed ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" /> Claimed (+5 Coins)
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300 animate-pulse" /> I learned this! (+5 Coins)
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer Stats Row */}
@@ -4947,12 +5064,16 @@ export default function OnboardingFlow() {
                         setActiveStudentId(studentId);
                         setState("MENTOR_STUDENTS");
                       }} 
+                      mentorEmail={email}
+                      mentorName={name}
                     />
                   )}
                   {state === "MENTOR_STUDENTS" && featureFlags.mentor_students !== false && (
                     <MentorStudents 
                       activeStudentId={activeStudentId} 
                       onSelectStudent={setActiveStudentId} 
+                      mentorEmail={email}
+                      mentorName={name}
                     />
                   )}
                   {state === "MENTOR_COURSES" && featureFlags.mentor_courses !== false && <MentorCourses />}

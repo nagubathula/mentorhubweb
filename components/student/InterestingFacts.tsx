@@ -68,9 +68,9 @@ const triviaChallenge = {
 };
 
 // Calculate Fact of the Day programmatically matching R9 in unminified_index.js
-function getFactOfTheDay() {
+function getFactOfTheDay(factsList: any[]) {
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 864e5);
-  return factsData[dayOfYear % factsData.length];
+  return factsList[dayOfYear % factsList.length];
 }
 
 export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFactsProps) {
@@ -78,16 +78,82 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
   const [selectedCategory, setSelectedCategory] = useState("all");
   
   // Interaction sets
-  const [likedFacts, setLikedFacts] = useState<Set<number>>(new Set());
-  const [savedFacts, setSavedFacts] = useState<Set<number>>(new Set());
+  const [likedFacts, setLikedFacts] = useState<Set<any>>(new Set());
+  const [savedFacts, setSavedFacts] = useState<Set<any>>(new Set());
   
   // Challenge quiz state
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isChallengeSubmitted, setIsChallengeSubmitted] = useState(false);
 
-  const factOfTheDay = getFactOfTheDay();
+  // Dynamic facts from Supabase
+  const [factsList, setFactsList] = useState<any[]>(factsData);
 
-  const handleLikeFact = (id: number) => {
+  useEffect(() => {
+    const fetchFacts = async () => {
+      // 1. Try custom facts from localStorage first (real-time admin panel sync)
+      const customFactsStr = localStorage.getItem("custom_interesting_facts");
+      if (customFactsStr) {
+        try {
+          const parsed = JSON.parse(customFactsStr);
+          const published = parsed.filter((f: any) => f.is_published);
+          if (published.length > 0) {
+            const mapped = published.map((f: any) => ({
+              id: f.id,
+              text: f.content || f.text,
+              category: f.category,
+              emoji: f.emoji || "💡",
+              is_active_today: f.is_active_today
+            }));
+            setFactsList(mapped);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // 2. Try Supabase
+      try {
+        const { createClient } = await import("@/lib/supabase");
+        const supabase = createClient();
+        const { data: dbFacts } = await supabase
+          .from("interesting_facts" as any)
+          .select("*")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false }) as { data: any[] | null };
+
+        if (dbFacts && dbFacts.length > 0) {
+          const mapped = dbFacts.map((f: any) => ({
+            id: f.id,
+            text: f.content,
+            category: f.category,
+            emoji: f.emoji || "💡",
+            is_active_today: f.is_active_today
+          }));
+          setFactsList(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load facts dynamically in overlay", err);
+      }
+    };
+    fetchFacts();
+    window.addEventListener("storage", fetchFacts);
+    return () => window.removeEventListener("storage", fetchFacts);
+  }, []);
+
+  // Find active fact from pushed fact of the day, or fallback to dayOfYear calculation
+  let factOfTheDay = factsList.find(f => f.is_active_today) || factsList[0];
+  const pushedFactStr = localStorage.getItem("pushed_fact_of_the_day");
+  if (pushedFactStr) {
+    try {
+      const parsed = JSON.parse(pushedFactStr);
+      const found = factsList.find(f => f.id === parsed.id);
+      if (found) factOfTheDay = found;
+    } catch (e) {}
+  }
+  if (!factOfTheDay && factsList.length > 0) {
+    factOfTheDay = getFactOfTheDay(factsList);
+  }
+
+  const handleLikeFact = (id: any) => {
     setLikedFacts(prev => {
       const copy = new Set(prev);
       if (copy.has(id)) {
@@ -100,7 +166,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
     });
   };
 
-  const handleSaveFact = (id: number) => {
+  const handleSaveFact = (id: any) => {
     setSavedFacts(prev => {
       const copy = new Set(prev);
       if (copy.has(id)) {
@@ -122,10 +188,10 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
   // Filter items
   const filteredFacts = selectedCategory === "all"
-    ? factsData
-    : factsData.filter(f => f.category === selectedCategory);
+    ? factsList
+    : factsList.filter(f => f.category === selectedCategory);
 
-  const savedFactsList = factsData.filter(f => savedFacts.has(f.id));
+  const savedFactsList = factsList.filter(f => savedFacts.has(f.id));
 
   return (
     <motion.div

@@ -27,7 +27,7 @@ type AdminPage =
   | "dashboard" | "courses" | "mentors" | "mentees" | "registrations"
   | "mapping" | "enrollments" | "games" | "questionnaires" | "circles"
   | "sessions" | "reviews" | "inspiration" | "messages" | "gratitude-wall"
-  | "csr-sponsors" | "settings" | "features" | "feedback" | "notes";
+  | "csr-sponsors" | "settings" | "features" | "feedback" | "notes" | "facts";
 
 type ModalKey =
   | "add-student" | "add-mentor" | "schedule-session"
@@ -52,6 +52,7 @@ const NAV_OTHERS = [
   { key: "sessions",       label: "Sessions",         icon: CalendarDays },
   { key: "reviews",        label: "Reviews",          icon: Star },
   { key: "inspiration",    label: "Inspiration",      icon: Sparkles },
+  { key: "facts",          label: "Interesting Facts",icon: Lightbulb },
   { key: "messages",       label: "Messages",         icon: MessageCircle },
   { key: "gratitude-wall", label: "Gratitude Wall",   icon: Heart },
   { key: "notes",          label: "Running Notes",    icon: StickyNote },
@@ -2391,6 +2392,1511 @@ function InspirationPage({ data, openModal }: { data: any; openModal: (m: ModalK
   );
 }
 
+const staticFallbackFacts = [
+  {
+    "id": "f1",
+    "content": "Sharks existed before trees first appeared on Earth—by nearly **50 million years**.",
+    "category": "world",
+    "emoji": "🦈",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f2",
+    "content": "There are more possible chess games than atoms estimated in the observable universe.",
+    "category": "world",
+    "emoji": "♟️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f3",
+    "content": "A single lightning bolt can heat the surrounding air to **five times hotter than the Sun's surface**.",
+    "category": "world",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f4",
+    "content": "The Eiffel Tower becomes about **15 centimeters taller** during summer because metal expands in heat.",
+    "category": "world",
+    "emoji": "🗼",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f5",
+    "content": "Antarctica is the driest, windiest, and coldest continent on Earth.",
+    "category": "world",
+    "emoji": "❄️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f6",
+    "content": "A teaspoon of neutron star material would weigh about **one billion tons** on Earth.",
+    "category": "world",
+    "emoji": "💫",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f7",
+    "content": "The fingerprints of a koala are so similar to humans that they can confuse forensic experts.",
+    "category": "world",
+    "emoji": "🐨",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f8",
+    "content": "The world's oldest known tree is over **4,800 years old** and is still alive.",
+    "category": "world",
+    "emoji": "🌳",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f9",
+    "content": "There are more stars in the universe than grains of sand on all Earth's beaches.",
+    "category": "world",
+    "emoji": "✨",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f10",
+    "content": "Earth is the only known planet not named after a mythological god or goddess.",
+    "category": "world",
+    "emoji": "🌍",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f11",
+    "content": "A day on Venus is longer than a year on Venus.",
+    "category": "world",
+    "emoji": "🪐",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f12",
+    "content": "Bananas are berries, but strawberries are not.",
+    "category": "world",
+    "emoji": "🍌",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f13",
+    "content": "Honey never spoils; jars found in ancient Egyptian tombs are still edible after 3,000 years.",
+    "category": "world",
+    "emoji": "🍯",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f14",
+    "content": "Wombat poop is cube-shaped, which stops it from rolling away.",
+    "category": "world",
+    "emoji": "💩",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f15",
+    "content": "The first computer bug was a real moth found trapped in a computer relay.",
+    "category": "world",
+    "emoji": "🪲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f16",
+    "content": "The total weight of all ants on Earth is roughly equal to the total weight of all humans.",
+    "category": "world",
+    "emoji": "🐜",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f17",
+    "content": "Oxford University is older than the Aztec Empire.",
+    "category": "world",
+    "emoji": "🏛️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f18",
+    "content": "Venus is the hottest planet in our solar system, with a surface temperature of over **450 degrees Celsius**.",
+    "category": "space",
+    "emoji": "🔥",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f19",
+    "content": "One day on Saturn is only **10.7 hours** long, but its year is 29 Earth years.",
+    "category": "space",
+    "emoji": "🪐",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f20",
+    "content": "Footprints left by astronauts on the Moon will last for at least **100 million years**.",
+    "category": "space",
+    "emoji": "👣",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f21",
+    "content": "Space is completely silent because there is no atmosphere for sound waves to travel through.",
+    "category": "space",
+    "emoji": "🤫",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f22",
+    "content": "Sunset on Mars appears blue because fine dust lets blue light penetrate more efficiently.",
+    "category": "space",
+    "emoji": "🌅",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f23",
+    "content": "The Moon is moving away from Earth at a rate of about **3.8 centimeters per year**.",
+    "category": "space",
+    "emoji": "🌙",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f24",
+    "content": "Neutron stars can spin up to **600 times per second** after their collapse.",
+    "category": "space",
+    "emoji": "🌀",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f25",
+    "content": "One million Earths could fit inside the Sun.",
+    "category": "space",
+    "emoji": "☀️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f26",
+    "content": "A spacecraft can travel out of our solar system, but it would take **tens of thousands of years** to reach the nearest star.",
+    "category": "space",
+    "emoji": "🚀",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f27",
+    "content": "The solar wind travels at speeds of up to **400 kilometers per second**.",
+    "category": "space",
+    "emoji": "💨",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f28",
+    "content": "Halley's Comet will next be visible from Earth in the year **2061**.",
+    "category": "space",
+    "emoji": "☄️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f29",
+    "content": "The center of a comet is a 'dirty snowball' of ice, dust, and rock.",
+    "category": "space",
+    "emoji": "❄️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f30",
+    "content": "A day on Jupiter lasts only **9 hours and 56 minutes**.",
+    "category": "space",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f31",
+    "content": "The Milky Way galaxy is about **100,000 light-years** across.",
+    "category": "space",
+    "emoji": "🌌",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f32",
+    "content": "The temperature in void space is about **minus 270 degrees Celsius**.",
+    "category": "space",
+    "emoji": "🥶",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f33",
+    "content": "Olympus Mons on Mars is the tallest volcano in the solar system, three times higher than Mount Everest.",
+    "category": "space",
+    "emoji": "🏔️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f34",
+    "content": "Uranus spins on its side, like a rolling ball, relative to its orbital plane.",
+    "category": "space",
+    "emoji": "🟢",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f35",
+    "content": "If you uncoiled all the DNA in your body, it would stretch to the Moon and back **6,000 times**.",
+    "category": "human",
+    "emoji": "🧬",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f36",
+    "content": "The human eye can distinguish about **10 million different colors**.",
+    "category": "human",
+    "emoji": "👁️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f37",
+    "content": "Your heart beats about **100,000 times a day**, pumping around 7,500 liters of blood.",
+    "category": "human",
+    "emoji": "❤️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f38",
+    "content": "Information travels along nerves to the brain at speeds of up to **400 kilometers per hour**.",
+    "category": "human",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f39",
+    "content": "Humans are the only animals known to shed emotional tears.",
+    "category": "human",
+    "emoji": "😢",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f40",
+    "content": "An adult human body is made up of about **7 octillion atoms**.",
+    "category": "human",
+    "emoji": "🔬",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f41",
+    "content": "The strongest muscle in the human body relative to its size is the jaw muscle (masseter).",
+    "category": "human",
+    "emoji": "💪",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f42",
+    "content": "Human teeth are just as strong as shark teeth.",
+    "category": "human",
+    "emoji": "🦷",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f43",
+    "content": "Your nose can remember 50,000 different scents.",
+    "category": "human",
+    "emoji": "👃",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f44",
+    "content": "A baby has about 300 bones at birth, which fuse to become 206 bones in an adult.",
+    "category": "human",
+    "emoji": "👶",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f45",
+    "content": "The human brain can store up to **2.5 petabytes** of information, equivalent to 3 million hours of TV.",
+    "category": "human",
+    "emoji": "🧠",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f46",
+    "content": "The stomach produces a new layer of mucus every two weeks to prevent digesting itself.",
+    "category": "human",
+    "emoji": "🧪",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f47",
+    "content": "A sneeze can travel at speeds of over **160 kilometers per hour**.",
+    "category": "human",
+    "emoji": "💨",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f48",
+    "content": "About 60% of the human body is water.",
+    "category": "human",
+    "emoji": "💧",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f49",
+    "content": "Your bones are about **four times stronger than concrete** of the same weight.",
+    "category": "human",
+    "emoji": "🦴",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f50",
+    "content": "Skin is the human body's largest organ and sheds millions of dead cells daily.",
+    "category": "human",
+    "emoji": "✋",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f51",
+    "content": "The small intestine is about **6 meters long**, which is four times taller than the average human.",
+    "category": "human",
+    "emoji": "📏",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f52",
+    "content": "Octopuses have **three hearts**, nine brains, and blue blood.",
+    "category": "animal",
+    "emoji": "🐙",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f53",
+    "content": "Honeybees can flap their wings up to **200 times per second**.",
+    "category": "animal",
+    "emoji": "🐝",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f54",
+    "content": "Cows have best friends and experience stress when they are separated from them.",
+    "category": "animal",
+    "emoji": "🐄",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f55",
+    "content": "Sea otters hold hands while sleeping to keep from drifting apart.",
+    "category": "animal",
+    "emoji": "🦦",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f56",
+    "content": "Flamingos are not pink at birth; they turn pink from eating brine shrimp and algae.",
+    "category": "animal",
+    "emoji": "🦩",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f57",
+    "content": "Sloths can take up to a month to digest a single leaf.",
+    "category": "animal",
+    "emoji": "🦥",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f58",
+    "content": "A blue whale's heart is the size of a small car and weighs about **600 kilograms**.",
+    "category": "animal",
+    "emoji": "🐋",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f59",
+    "content": "Hummingbirds are the only birds that can fly backwards.",
+    "category": "animal",
+    "emoji": "🐦",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f60",
+    "content": "A snail can sleep for up to **three years** if the weather is too dry or cold.",
+    "category": "animal",
+    "emoji": "🐌",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f61",
+    "content": "Polar bear skin is black, and their fur is actually translucent, not white.",
+    "category": "animal",
+    "emoji": "🐻",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f62",
+    "content": "Butterfly taste buds are located on their feet to help them find host plants.",
+    "category": "animal",
+    "emoji": "🦋",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f63",
+    "content": "A jellyfish is 95% water and has no brain, heart, or bones.",
+    "category": "animal",
+    "emoji": "🪼",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f64",
+    "content": "Male seahorses are the ones that give birth to their young.",
+    "category": "animal",
+    "emoji": "🧜‍♂️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f65",
+    "content": "A newborn kangaroo is only about the size of a lima bean.",
+    "category": "animal",
+    "emoji": "🦘",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f66",
+    "content": "Elephants are the only land animals that cannot jump.",
+    "category": "animal",
+    "emoji": "🐘",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f67",
+    "content": "A cat's jaw cannot move sideways, which is why they cannot chew large chunks of food.",
+    "category": "animal",
+    "emoji": "🐱",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f68",
+    "content": "Turritopsis dohrnii is a jellyfish species that is biologically immortal.",
+    "category": "animal",
+    "emoji": "🪼",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f69",
+    "content": "Ada Lovelace wrote the world's first computer algorithm in **1843** for Charles Babbage's Analytical Engine.",
+    "category": "tech",
+    "emoji": "💻",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f70",
+    "content": "The first website ever created is still online today. It went live at CERN in **1991**.",
+    "category": "tech",
+    "emoji": "🌐",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f71",
+    "content": "Python was named after the British comedy group 'Monty Python,' not the snake.",
+    "category": "tech",
+    "emoji": "🐍",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f72",
+    "content": "The first computer mouse was made of wood in **1964** by Douglas Engelbart.",
+    "category": "tech",
+    "emoji": "🖱️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f73",
+    "content": "The QWERTY keyboard layout was designed to slow typists down so typewriter keys wouldn't jam.",
+    "category": "tech",
+    "emoji": "⌨️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f74",
+    "content": "Domain name registration was completely free until **1995**.",
+    "category": "tech",
+    "emoji": "🏷️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f75",
+    "content": "Over 90% of the world's currency exists only in digital form on computer servers.",
+    "category": "tech",
+    "emoji": "💳",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f76",
+    "content": "JavaScript was created in just **10 days** in 1995 by Brendan Eich.",
+    "category": "tech",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f77",
+    "content": "The first computer bug was a real moth found trapped in a Harvard Mark II computer relay in 1947.",
+    "category": "tech",
+    "emoji": "🪲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f78",
+    "content": "The average smartphone today has millions of times more computing power than all of NASA did in 1969.",
+    "category": "tech",
+    "emoji": "📱",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f79",
+    "content": "The term 'robot' comes from a Czech word meaning 'forced labor.'",
+    "category": "tech",
+    "emoji": "🤖",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f80",
+    "content": "The first electronic computer, ENIAC, weighed more than **27 tons** and took up 1,800 square feet.",
+    "category": "tech",
+    "emoji": "🎛️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f81",
+    "content": "About 30,000 websites are hacked every single day around the world.",
+    "category": "tech",
+    "emoji": "🛡️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f82",
+    "content": "The first email was sent in **1971** by Ray Tomlinson to himself.",
+    "category": "tech",
+    "emoji": "📧",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f83",
+    "content": "Captain Crunch whistle could be used to make free long-distance phone calls in the 1970s.",
+    "category": "tech",
+    "emoji": "😙",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f84",
+    "content": "GPS was originally created for military use before being opened to the public in the 1980s.",
+    "category": "tech",
+    "emoji": "🛰️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f85",
+    "content": "Linux runs 100% of the world's top 500 supercomputers.",
+    "category": "tech",
+    "emoji": "🐧",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f86",
+    "content": "The concept of **zero** as a number and its arithmetic rules were first defined in India by Brahmagupta.",
+    "category": "india",
+    "emoji": "🇮🇳",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f87",
+    "content": "Chess (originally called Chaturanga) was invented in India during the Gupta Empire in the 6th century.",
+    "category": "india",
+    "emoji": "♟️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f88",
+    "content": "Yoga originated in ancient India over **5,000 years ago**.",
+    "category": "india",
+    "emoji": "🧘",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f89",
+    "content": "Takshashila, established around 700 BCE, is considered one of the world's earliest universities.",
+    "category": "india",
+    "emoji": "🏫",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f90",
+    "content": "Mawsynram in Meghalaya, India, is the wettest inhabited place on Earth, receiving over 11,800 mm of rain annually.",
+    "category": "india",
+    "emoji": "🌧️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f91",
+    "content": "The Chail Cricket Ground in Himachal Pradesh is the highest cricket pitch in the world, at 2,444 meters.",
+    "category": "india",
+    "emoji": "🏏",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f92",
+    "content": "Ladakh has a 'Magnetic Hill' that creates an optical illusion making cars appear to roll uphill.",
+    "category": "india",
+    "emoji": "⛰️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f93",
+    "content": "The word 'shampoo' comes from the Sanskrit word 'Champu,' which means to massage or press.",
+    "category": "india",
+    "emoji": "🧴",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f94",
+    "content": "All wild white tigers in the world trace their ancestry back to a single tiger caught in India in 1951.",
+    "category": "india",
+    "emoji": "🐅",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f95",
+    "content": "In 1963, India's first rocket was transported to the launch pad on a bicycle.",
+    "category": "india",
+    "emoji": "🚲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f96",
+    "content": "The Bandra-Worli Sea Link in Mumbai has steel wires equal to the Earth's circumference.",
+    "category": "india",
+    "emoji": "🌉",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f97",
+    "content": "India is home to the world's only floating post office, located on Dal Lake in Srinagar.",
+    "category": "india",
+    "emoji": "✉️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f98",
+    "content": "Ayurveda is one of the oldest systems of medicine, originating in India over **3,000 years ago**.",
+    "category": "india",
+    "emoji": "🌿",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f99",
+    "content": "India has the world's largest postal network, with over 150,000 post offices.",
+    "category": "india",
+    "emoji": "📮",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f100",
+    "content": "The Kumbh Mela gathering is so large that it can be seen from space.",
+    "category": "india",
+    "emoji": "🎡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f101",
+    "content": "Rabindranath Tagore wrote the national anthems for both India and Bangladesh.",
+    "category": "india",
+    "emoji": "✍️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f102",
+    "content": "The game of Snakes and Ladders was created in ancient India to teach children about morals and karma.",
+    "category": "india",
+    "emoji": "🎲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f103",
+    "content": "Learning a new language can literally increase the size of your brain's hippocampus and cerebral cortex.",
+    "category": "motivation",
+    "emoji": "🗣️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f104",
+    "content": "Taking handwritten notes helps you learn and retain information much better than typing them.",
+    "category": "motivation",
+    "emoji": "✍️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f105",
+    "content": "Sleep plays a critical role in memory consolidation, transferring new information into long-term storage.",
+    "category": "motivation",
+    "emoji": "😴",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f106",
+    "content": "Making mistakes triggers brain growth and neural connection reinforcement, meaning errors are vital for learning.",
+    "category": "motivation",
+    "emoji": "❌",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f107",
+    "content": "The spacing effect shows that learning in small, spaced intervals is far more effective than cramming.",
+    "category": "motivation",
+    "emoji": "⏳",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f108",
+    "content": "Teaching a concept to someone else helps you retain about 90% of that information.",
+    "category": "motivation",
+    "emoji": "🧑‍🏫",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f109",
+    "content": "Regular physical exercise increases the production of proteins that support brain health and neurogenesis.",
+    "category": "motivation",
+    "emoji": "🏃",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f110",
+    "content": "Listening to music can activate both the left and right hemispheres of the brain simultaneously.",
+    "category": "motivation",
+    "emoji": "🎵",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f111",
+    "content": "High-density learning requires regular breaks; the Pomodoro Technique optimizes focus.",
+    "category": "motivation",
+    "emoji": "⏱️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f112",
+    "content": "Mentorship accelerates skill acquisition by up to 10 times compared to self-directed learning.",
+    "category": "motivation",
+    "emoji": "🤝",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f113",
+    "content": "Over 80% of personal development comes from establishing small, consistent daily habits.",
+    "category": "motivation",
+    "emoji": "📈",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f114",
+    "content": "Reading fiction increases empathy and emotional intelligence by simulating social experiences.",
+    "category": "motivation",
+    "emoji": "📚",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f115",
+    "content": "Your brain has a 'neuroplasticity' feature, meaning it can adapt and grow at any age.",
+    "category": "motivation",
+    "emoji": "🧠",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f116",
+    "content": "Setting specific, written goals increases your chance of achieving them by over 40%.",
+    "category": "motivation",
+    "emoji": "🎯",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f117",
+    "content": "Deep breathing increases oxygen flow to the brain, instantly reducing stress and improving focus.",
+    "category": "motivation",
+    "emoji": "🧘",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f118",
+    "content": "Consistency in practice is the single most important factor in mastering any complex skill.",
+    "category": "motivation",
+    "emoji": "🔄",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f119",
+    "content": "The first computer programmer was Ada Lovelace in 1843 — over 100 years before modern computers existed.",
+    "category": "tech",
+    "emoji": "💻",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f120",
+    "content": "The first website ever created is still online today. It was published by Tim Berners-Lee in 1991.",
+    "category": "tech",
+    "emoji": "🌐",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f121",
+    "content": "Python is named after the comedy group Monty Python, not the snake.",
+    "category": "tech",
+    "emoji": "🐍",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f122",
+    "content": "The average smartphone today has more computing power than NASA had during the Apollo 11 moon landing.",
+    "category": "tech",
+    "emoji": "📱",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f123",
+    "content": "Many successful engineers wrote their first code as beginners without formal training.",
+    "category": "career",
+    "emoji": "🚀",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f124",
+    "content": "Steve Jobs once said that connecting ideas from different fields creates innovation.",
+    "category": "career",
+    "emoji": "💡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f125",
+    "content": "Many tech founders built their first product while still learning the basics.",
+    "category": "career",
+    "emoji": "🔥",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f126",
+    "content": "The most in-demand skill across all industries in 2025 is creative problem-solving.",
+    "category": "career",
+    "emoji": "🎯",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f127",
+    "content": "The brain remembers information better when learning is spaced over time (the spacing effect).",
+    "category": "brain",
+    "emoji": "🧠",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f128",
+    "content": "Taking short breaks improves concentration and creativity — your brain processes information during rest.",
+    "category": "brain",
+    "emoji": "☕",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f129",
+    "content": "Teaching others helps you remember concepts 90% longer than just reading about them.",
+    "category": "brain",
+    "emoji": "📖",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f130",
+    "content": "Your brain forms new neural connections every single time you learn something new.",
+    "category": "brain",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f131",
+    "content": "The human brain uses about 20% of the body's total energy despite being only 2% of body weight.",
+    "category": "science",
+    "emoji": "🔬",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f132",
+    "content": "Octopuses have three hearts and blue blood.",
+    "category": "science",
+    "emoji": "🐙",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f133",
+    "content": "There are more possible chess games than atoms in the observable universe.",
+    "category": "science",
+    "emoji": "♟️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f134",
+    "content": "The first bug in computing was literally a moth stuck in a computer relay at Harvard in 1947.",
+    "category": "code",
+    "emoji": "🪲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f135",
+    "content": "JavaScript was created in just 10 days by Brendan Eich in 1995.",
+    "category": "code",
+    "emoji": "⚡",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f136",
+    "content": "The first version of Windows was released in 1985 and required only 256 KB of memory.",
+    "category": "code",
+    "emoji": "🪟",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f137",
+    "content": "There are over 700 programming languages in the world. You only need to master a few!",
+    "category": "code",
+    "emoji": "🧑‍💻",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f138",
+    "content": "Consistency matters more than intensity in skill building. Small daily steps beat rare marathons.",
+    "category": "motivation",
+    "emoji": "🌟",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f139",
+    "content": "Many great inventions came from solving everyday problems — not from genius moments.",
+    "category": "motivation",
+    "emoji": "✨",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f140",
+    "content": "The best way to learn something is to build something with it.",
+    "category": "motivation",
+    "emoji": "🛠️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f141",
+    "content": "Every expert was once a beginner. The only difference is they never stopped learning.",
+    "category": "motivation",
+    "emoji": "🏆",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f142",
+    "content": "The world's quietest room is -20.3 dBA, so quiet you can hear your own heartbeat and bones grinding.",
+    "category": "world",
+    "emoji": "🤫",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f143",
+    "content": "Glaciers and ice sheets hold about **69 percent** of the world's freshwater.",
+    "category": "world",
+    "emoji": "🏔️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f144",
+    "content": "The oceans hold about 96.5 percent of all Earth's water, covering 71 percent of the surface.",
+    "category": "world",
+    "emoji": "🌊",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f145",
+    "content": "A day on Earth was only 18 hours long about **1.4 billion years ago**.",
+    "category": "world",
+    "emoji": "🕰️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f146",
+    "content": "There are more trees on Earth than stars in the Milky Way galaxy.",
+    "category": "space",
+    "emoji": "🌲",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f147",
+    "content": "The Sun makes up **99.86 percent** of the total mass of the entire Solar System.",
+    "category": "space",
+    "emoji": "☀️",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f148",
+    "content": "One day on Mercury lasts approximately **59 Earth days**.",
+    "category": "space",
+    "emoji": "🪐",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f149",
+    "content": "The footprints on the moon will not disappear because there is no wind or water to erode them.",
+    "category": "space",
+    "emoji": "👣",
+    "is_published": true,
+    "is_active_today": false
+  },
+  {
+    "id": "f150",
+    "content": "A newborn panda is smaller than a mouse, weighing only about 100 grams.",
+    "category": "animal",
+    "emoji": "🐼",
+    "is_published": true,
+    "is_active_today": false
+  }
+];
+
+function InterestingFactsPage({ data, openModal, fetchAll }: { data: any; openModal: (m: ModalKey) => void; fetchAll: () => void }) {
+  const { facts = [] } = data;
+  const [localFacts, setLocalFacts] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingFact, setEditingFact] = useState<any | null>(null);
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("custom_interesting_facts");
+    if (stored) {
+      try {
+        setLocalFacts(JSON.parse(stored));
+        return;
+      } catch (e) {}
+    }
+
+    if (facts && facts.length > 0) {
+      setLocalFacts(facts);
+    } else {
+      setLocalFacts(staticFallbackFacts);
+    }
+  }, [facts]);
+
+  const handleTogglePublish = async (fact: any) => {
+    const updatedStatus = !fact.is_published;
+    try {
+      await supabase.from("interesting_facts" as any).update({ is_published: updatedStatus }).eq("id", fact.id);
+    } catch (e) {
+      console.warn("DB toggle publish failed, using localStorage fallback", e);
+    }
+    const updatedList = localFacts.map(f => f.id === fact.id ? { ...f, is_published: updatedStatus } : f);
+    localStorage.setItem("custom_interesting_facts", JSON.stringify(updatedList));
+    setLocalFacts(updatedList);
+    
+    if (!updatedStatus) {
+      const pushedFactStr = localStorage.getItem("pushed_fact_of_the_day");
+      if (pushedFactStr) {
+        try {
+          const parsed = JSON.parse(pushedFactStr);
+          if (parsed.id === fact.id) {
+            localStorage.removeItem("pushed_fact_of_the_day");
+            window.dispatchEvent(new Event("storage"));
+          }
+        } catch (e) {}
+      }
+    }
+    fetchAll();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this fact?")) {
+      try {
+        await supabase.from("interesting_facts" as any).delete().eq("id", id);
+      } catch (e) {
+        console.warn("DB delete failed, using localStorage fallback", e);
+      }
+      const updatedList = localFacts.filter(f => f.id !== id);
+      localStorage.setItem("custom_interesting_facts", JSON.stringify(updatedList));
+      setLocalFacts(updatedList);
+      
+      const pushedFactStr = localStorage.getItem("pushed_fact_of_the_day");
+      if (pushedFactStr) {
+        try {
+          const parsed = JSON.parse(pushedFactStr);
+          if (parsed.id === id) {
+            localStorage.removeItem("pushed_fact_of_the_day");
+            window.dispatchEvent(new Event("storage"));
+          }
+        } catch (e) {}
+      }
+      fetchAll();
+    }
+  };
+
+  const handlePushToApp = async (fact: any) => {
+    try {
+      await supabase.from("interesting_facts" as any).update({ is_active_today: false }).neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("interesting_facts" as any).update({ is_active_today: true }).eq("id", fact.id);
+    } catch (e) {
+      console.warn("DB push failed, using localStorage fallback", e);
+    }
+
+    const updatedList = localFacts.map(f => ({
+      ...f,
+      is_active_today: f.id === fact.id
+    }));
+    localStorage.setItem("custom_interesting_facts", JSON.stringify(updatedList));
+    setLocalFacts(updatedList);
+
+    const pushedFact = { ...fact, is_active_today: true };
+    localStorage.setItem("pushed_fact_of_the_day", JSON.stringify(pushedFact));
+    window.dispatchEvent(new Event("storage"));
+    alert(`"${fact.content || fact.text || ""}" has been successfully pushed as the active Fact of the Day!`);
+    fetchAll();
+  };
+
+  const filtered = localFacts.filter((f: any) => {
+    const matchesSearch = (f.content || f.text || "").toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || f.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <PageShell title="Interesting Facts" subtitle={`${localFacts.length} facts in repository`}
+      action={<BtnPrimary onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4" />Create Fact</BtnPrimary>}>
+      
+      <div className="flex gap-3 mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="flex-1 relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+          <input 
+            type="text" 
+            placeholder="Search facts..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-slate-400 font-medium"
+          />
+        </div>
+        <select 
+          value={categoryFilter} 
+          onChange={(e) => setCategoryFilter(e.target.value)} 
+          className="border border-slate-200 rounded-xl px-4 py-2 text-xs font-medium outline-none cursor-pointer bg-white"
+        >
+          <option value="all">All Categories</option>
+          <option value="world">World Facts</option>
+          <option value="space">Space & Universe</option>
+          <option value="human">Human Body</option>
+          <option value="animal">Animals & Nature</option>
+          <option value="tech">Tech & Code</option>
+          <option value="india">India & History</option>
+          <option value="motivation">Inspirational</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map((f: any) => (
+          <Card key={f.id} className="p-5 flex flex-col justify-between border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl shrink-0">{f.emoji || "💡"}</span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">
+                    {f.category}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      onClick={() => handleTogglePublish(f)} 
+                      className={cn(
+                        "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full transition-all",
+                        f.is_published ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" : "bg-slate-100 text-slate-400 hover:bg-slate-200"
+                      )}
+                    >
+                      {f.is_published ? "Published" : "Draft"}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[13px] text-slate-700 font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: (f.content || f.text || "").replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') }} />
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-50">
+              <button 
+                onClick={() => handlePushToApp(f)} 
+                className={cn(
+                  "text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1",
+                  f.is_active_today 
+                    ? "bg-amber-50 text-amber-600 border border-amber-200/50" 
+                    : "text-slate-500 hover:text-amber-600 hover:bg-slate-50"
+                )}
+              >
+                <Zap className={cn("w-3.5 h-3.5", f.is_active_today ? "fill-amber-450 text-amber-550 animate-pulse" : "")} />
+                {f.is_active_today ? "Pushed" : "Push to App"}
+              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setEditingFact(f)} 
+                  className="text-[11px] font-bold text-slate-500 hover:text-indigo-600 px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1"
+                >
+                  <Edit3 className="w-3 h-3" /> Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(f.id)} 
+                  className="text-[11px] font-bold text-rose-500 hover:text-rose-700 px-2.5 py-1 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> Delete
+                </button>
+              </div>
+            </div>
+          </Card>
+        ))}
+
+        {filtered.length === 0 && (
+          <div className="col-span-2 py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <Lightbulb className="w-12 h-12 mx-auto mb-3 opacity-30 animate-pulse" />
+            <p className="text-xs font-semibold">No interesting facts matched your search.</p>
+          </div>
+        )}
+      </div>
+
+      {(showAddModal || editingFact) && (
+        <FactModal 
+          onClose={() => { setShowAddModal(false); setEditingFact(null); }} 
+          onSave={async (savedFact?: any) => {
+            let updatedList = [...localFacts];
+            if (editingFact) {
+              updatedList = updatedList.map(f => f.id === editingFact.id ? { ...f, ...savedFact } : f);
+            } else {
+              updatedList.unshift({ id: `custom-${Date.now()}`, ...savedFact, is_published: true, is_active_today: false });
+            }
+            localStorage.setItem("custom_interesting_facts", JSON.stringify(updatedList));
+            setLocalFacts(updatedList);
+            fetchAll();
+          }} 
+          editingFact={editingFact}
+        />
+      )}
+    </PageShell>
+  );
+}
+
+function FactModal({ onClose, onSave, editingFact }: { onClose: () => void; onSave: (savedFact: any) => void; editingFact?: any }) {
+  const [content, setContent] = useState(editingFact?.content || editingFact?.text || "");
+  const [category, setCategory] = useState(editingFact?.category || "tech");
+  const [emoji, setEmoji] = useState(editingFact?.emoji || "💡");
+  const [isPublished, setIsPublished] = useState(editingFact ? editingFact.is_published : true);
+  const supabase = createClient();
+
+  const handleSave = async () => {
+    if (!content) return;
+    const payload = { content, category, emoji, is_published: isPublished };
+    try {
+      if (editingFact) {
+        if (typeof editingFact.id === "string" && editingFact.id.length > 20) {
+          await supabase.from("interesting_facts" as any).update(payload).eq("id", editingFact.id);
+        }
+      } else {
+        await supabase.from("interesting_facts" as any).insert(payload);
+      }
+    } catch (e) {
+      console.warn("DB save failed", e);
+    }
+    onSave(payload);
+    onClose();
+  };
+
+  const categoryEmojis: Record<string, string> = {
+    world: "🌍", space: "🪐", human: "🧬", animal: "🐙", tech: "💻", india: "🇮🇳", motivation: "💡"
+  };
+
+  return (
+    <ModalWrap title={editingFact ? "Edit Fact" : "Create Fact"} onClose={onClose} onSave={handleSave}>
+      <FieldRow label="Category">
+        <select 
+          value={category} 
+          onChange={(e) => { 
+            setCategory(e.target.value); 
+            setEmoji(categoryEmojis[e.target.value] || "💡"); 
+          }} 
+          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium bg-white"
+        >
+          <option value="world">Amazing World Facts</option>
+          <option value="space">Space & Universe</option>
+          <option value="human">Human Body</option>
+          <option value="animal">Animals & Nature</option>
+          <option value="tech">Tech & Code</option>
+          <option value="india">India & History</option>
+          <option value="motivation">Inspirational</option>
+        </select>
+      </FieldRow>
+      <FieldRow label="Emoji">
+        <input 
+          type="text" 
+          value={emoji} 
+          onChange={(e) => setEmoji(e.target.value)} 
+          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none"
+        />
+      </FieldRow>
+      <FieldRow label="Fact Content (Supports Markdown **bolding**)">
+        <textarea 
+          value={content} 
+          onChange={(e) => setContent(e.target.value)} 
+          placeholder="e.g. Sharks existed before trees first appeared on Earth—by nearly **50 million years**." 
+          rows={4} 
+          className="w-full border border-slate-200 rounded-xl p-3 text-xs font-medium outline-none focus:ring-1 focus:ring-slate-400"
+        />
+      </FieldRow>
+      <FieldRow label="Status">
+        <label className="flex items-center gap-2 cursor-pointer mt-1">
+          <input 
+            type="checkbox" 
+            checked={isPublished} 
+            onChange={(e) => setIsPublished(e.target.checked)} 
+            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          <span className="text-xs font-semibold text-slate-700">Publish Immediately</span>
+        </label>
+      </FieldRow>
+    </ModalWrap>
+  );
+}
+
 function MessagesPage({ data }: { data: any }) {
   const { messages = [] } = data;
   return (
@@ -2777,7 +4283,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
     students: [], mentors: [], unassigned: [], courses: [], sessions: [], enrollments: [],
     reviews: [], messages: [], mapping: [], circles: [], registrations: [],
     questionnaires: [], inspiration: [], gratitude_messages: [], csr_sponsors: [],
-    games: [], studentQuiz: [], mentorQuiz: [], feature_flags: [],
+    games: [], studentQuiz: [], mentorQuiz: [], feature_flags: [], facts: [],
   });
 
   const [selectedCourse, setSelectedCourse] = useState<MentorCourse | null>(null);
@@ -2804,6 +4310,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       sessions: "/admin/sessions",
       reviews: "/admin/reviews",
       inspiration: "/admin/inspiration",
+      facts: "/admin/facts",
       messages: "/admin/messages",
       "gratitude-wall": "/admin/gratitude-wall",
       notes: "/admin/notes",
@@ -2891,7 +4398,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
     const [profilesList, courses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
-      games, studentQuiz, mentorQuiz, feature_flags] = await Promise.all([
+      games, studentQuiz, mentorQuiz, feature_flags, facts] = await Promise.all([
       q(() => supabase.from("profiles").select("*").limit(500)),
       q(() => supabase.from("courses").select("*").limit(200)),
       q(() => supabase.from("sessions").select("*").limit(200)),
@@ -2909,6 +4416,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       q(() => supabase.from("student_quiz_responses").select("*").limit(200)),
       q(() => supabase.from("mentor_quiz_responses").select("*").limit(200)),
       q(() => supabase.from("feature_flags").select("*").limit(200)),
+      q(() => supabase.from("interesting_facts" as any).select("*").order("created_at", { ascending: false })),
     ]);
 
     const mapProfile = (p: any, targetRole: "STUDENT" | "MENTOR" | "UNASSIGNED") => {
@@ -2974,7 +4482,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
 
     setData({ students, mentors, unassigned, courses: mappedCourses, sessions, enrollments, reviews, messages, mapping,
       circles, registrations, questionnaires, inspiration, gratitude_messages, csr_sponsors,
-      games, studentQuiz, mentorQuiz, feature_flags });
+      games, studentQuiz, mentorQuiz, feature_flags, facts });
   }, []);
 
   useEffect(() => {
@@ -3139,6 +4647,7 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
       case "sessions":       return <SessionsPage data={data} openModal={openModal} />;
       case "reviews":        return <ReviewsPage data={data} />;
       case "inspiration":    return <InspirationPage data={data} openModal={openModal} />;
+      case "facts":          return <InterestingFactsPage data={data} openModal={openModal} fetchAll={fetchAll} />;
       case "messages":       return <MessagesPage data={data} />;
       case "gratitude-wall": return <GratitudeWallPage data={data} />;
       case "notes":          return <MentorNotes />;
