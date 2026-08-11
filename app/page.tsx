@@ -1945,7 +1945,7 @@ export default function OnboardingFlow() {
           setEmail(guestEmail);
           setRole(selectedRole);
           
-          setState(selectedRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE");
+          setState(selectedRole === "STUDENT" ? "DASHBOARD_MAIN" : "MENTOR_DASHBOARD");
           return;
         }
       }
@@ -1959,7 +1959,7 @@ export default function OnboardingFlow() {
     setName(guestName);
     setEmail(guestEmail);
     setRole(selectedRole);
-    setState(selectedRole === "STUDENT" ? "STUDENT_PROFILE" : "MENTOR_PROFILE");
+    setState(selectedRole === "STUDENT" ? "DASHBOARD_MAIN" : "MENTOR_DASHBOARD");
   };
 
   const handleSignOut = async () => {
