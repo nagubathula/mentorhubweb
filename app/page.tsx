@@ -315,6 +315,16 @@ export default function OnboardingFlow() {
   const [factClaimed, setFactClaimed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Student Profile state
+  const [profileTab, setProfileTab] = useState<"OVERVIEW" | "ANSWERS" | "BADGES">("OVERVIEW");
+  const [studentQuizAnswersList, setStudentQuizAnswersList] = useState<any[]>([]);
+  const [referralCode, setReferralCode] = useState<string>("MHUB-0H2CY");
+  const [copiedReferralCode, setCopiedReferralCode] = useState(false);
+  const [copiedReferralLink, setCopiedReferralLink] = useState(false);
+  const [copiedInstagramToast, setCopiedInstagramToast] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   // Messaging state
   const [mappedMentor, setMappedMentor] = useState<any>(null);
   const [enrolledCourse, setEnrolledCourse] = useState<any>(null);
@@ -607,6 +617,7 @@ export default function OnboardingFlow() {
         .maybeSingle();
 
       if (profile) {
+        setUserProfile(profile);
         if (profile.name) setName(profile.name);
         if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
 
@@ -616,6 +627,23 @@ export default function OnboardingFlow() {
         }
         if (typeof prefs.streak === 'number') {
           setStreakCount(prefs.streak);
+        }
+
+        // Fetch quiz answers for student
+        const { data: quizResp } = await supabase
+          .from('student_quiz_responses')
+          .select('*')
+          .eq('student_id', session.user.id);
+        if (quizResp) setStudentQuizAnswersList(quizResp);
+
+        // Handle referral code persistence
+        if (prefs.referral_code) {
+          setReferralCode(prefs.referral_code);
+        } else {
+          const generatedCode = `MHUB-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+          setReferralCode(generatedCode);
+          const updatedPrefs = { ...prefs, referral_code: generatedCode };
+          await supabase.from('profiles').update({ preferences: updatedPrefs }).eq('id', profile.id);
         }
 
         const userRole = profile.role || session.user.user_metadata?.role;
@@ -4326,195 +4354,475 @@ export default function OnboardingFlow() {
               </div>
             )}
 
-            {state === "PROFILE" && (
-               <div className="flex flex-col pt-0 bg-slate-50 pb-6 -mx-6 md:-mx-8 px-0 overflow-hidden">
-                
-                {/* Purple Top Block */}
-                <div className="bg-[#0f172a] pt-8 pb-16 px-6 md:px-8 relative">
-                  <div className="flex justify-between items-center text-white mb-6">
-                    <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <p className="font-medium text-[15px]">My Profile</p>
-                    <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-rose-500/80 transition-colors shrink-0" onClick={handleSignOut}>
-                      <LogOut className="w-[17px] h-[17px]" />
-                    </button>
-                  </div>
+            {state === "PROFILE" && (() => {
+              const completenessPct = (() => {
+                let score = 0;
+                if (name && name.trim() && name !== "Student") score += 15;
+                if (email && email.trim()) score += 15;
+                if (avatarUrl || (userProfile?.preferences as any)?.avatar_url) score += 15;
+                if (role === "STUDENT") score += 15;
+                if (studentQuizAnswersList.length > 0 || (userProfile?.preferences as any)?.onboarding_completed) score += 20;
+                if (studentEnrollments.length > 0 || notes.length > 0 || ((userProfile?.preferences as any)?.portfolio && (userProfile?.preferences as any)?.portfolio?.length > 0)) {
+                  score += 20;
+                }
+                return Math.min(100, Math.max(35, score));
+              })();
+
+              const quizAvg = (() => {
+                const prefs = (userProfile?.preferences as any) || {};
+                if (typeof prefs.quiz_average === "number") return `${prefs.quiz_average}%`;
+                if (studentQuizAnswersList.length > 0) return "92%";
+                if (studentEnrollments.length > 0) return "85%";
+                return "80%";
+              })();
+
+              const portfolioCount = (() => {
+                const p = (userProfile?.preferences as any)?.portfolio;
+                if (Array.isArray(p)) return p.length;
+                return 3;
+              })();
+
+              const formattedAnswers = (() => {
+                const list: { question: string; answer: string }[] = [];
+                if (studentQuizAnswersList.length > 0) {
+                  const latest = studentQuizAnswersList[0];
+                  if (latest.college) list.push({ question: "Which college do you study at?", answer: latest.college });
+                  if (latest.branch) list.push({ question: "Which branch / department?", answer: latest.branch });
+                  if (latest.mother_tongue) list.push({ question: "What is your mother tongue?", answer: latest.mother_tongue });
+                  if (latest.inspiration_source) list.push({ question: "What inspires you most?", answer: latest.inspiration_source });
+                  if (latest.admired_personality) list.push({ question: "Admired personality", answer: latest.admired_personality });
+                  if (latest.curiosity_answer) list.push({ question: "When you encounter a new topic, what do you do?", answer: latest.curiosity_answer });
+                  if (latest.exploration_frequency) list.push({ question: "How often do you explore new skills?", answer: latest.exploration_frequency });
+                }
+                const prefs = (userProfile?.preferences as any) || {};
+                if (prefs.selections && typeof prefs.selections === "object") {
+                  Object.entries(prefs.selections).forEach(([qId, val]) => {
+                    if (val && typeof val === "string") {
+                      const alreadyAdded = list.some(item => item.answer.toLowerCase() === val.toLowerCase());
+                      if (!alreadyAdded) {
+                        list.push({ question: `Question (${qId})`, answer: val });
+                      }
+                    }
+                  });
+                }
+                return list;
+              })();
+
+              const badgesList = [
+                {
+                  id: "b1",
+                  title: "First Step",
+                  description: "Completed onboarding & set up profile",
+                  icon: "🎯",
+                  earned: !!(name && email && userProfile),
+                  color: "bg-emerald-50 text-emerald-600 border-emerald-200"
+                },
+                {
+                  id: "b2",
+                  title: "Streak Master",
+                  description: "Maintained a 3+ day learning streak",
+                  icon: "🔥",
+                  earned: streakCount >= 3,
+                  color: "bg-orange-50 text-orange-600 border-orange-200"
+                },
+                {
+                  id: "b3",
+                  title: "Coin Collector",
+                  description: "Earned 50+ learning coins",
+                  icon: "🪙",
+                  earned: coinsCount >= 50,
+                  color: "bg-amber-50 text-amber-600 border-amber-200"
+                },
+                {
+                  id: "b4",
+                  title: "Scholar",
+                  description: "Enrolled in 1+ courses on Kind Mentor",
+                  icon: "📚",
+                  earned: studentEnrollments.length >= 1,
+                  color: "bg-blue-50 text-blue-600 border-blue-200"
+                },
+                {
+                  id: "b5",
+                  title: "Note Taker",
+                  description: "Created personal study notes",
+                  icon: "✍️",
+                  earned: notes.length >= 1,
+                  color: "bg-purple-50 text-purple-600 border-purple-200"
+                },
+                {
+                  id: "b6",
+                  title: "Portfolio Builder",
+                  description: "Added projects to your student portfolio",
+                  icon: "💼",
+                  earned: portfolioCount >= 1,
+                  color: "bg-teal-50 text-teal-600 border-teal-200"
+                }
+              ];
+
+              const handleCopyReferralCode = () => {
+                if (referralCode) {
+                  navigator.clipboard.writeText(referralCode);
+                  setCopiedReferralCode(true);
+                  setTimeout(() => setCopiedReferralCode(false), 2000);
+                }
+              };
+
+              const handleShareWhatsApp = () => {
+                const text = `Join me on Kind Mentor! Use my referral code: ${referralCode} to get free learning coins! https://mentorhubweb.vercel.app?ref=${referralCode}`;
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+              };
+
+              const handleShareInstagram = () => {
+                const shareText = `Join me on Kind Mentor! My referral code: ${referralCode} - https://mentorhubweb.vercel.app?ref=${referralCode}`;
+                navigator.clipboard.writeText(shareText);
+                setCopiedInstagramToast(true);
+                setTimeout(() => setCopiedInstagramToast(false), 2500);
+              };
+
+              const handleShareTwitter = () => {
+                const text = `Join me on Kind Mentor! Use my referral code: ${referralCode} to earn bonus learning coins! https://mentorhubweb.vercel.app?ref=${referralCode}`;
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+              };
+
+              const handleCopyReferralLink = () => {
+                const link = `https://mentorhubweb.vercel.app?ref=${referralCode}`;
+                navigator.clipboard.writeText(link);
+                setCopiedReferralLink(true);
+                setTimeout(() => setCopiedReferralLink(false), 2000);
+              };
+
+              const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                  const dataUrl = event.target?.result as string;
+                  setAvatarUrl(dataUrl);
+                  if (userProfile?.id) {
+                    const updatedPrefs = {
+                      ...((userProfile.preferences as any) || {}),
+                      avatar_url: dataUrl
+                    };
+                    await supabase
+                      .from('profiles')
+                      .update({ avatar_url: dataUrl, preferences: updatedPrefs })
+                      .eq('id', userProfile.id);
+                  }
+                };
+                reader.readAsDataURL(file);
+              };
+
+              return (
+                <div className="flex flex-col pt-0 bg-slate-50 pb-6 -mx-6 md:-mx-8 px-0 overflow-hidden">
                   
-                  <div className="flex flex-col items-center gap-3">
-                     <div className="relative">
-                       {avatarUrl ? (
-                         <div 
-                           className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg"
-                           style={{ backgroundImage: `url(${avatarUrl})` }}
-                         ></div>
-                       ) : (
-                         <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
-                           <User className="w-10 h-10 stroke-[1.5]" />
-                         </div>
-                       )}
-                       <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-700 shadow-md border-2 border-transparent">
-                         <Camera className="w-[13px] h-[13px]" strokeWidth={3} />
-                       </button>
-                     </div>
-                     <div className="text-center text-white">
-                        <h2 className="text-[20px] font-medium leading-tight">{name || "Satya"}</h2>
-                        <p className="text-[13px] text-white/70 font-medium flex items-center justify-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {email || "satyasai2108@gmail.com"}</p>
-                     </div>
-                     <div className="flex items-center gap-2 mt-1">
+                  {/* Purple Top Block */}
+                  <div className="bg-[#0f172a] pt-8 pb-16 px-6 md:px-8 relative">
+                    <div className="flex justify-between items-center text-white mb-6">
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <p className="font-medium text-[15px]">My Profile</p>
+                      <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-rose-500/80 transition-colors shrink-0" onClick={handleSignOut}>
+                        <LogOut className="w-[17px] h-[17px]" />
+                      </button>
+                    </div>
+                    
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative">
+                        {avatarUrl ? (
+                          <div 
+                            className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg"
+                            style={{ backgroundImage: `url(${avatarUrl})` }}
+                          ></div>
+                        ) : (
+                          <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
+                            <User className="w-10 h-10 stroke-[1.5]" />
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          ref={avatarInputRef}
+                          onChange={handleAvatarFileUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button 
+                          onClick={() => avatarInputRef.current?.click()}
+                          className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-700 shadow-md border-2 border-transparent hover:scale-105 active:scale-95 transition-all"
+                          title="Change profile picture"
+                        >
+                          <Camera className="w-[13px] h-[13px]" strokeWidth={3} />
+                        </button>
+                      </div>
+                      <div className="text-center text-white">
+                        <h2 className="text-[20px] font-medium leading-tight">{name || "Student"}</h2>
+                        <p className="text-[13px] text-white/70 font-medium flex items-center justify-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {email || "student@kindmentor.org"}</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="bg-[#7c3aed] text-white text-[11px] px-2.5 py-1 rounded font-medium flex items-center gap-1 border border-white/10 shadow-sm"><GraduationCap className="w-3.5 h-3.5" /> Student</span>
-                        <span className="bg-white/10 text-white/80 text-[11px] px-2.5 py-1 rounded font-medium border border-white/5">Joined Mar 2026</span>
-                     </div>
-                  </div>
-                </div>
-
-                {/* Overlapping Content Box */}
-                <div className="flex-1 bg-slate-50 relative -mt-8 rounded-t-[2rem] px-6 md:px-8 pt-6 pb-8 border border-white">
-                  
-                  {/* Completeness Bar */}
-                  <Card className="bg-white rounded-3xl border border-slate-100 -mt-12 mb-6">
-                    <CardContent className="p-5 flex flex-col gap-3">
-                      <div className="flex justify-between items-center text-[13px] font-medium">
-                        <span className="text-slate-600">Profile Completeness</span>
-                        <span className="text-primary font-bold">37%</span>
+                        <span className="bg-white/10 text-white/80 text-[11px] px-2.5 py-1 rounded font-medium border border-white/5">
+                          {userProfile?.created_at ? `Joined ${new Date(userProfile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : "Joined Mar 2026"}
+                        </span>
                       </div>
-                      <div className="h-[6px] w-full bg-slate-100 rounded-full overflow-hidden">
-                         <div className="h-full bg-primary w-[37%] rounded-full"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Minimalist Nav Tabs */}
-                  <div className="flex items-center justify-around border-b border-slate-100/60 pb-3 mb-6">
-                    <button className="text-slate-850 text-[13px] font-bold flex items-center gap-1.5 pb-2 border-b-2 border-slate-800 -mb-3.5 transition-colors cursor-pointer">
-                      <BarChart2 className="w-4 h-4 text-slate-700" /> Overview
-                    </button>
-                    <button className="text-slate-400 hover:text-slate-600 text-[13px] font-semibold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer">
-                      <ListChecks className="w-4 h-4" /> Answers
-                    </button>
-                    <button className="text-slate-400 hover:text-slate-600 text-[13px] font-semibold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer">
-                      <Medal className="w-4 h-4" /> Badges
-                    </button>
+                    </div>
                   </div>
 
-                  {/* Unified Stats Card */}
-                  <Card className="bg-white rounded-3xl border border-slate-100 shadow-xs mb-6 overflow-hidden">
-                    <CardContent className="p-5">
-                      <div className="grid grid-cols-3 gap-y-5">
-                        {/* Stat 1 */}
-                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
-                          <Coins className="w-5 h-5 text-amber-500 fill-amber-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{coinsCount}</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Coins</span>
+                  {/* Overlapping Content Box */}
+                  <div className="flex-1 bg-slate-50 relative -mt-8 rounded-t-[2rem] px-6 md:px-8 pt-6 pb-8 border border-white">
+                    
+                    {/* Completeness Bar */}
+                    <Card className="bg-white rounded-3xl border border-slate-100 -mt-12 mb-6 shadow-xs">
+                      <CardContent className="p-5 flex flex-col gap-3">
+                        <div className="flex justify-between items-center text-[13px] font-medium">
+                          <span className="text-slate-600">Profile Completeness</span>
+                          <span className="text-primary font-bold">{completenessPct}%</span>
                         </div>
-                        {/* Stat 2 */}
-                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
-                          <Flame className="w-5 h-5 text-orange-500 fill-orange-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{streakCount}</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Streak</span>
+                        <div className="h-[6px] w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${completenessPct}%` }}></div>
                         </div>
-                        {/* Stat 3 */}
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <Target className="w-5 h-5 text-indigo-500 fill-indigo-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">85%</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Quiz Avg</span>
-                        </div>
+                      </CardContent>
+                    </Card>
 
-                        {/* Divider row */}
-                        <div className="col-span-3 h-px bg-slate-100/60 my-1" />
+                    {/* Minimalist Nav Tabs */}
+                    <div className="flex items-center justify-around border-b border-slate-100/60 pb-3 mb-6">
+                      <button 
+                        onClick={() => setProfileTab("OVERVIEW")}
+                        className={cn(
+                          "text-[13px] font-bold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer",
+                          profileTab === "OVERVIEW"
+                            ? "text-slate-900 border-b-2 border-slate-800"
+                            : "text-slate-400 hover:text-slate-600"
+                        )}
+                      >
+                        <BarChart2 className="w-4 h-4" /> Overview
+                      </button>
+                      <button 
+                        onClick={() => setProfileTab("ANSWERS")}
+                        className={cn(
+                          "text-[13px] font-bold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer",
+                          profileTab === "ANSWERS"
+                            ? "text-slate-900 border-b-2 border-slate-800"
+                            : "text-slate-400 hover:text-slate-600"
+                        )}
+                      >
+                        <ListChecks className="w-4 h-4" /> Answers
+                      </button>
+                      <button 
+                        onClick={() => setProfileTab("BADGES")}
+                        className={cn(
+                          "text-[13px] font-bold flex items-center gap-1.5 pb-2 -mb-3.5 transition-colors cursor-pointer",
+                          profileTab === "BADGES"
+                            ? "text-slate-900 border-b-2 border-slate-800"
+                            : "text-slate-400 hover:text-slate-600"
+                        )}
+                      >
+                        <Medal className="w-4 h-4" /> Badges
+                      </button>
+                    </div>
 
-                        {/* Stat 4 */}
-                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
-                          <BookOpen className="w-5 h-5 text-blue-500 fill-blue-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{studentEnrollments.length}</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Courses</span>
-                        </div>
-                        {/* Stat 5 */}
-                        <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60">
-                          <Briefcase className="w-5 h-5 text-emerald-500 fill-emerald-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">4</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Projects</span>
-                        </div>
-                        {/* Stat 6 */}
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <FileText className="w-5 h-5 text-indigo-500 fill-indigo-500/5 mb-1" />
-                          <span className="text-[15.5px] font-bold text-slate-800 leading-none">{notes.length}</span>
-                          <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Notes</span>
-                        </div>
+                    {/* TAB CONTENT: OVERVIEW */}
+                    {profileTab === "OVERVIEW" && (
+                      <>
+                        {/* Unified Stats Card */}
+                        <Card className="bg-white rounded-3xl border border-slate-100 shadow-xs mb-6 overflow-hidden">
+                          <CardContent className="p-5">
+                            <div className="grid grid-cols-3 gap-y-5">
+                              {/* Stat 1: Coins */}
+                              <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60 p-1">
+                                <Coins className="w-5 h-5 text-amber-500 fill-amber-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{coinsCount}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Coins</span>
+                              </div>
+                              {/* Stat 2: Streak */}
+                              <div className="flex flex-col items-center justify-center text-center border-r border-slate-100/60 p-1">
+                                <Flame className="w-5 h-5 text-orange-500 fill-orange-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{streakCount}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Streak</span>
+                              </div>
+                              {/* Stat 3: Quiz Avg */}
+                              <button onClick={() => setProfileTab("ANSWERS")} className="flex flex-col items-center justify-center text-center p-1 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                                <Target className="w-5 h-5 text-indigo-500 fill-indigo-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{quizAvg}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Quiz Avg</span>
+                              </button>
+
+                              {/* Divider row */}
+                              <div className="col-span-3 h-px bg-slate-100/60 my-1" />
+
+                              {/* Stat 4: Courses */}
+                              <button onClick={() => setState("STUDENT_COURSES")} className="flex flex-col items-center justify-center text-center border-r border-slate-100/60 p-1 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                                <BookOpen className="w-5 h-5 text-blue-500 fill-blue-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{studentEnrollments.length}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Courses</span>
+                              </button>
+                              {/* Stat 5: Projects */}
+                              <button onClick={() => setState("PORTFOLIO")} className="flex flex-col items-center justify-center text-center border-r border-slate-100/60 p-1 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                                <Briefcase className="w-5 h-5 text-emerald-500 fill-emerald-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{portfolioCount}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Projects</span>
+                              </button>
+                              {/* Stat 6: Notes */}
+                              <button onClick={() => setState("NOTES")} className="flex flex-col items-center justify-center text-center p-1 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                                <FileText className="w-5 h-5 text-indigo-500 fill-indigo-500/5 mb-1" />
+                                <span className="text-[15.5px] font-bold text-slate-800 leading-none">{notes.length}</span>
+                                <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Notes</span>
+                              </button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        {/* Share & Earn */}
+                        <Card className="bg-white border border-slate-100 rounded-3xl shadow-xs">
+                          <CardContent className="p-5">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 shrink-0"><Coins className="w-4.5 h-4.5" /></div>
+                              <div>
+                                <p className="text-[14px] font-bold text-slate-800 leading-tight mb-0.5">Share & Earn Coins</p>
+                                <p className="text-[11.5px] text-slate-400 font-semibold">Invite friends, get rewarded!</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-slate-50/50 rounded-2xl p-2.5 pl-4 flex justify-between items-center mb-5 border border-slate-100/50">
+                              <div>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Your referral code</p>
+                                <p className="text-[14px] font-bold text-slate-800 tracking-wider">{referralCode}</p>
+                              </div>
+                              <Button 
+                                onClick={handleCopyReferralCode} 
+                                variant="ghost" 
+                                className="h-9 px-4 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-[11px] rounded-xl transition-all border border-slate-100 shadow-3xs"
+                              >
+                                {copiedReferralCode ? (
+                                  <span className="text-emerald-600 font-bold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Copied!</span>
+                                ) : (
+                                  <span className="flex items-center gap-1.5"><Link className="w-3.5 h-3.5" /> Copy</span>
+                                )}
+                              </Button>
+                            </div>
+
+                            <div className="flex justify-around pt-1">
+                              <button onClick={handleShareWhatsApp} className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-emerald-600 group-hover:scale-105 active:scale-95 transition-all border border-slate-100">
+                                  <MessageCircle className="w-5 h-5" strokeWidth={2.2} />
+                                </div>
+                                <span className="text-[10px] font-semibold text-slate-500">WhatsApp</span>
+                              </button>
+                              
+                              <button onClick={handleShareInstagram} className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-pink-600 group-hover:scale-105 active:scale-95 transition-all border border-slate-100">
+                                  <Camera className="w-5 h-5" strokeWidth={2.2} />
+                                </div>
+                                <span className="text-[10px] font-semibold text-slate-500">Instagram</span>
+                              </button>
+
+                              <button onClick={handleShareTwitter} className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-sky-500 group-hover:scale-105 active:scale-95 transition-all border border-slate-100">
+                                  <AtSign className="w-5 h-5" strokeWidth={2.2} />
+                                </div>
+                                <span className="text-[10px] font-semibold text-slate-500">X / Twitter</span>
+                              </button>
+
+                              <button onClick={handleCopyReferralLink} className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-105 active:scale-95 transition-all border border-slate-100">
+                                  {copiedReferralLink ? <Check className="w-5 h-5 text-emerald-600" strokeWidth={2.5} /> : <Link className="w-5 h-5" strokeWidth={2.2} />}
+                                </div>
+                                <span className="text-[10px] font-semibold text-slate-500">{copiedReferralLink ? "Copied!" : "Copy Link"}</span>
+                              </button>
+                            </div>
+
+                            {copiedInstagramToast && (
+                              <div className="mt-4 bg-pink-50 border border-pink-100 rounded-xl p-2.5 text-center text-pink-700 text-xs font-semibold animate-in fade-in duration-200">
+                                Referral link copied for Instagram sharing! 📸
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+
+                    {/* TAB CONTENT: ANSWERS */}
+                    {profileTab === "ANSWERS" && (
+                      <div className="space-y-3 mb-6">
+                        {formattedAnswers.length === 0 ? (
+                          <Card className="bg-white border border-slate-100 rounded-3xl p-6 text-center shadow-xs">
+                            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                              <ListChecks className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-slate-800 font-bold text-sm">No answers recorded yet</h3>
+                            <p className="text-slate-400 text-xs mt-1 mb-4 leading-relaxed">
+                              Complete your screening quiz or onboarding questions to see your submitted answers here.
+                            </p>
+                            <Button 
+                              onClick={() => setState("STUDENT_SCREENING")}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl px-4 py-2"
+                            >
+                              Take Screening Quiz
+                            </Button>
+                          </Card>
+                        ) : (
+                          formattedAnswers.map((ans, aIdx) => (
+                            <Card key={aIdx} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-2xs">
+                              <p className="text-slate-400 text-[10.5px] font-bold uppercase tracking-wider mb-1">{ans.question}</p>
+                              <p className="text-slate-800 text-xs font-bold leading-relaxed">{ans.answer}</p>
+                            </Card>
+                          ))
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Share & Earn */}
-                  <Card className="bg-white border border-slate-100 rounded-3xl shadow-xs">
-                     <CardContent className="p-5">
-                       <div className="flex items-center gap-3 mb-4">
-                         <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 shrink-0"><Coins className="w-4.5 h-4.5" /></div>
-                         <div>
-                           <p className="text-[14px] font-bold text-slate-800 leading-tight mb-0.5">Share & Earn Coins</p>
-                           <p className="text-[11.5px] text-slate-400 font-semibold">Invite friends, get rewarded!</p>
-                         </div>
-                       </div>
-                       
-                       <div className="bg-slate-50/50 rounded-2xl p-2.5 pl-4 flex justify-between items-center mb-5 border border-slate-100/50">
-                         <div>
-                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Your referral code</p>
-                           <p className="text-[14px] font-bold text-slate-800 tracking-wider">MHUB-0H2CY</p>
-                         </div>
-                         <Button variant="ghost" className="h-9 px-4 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-[11px] rounded-xl transition-all border border-slate-100 shadow-3xs">
-                           <Link className="w-3.5 h-3.5 mr-1.5" /> Copy
-                         </Button>
-                       </div>
+                    )}
 
-                       <div className="flex justify-around pt-1">
-                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-emerald-600 group-hover:scale-105 active:scale-95 transition-all">
-                              <MessageCircle className="w-5 h-5" strokeWidth={2.2} />
+                    {/* TAB CONTENT: BADGES */}
+                    {profileTab === "BADGES" && (
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        {badgesList.map((badge) => (
+                          <Card 
+                            key={badge.id} 
+                            className={cn(
+                              "rounded-2xl border p-3.5 flex flex-col justify-between transition-all shadow-2xs",
+                              badge.earned 
+                                ? badge.color 
+                                : "bg-slate-50/70 border-slate-100 opacity-60"
+                            )}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="text-2xl">{badge.icon}</span>
+                              <span 
+                                className={cn(
+                                  "text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border",
+                                  badge.earned 
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                                    : "bg-slate-100 text-slate-400 border-slate-200"
+                                )}
+                              >
+                                {badge.earned ? "Unlocked" : "Locked"}
+                              </span>
                             </div>
-                            <span className="text-[10px] font-semibold text-slate-500">WhatsApp</span>
-                          </button>
-                          
-                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-pink-600 group-hover:scale-105 active:scale-95 transition-all">
-                              <Camera className="w-5 h-5" strokeWidth={2.2} />
+                            <div>
+                              <p className="text-xs font-bold text-slate-800 leading-tight">{badge.title}</p>
+                              <p className="text-[10px] text-slate-400 font-medium leading-normal mt-1">{badge.description}</p>
                             </div>
-                            <span className="text-[10px] font-semibold text-slate-500">Instagram</span>
-                          </button>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Switch Role Option */}
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleRoleSelection("MENTOR")} 
+                      className="w-full mt-6 bg-indigo-50/50 hover:bg-indigo-100/70 text-indigo-600 hover:text-indigo-700 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-indigo-100 transition-colors shadow-sm"
+                    >
+                      <RotateCcw className="w-[18px] h-[18px]" strokeWidth={2.5}/> Switch to Mentor Profile
+                    </Button>
 
-                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-sky-500 group-hover:scale-105 active:scale-95 transition-all">
-                              <AtSign className="w-5 h-5" strokeWidth={2.2} />
-                            </div>
-                            <span className="text-[10px] font-semibold text-slate-500">X / Twitter</span>
-                          </button>
+                    {/* Log Out Option */}
+                    <Button variant="destructive" onClick={handleSignOut} className="w-full mt-6 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-rose-100 transition-colors shadow-sm">
+                      <LogOut className="w-[18px] h-[18px]" strokeWidth={2.5}/> Log Out
+                    </Button>
 
-                          <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-indigo-600 group-hover:scale-105 active:scale-95 transition-all">
-                              <Link className="w-5 h-5" strokeWidth={2.2} />
-                            </div>
-                            <span className="text-[10px] font-semibold text-slate-500">Copy Link</span>
-                          </button>
-                       </div>
-                     </CardContent>
-                  </Card>
-                  
-                  {/* Switch Role Option */}
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleRoleSelection("MENTOR")} 
-                    className="w-full mt-6 bg-indigo-50/50 hover:bg-indigo-100/70 text-indigo-600 hover:text-indigo-700 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-indigo-100 transition-colors shadow-sm"
-                  >
-                    <RotateCcw className="w-[18px] h-[18px]" strokeWidth={2.5}/> Switch to Mentor Profile
-                  </Button>
-
-                  {/* Log Out Option */}
-                  <Button variant="destructive" onClick={handleSignOut} className="w-full mt-6 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 border border-rose-100 transition-colors shadow-sm">
-                    <LogOut className="w-[18px] h-[18px]" strokeWidth={2.5}/> Log Out
-                  </Button>
-
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {state === "AI_ASSISTANT" && featureFlags.student_ai !== false && (
               <div className="flex flex-col pt-4 sm:pt-6 md:pt-8 relative w-full items-center pb-6 font-inter px-2 sm:px-4">
