@@ -72,7 +72,7 @@ const ROADMAP_WEEKS = [
 const AESTHETIC_GRADIENTS = [
   "from-indigo-500 to-purple-600",
   "from-emerald-500 to-teal-600",
-  "from-pink-500 to-rose-600",
+  "from-indigo-500 to-sky-500",
   "from-amber-500 to-orange-600",
   "from-cyan-500 to-blue-600",
   "from-violet-500 to-indigo-600",
@@ -93,7 +93,7 @@ const STUDENT_AESTHETIC_GRADIENTS = [
   "from-violet-50 to-violet-100/80 text-violet-600 border-violet-200/40",
   "from-fuchsia-50 to-fuchsia-100/80 text-fuchsia-600 border-fuchsia-200/40",
   "from-pink-50 to-pink-100/80 text-pink-600 border-pink-200/40",
-  "from-rose-50 to-rose-100/80 text-rose-600 border-rose-200/40",
+  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
   "from-amber-50 to-amber-100/80 text-amber-600 border-amber-200/40",
   "from-emerald-50 to-emerald-100/80 text-emerald-600 border-emerald-200/40",
   "from-cyan-50 to-cyan-100/80 text-cyan-600 border-cyan-200/40",
@@ -1218,7 +1218,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
             <MessageSquare className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> 
             Student Messages 
             {messages.filter(m => m.from_user_id !== mentorId && !m.is_read).length > 0 && (
-              <span className="bg-rose-100 text-rose-500 text-[11px] px-2 py-0.5 rounded-full ml-1">
+              <span className="bg-indigo-50 text-indigo-600 text-[11px] px-2 py-0.5 rounded-full ml-1">
                 {messages.filter(m => m.from_user_id !== mentorId && !m.is_read).length} new
               </span>
             )}
@@ -1356,7 +1356,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
                       variant="ghost" 
                       size="icon" 
                       onClick={() => handleDeleteMessage(msg.id)} 
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50/50 transition-all w-8 h-8 rounded-full shrink-0" 
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all w-8 h-8 rounded-full shrink-0" 
                       title="Delete Message"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

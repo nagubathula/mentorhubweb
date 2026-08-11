@@ -1,9 +1,17 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from './database.types'
+import { getSupabaseCredentials } from './supabase/env'
+
+let browserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
 
 export function createClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
-  )
+  const { url, key } = getSupabaseCredentials()
+  if (typeof window !== 'undefined') {
+    if (!browserClient) {
+      browserClient = createBrowserClient<Database>(url, key)
+    }
+    return browserClient
+  }
+  return createBrowserClient<Database>(url, key)
 }
+

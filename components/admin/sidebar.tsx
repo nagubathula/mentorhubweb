@@ -24,7 +24,8 @@ import {
   Settings,
   ChevronLeft,
   StickyNote,
-  Lightbulb
+  Lightbulb,
+  LogOut
 } from "lucide-react";
 
 const mainNavItems = [
@@ -77,7 +78,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors group",
                   isActive
-                    ? "bg-[#0f172a] text-white shadow-md shadow-slate-200"
+                    ? "bg-primary text-white shadow-md shadow-indigo-100/50"
                     : "text-slate-500 hover:bg-slate-100 font-medium"
                 )}
               >
@@ -100,7 +101,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors group",
                   isActive
-                    ? "bg-[#0f172a] text-white shadow-md shadow-slate-200"
+                    ? "bg-primary text-white shadow-md shadow-indigo-100/50"
                     : "text-slate-500 hover:bg-slate-100 font-medium"
                 )}
               >
@@ -112,10 +113,16 @@ export function Sidebar() {
         </div>
       </div>
 
-      <div className="p-4 border-t">
-        <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors px-3 py-2">
-          <ChevronLeft className="w-4 h-4" />
-          <span>Collapse</span>
+      <div className="p-4 border-t flex flex-col gap-1">
+        <button 
+          onClick={() => {
+            document.cookie = "admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            window.location.href = "/admin/login";
+          }}
+          className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors px-3 py-2 rounded-lg font-medium"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out</span>
         </button>
       </div>
     </div>

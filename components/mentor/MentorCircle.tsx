@@ -349,7 +349,7 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
                     size="sm" 
                     variant="ghost" 
                     onClick={() => handleLeaveCircle(selectedCircle.id)} 
-                    className="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/20 rounded-xl px-4 py-2 flex items-center gap-1.5 font-semibold transition-all active:scale-95 cursor-pointer"
+                    className="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 border border-red-500/20 rounded-xl px-4 py-2 flex items-center gap-1.5 font-semibold transition-all active:scale-95 cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" /> Leave Circle
                   </Button>

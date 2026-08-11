@@ -136,7 +136,7 @@ export function MentalWellness({ onBack, coins, onCoinsEarned }: MentalWellnessP
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-rose-500 fill-rose-50" />
+                <Heart className="w-4 h-4 text-indigo-600 fill-indigo-50" />
                 <p className="text-gray-900 text-sm font-semibold">Mental Wellness</p>
               </div>
               <p className="text-gray-400 text-[11px]">Take care of your mind while you learn</p>
@@ -477,15 +477,15 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
       transition={{ duration: 0.2 }}
     >
       {/* Progress Card */}
-      <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl border border-rose-100 p-4 space-y-3">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 space-y-3 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center text-rose-500">
+            <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center text-indigo-600">
               🙏
             </div>
             <div>
               <p className="text-gray-900 text-xs font-medium">Gratitude Points</p>
-              <p className="text-rose-600 text-[10px] font-semibold">Level {levelNum}: {levelName}</p>
+              <p className="text-indigo-600 text-[10px] font-semibold">Level {levelNum}: {levelName}</p>
             </div>
           </div>
           <div className="text-right">
@@ -502,7 +502,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
           </div>
           <div className="h-2 bg-white/60 rounded-full overflow-hidden border border-rose-100/40">
             <motion.div
-              className="h-full bg-gradient-to-r from-rose-400 to-pink-400 rounded-full"
+              className="h-full bg-primary rounded-full"
               animate={{ width: `${levelProgress * 100}%` }}
               transition={{ type: "spring", damping: 20 }}
             />
@@ -519,7 +519,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
             <BookOpen className="w-3.5 h-3.5 text-amber-500" />
             <span className="text-gray-600 text-[10px] font-semibold">{entries.length} total entries</span>
           </div>
-          <span className="text-rose-500 text-[10px] ml-auto font-medium">+5 coins each</span>
+          <span className="text-indigo-600 text-[10px] ml-auto font-medium">+5 coins each</span>
         </div>
       </div>
 
@@ -528,7 +528,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm">📝</span>
           <p className="text-gray-900 text-xs font-semibold">Write 3 Good Things Today</p>
-          <span className="ml-auto px-1.5 py-0.5 bg-rose-50 text-rose-500 text-[10px] rounded-md font-medium">
+          <span className="ml-auto px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded-md font-medium">
             {filledCount}/3
           </span>
         </div>
@@ -566,7 +566,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
                     value={formInputs[idx]}
                     onChange={(e) => handleInputChange(idx, e.target.value)}
                     placeholder="Today I am grateful for..."
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-100 text-xs text-gray-900 placeholder:text-gray-300 rounded-xl outline-none focus:ring-1 focus:ring-rose-200 focus:border-rose-300 transition-all"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-100 text-xs text-gray-900 placeholder:text-gray-300 rounded-xl outline-none focus:ring-1 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
                   />
                   {formInputs[idx].trim() && (
                     <motion.div
@@ -586,7 +586,7 @@ function GratitudeGame({ onCoinsEarned }: { onCoinsEarned: (amount: number) => v
               disabled={filledCount === 0}
               className={`w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-md ${
                 filledCount > 0
-                  ? "bg-rose-500 text-white shadow-rose-500/10 hover:bg-rose-600"
+                  ? "bg-primary text-white shadow-indigo-600/10 hover:bg-indigo-700"
                   : "bg-gray-100 text-gray-300 pointer-events-none"
               }`}
             >

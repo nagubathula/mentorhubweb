@@ -232,15 +232,13 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
     const fetchRelevantGames = async () => {
       setIsLoading(true);
       try {
-        // Fetch all course question banks from questionnaires table
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('questionnaires')
           .select('*')
           .ilike('title', '%Question Bank%')
           .eq('is_active', true);
         
         if (data) {
-          // Flatten the phases into a single question list for each questionnaire
           const processedBanks = data.map(q => {
             const allQs = Array.isArray(q.questions) 
               ? q.questions.flatMap((phase: any) => 
@@ -253,7 +251,6 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
             return { ...q, flattenedQuestions: allQs };
           });
 
-          // Filter for the enrolled course
           const courseTitle = enrolledCourse?.title?.toLowerCase() || "";
           const relevant = processedBanks.filter(b => 
             b.title.toLowerCase().includes(courseTitle) || 

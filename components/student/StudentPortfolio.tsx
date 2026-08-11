@@ -238,7 +238,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
         {/* Gamified Profile Metrics */}
         {profile && (
           <motion.div
-            className="bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 rounded-2xl p-4 text-white shadow-md flex items-center justify-between"
+            className="bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-600 rounded-2xl p-4 text-white shadow-md flex items-center justify-between"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -596,7 +596,7 @@ export function StudentPortfolio({ onBack }: StudentPortfolioProps) {
                                 e.stopPropagation();
                                 handleDeleteProject(proj.id);
                               }}
-                              className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 hover:bg-rose-50 hover:border-rose-100 text-gray-400 hover:text-rose-500 active:scale-90 transition-all"
+                              className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 hover:bg-indigo-50 hover:border-indigo-100 text-gray-400 hover:text-indigo-600 active:scale-90 transition-all"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

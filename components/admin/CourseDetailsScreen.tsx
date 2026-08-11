@@ -5,11 +5,13 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Check, Lock, ChevronDown, Play, Code2, HelpCircle, 
-  FolderOpen, BookOpen, Award, CheckCircle2, AlertCircle, Layers, Plus, Users, Edit3, Brain, Coins
+  FolderOpen, BookOpen, Award, CheckCircle2, AlertCircle, Layers, Plus, Users, Edit3, Brain, Coins, Sparkles, Bot, X, Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { COURSE_QUESTIONS } from "@/lib/courseQuestionsData";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export interface ExtendedLesson {
   id: string;
@@ -93,9 +95,168 @@ export function CourseDetailsScreen({
   const [showCoinAnimation, setShowCoinAnimation] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // AI Assistant Panel state
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [aiMessages, setAiMessages] = useState<{ id: string; sender: "user" | "ai"; text: string }[]>([]);
+  const [aiInputQuery, setAiInputQuery] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
+  const aiChatEndRef = React.useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (aiMessages.length > 0) {
+      aiChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [aiMessages, isAiLoading]);
+
+  const handleSendAiQuestion = async (queryText?: string) => {
+    const textToSend = queryText || aiInputQuery;
+    if (!textToSend || !textToSend.trim() || isAiLoading) return;
+
+    const trimmed = textToSend.trim();
+    setAiErrorMessage(null);
+    setAiInputQuery("");
+
+    const userMsg = { id: `user-${Date.now()}`, sender: "user" as const, text: trimmed };
+    const updatedHistory = [...aiMessages, userMsg];
+    setAiMessages(updatedHistory);
+    setIsAiLoading(true);
+
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: trimmed,
+          courseContext: `Course Name: "${course.title}", Category: "${course.category}", Description: "${course.description}"`,
+          history: updatedHistory.slice(-6).map((m) => ({ sender: m.sender, text: m.text })),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Could not process question.");
+      }
+
+      const aiMsg = { id: `ai-${Date.now()}`, sender: "ai" as const, text: data.response || "No response received." };
+      setAiMessages((prev) => [...prev, aiMsg]);
+    } catch (err: any) {
+      console.error("Course AI query error:", err);
+      setAiErrorMessage("Sorry, I couldn't process that question. Please try again.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const getSuggestedQuestionsForCourse = () => {
+    const titleLower = (course.title || "").toLowerCase();
+    if (titleLower.includes("vlsi") || titleLower.includes("semiconductor") || titleLower.includes("circuit") || titleLower.includes("transistor")) {
+      return [
+        "Explain MOSFET in simple words.",
+        "What is CMOS logic in VLSI?",
+        "Difference between NMOS and PMOS?",
+        "Explain gate delay & dynamic power"
+      ];
+    }
+    if (titleLower.includes("python") || titleLower.includes("programming")) {
+      return [
+        "Explain Python loops simply",
+        "List vs Tuple in Python?",
+        "How do functions work in Python?",
+        "What are Python dictionaries?"
+      ];
+    }
+    if (titleLower.includes("data") || titleLower.includes("ml") || titleLower.includes("machine learning")) {
+      return [
+        "What is Machine Learning?",
+        "Supervised vs Unsupervised Learning?",
+        "Explain DBMS Normalization",
+        "What is a Confusion Matrix?"
+      ];
+    }
+    if (titleLower.includes("web") || titleLower.includes("react") || titleLower.includes("frontend") || titleLower.includes("design")) {
+      return [
+        "What is React state & props?",
+        "Flexbox vs CSS Grid?",
+        "What is Responsive Web Design?",
+        "How do REST APIs work?"
+      ];
+    }
+    return [
+      `What are the core principles of ${course.title}?`,
+      `Explain the most important topics in ${course.title}`,
+      `How is ${course.title} applied in real projects?`,
+      `Give me a quick summary of ${course.title}`
+    ];
+  };
+
+  const suggestedQuestions = getSuggestedQuestionsForCourse();
+
+  const renderFormattedAiText = (text: string) => {
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push({ type: "text", content: text.substring(lastIndex, match.index) });
+      }
+      parts.push({ type: "code", lang: match[1] || "code", content: match[2] });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push({ type: "text", content: text.substring(lastIndex) });
+    }
+
+    return (
+      <div className="space-y-1.5 leading-relaxed">
+        {parts.map((part, pIdx) => {
+          if (part.type === "code") {
+            return (
+              <div key={pIdx} className="my-2 rounded-xl bg-slate-900 p-2.5 font-mono text-[11.5px] text-slate-100 overflow-x-auto shadow-inner border border-slate-800">
+                <div className="flex justify-between items-center text-[9px] text-slate-400 mb-1 border-b border-slate-800 pb-1 uppercase tracking-widest font-sans font-semibold">
+                  <span>{part.lang}</span>
+                  <Code2 className="w-3 h-3 text-slate-500" />
+                </div>
+                <pre className="whitespace-pre overflow-x-auto">{part.content}</pre>
+              </div>
+            );
+          }
+          const lines = part.content.split("\n");
+          return (
+            <div key={pIdx} className="space-y-1">
+              {lines.map((line, lIdx) => {
+                if (line.startsWith("### ")) {
+                  return <h4 key={lIdx} className="text-xs font-bold text-slate-900 mt-1.5 mb-0.5">{line.replace("### ", "")}</h4>;
+                }
+                if (line.startsWith("#### ")) {
+                  return <h5 key={lIdx} className="text-[11.5px] font-semibold text-slate-800 mt-1 mb-0.5">{line.replace("#### ", "")}</h5>;
+                }
+                const boldRegex = /\*\*([^*]+)\*\*/g;
+                const subParts = line.split(boldRegex);
+                return (
+                  <p key={lIdx} className={line.trim() === "" ? "h-1" : ""}>
+                    {subParts.map((sub, sIdx) => {
+                      if (sIdx % 2 === 1) {
+                        return <strong key={sIdx} className="font-bold text-slate-900">{sub}</strong>;
+                      }
+                      return sub;
+                    })}
+                  </p>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(course.modules[0]?.id || null);
 
@@ -225,19 +386,30 @@ export function CourseDetailsScreen({
         {/* SCREEN HERO HEADER */}
         <div className="bg-white px-6 pt-10 pb-5 md:px-8 border-b border-slate-100 shadow-sm shrink-0">
           {/* Breadcrumb & Back Row */}
-          <div className="flex items-center gap-3 mb-4">
-            <button
-              onClick={onBack}
-              className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0"
-              title="Back to Courses"
-            >
-              <ArrowLeft className="w-4 h-4 text-slate-600" />
-            </button>
-            <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
-              <button onClick={onBack} className="hover:text-slate-900 transition-colors">Courses</button>
-              <span className="text-slate-300">/</span>
-              <span className="text-slate-900 font-extrabold">{course.shortTitle || course.title}</span>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onBack}
+                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 active:scale-95 transition-all shrink-0"
+                title="Back to Courses"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-600" />
+              </button>
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
+                <button onClick={onBack} className="hover:text-slate-900 transition-colors">Courses</button>
+                <span className="text-slate-300">/</span>
+                <span className="text-slate-900 font-extrabold">{course.shortTitle || course.title}</span>
+              </div>
             </div>
+
+            <button
+              onClick={() => setIsAiPanelOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200/80 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-2xs group shrink-0"
+              title={`Ask AI about ${course.title}`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
+              <span>Ask AI</span>
+            </button>
           </div>
 
           {/* Hero details flex row */}
@@ -718,6 +890,175 @@ export function CourseDetailsScreen({
                     </div>
                   )}
                 </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Floating Course AI Assistant Panel */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isAiPanelOpen && (
+            <>
+              {/* Backdrop for mobile */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsAiPanelOpen(false)}
+                className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-[990] sm:hidden"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[520px] bg-white rounded-3xl shadow-2xl border border-slate-200 z-[999] flex flex-col overflow-hidden font-inter"
+              >
+                {/* Panel Header */}
+                <div className="bg-slate-900 text-white p-4 flex items-center justify-between shrink-0 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl pointer-events-none" />
+                  <div className="flex items-center gap-2.5 min-w-0 z-10">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-indigo-400/30 shadow-xs">
+                      <Sparkles className="w-4 h-4 text-indigo-100" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                        AI Assistant
+                      </h4>
+                      <p className="text-[11px] font-medium text-slate-300 truncate">
+                        Ask anything about {course.title}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsAiPanelOpen(false)}
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors shrink-0 z-10"
+                    title="Close AI Assistant"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Messages Window */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 min-h-[180px] max-h-[280px] hidden-scrollbar bg-slate-50/50">
+                  {aiMessages.length === 0 ? (
+                    <div className="text-center py-6 px-2 space-y-2">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-1 border border-indigo-100">
+                        <Bot className="w-5 h-5" />
+                      </div>
+                      <p className="text-slate-800 font-bold text-xs">Got a question about {course.shortTitle || course.title}?</p>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">
+                        Ask me to explain any concept, lesson, or formula from this course!
+                      </p>
+                    </div>
+                  ) : (
+                    aiMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={cn("flex flex-col", msg.sender === "user" ? "items-end" : "items-start")}
+                      >
+                        <div className="flex items-end gap-2 max-w-[88%]">
+                          {msg.sender === "ai" && (
+                            <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 mb-1">
+                              <Bot className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                          <div
+                            className={cn(
+                              "px-3.5 py-2.5 rounded-2xl text-[12.5px] font-medium leading-relaxed",
+                              msg.sender === "user"
+                                ? "bg-slate-900 text-white rounded-tr-none shadow-xs"
+                                : "bg-white text-slate-800 border border-slate-100 shadow-2xs"
+                            )}
+                          >
+                            {msg.sender === "user" ? (
+                              <p className="whitespace-pre-wrap">{msg.text}</p>
+                            ) : (
+                              renderFormattedAiText(msg.text)
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[9.5px] font-medium text-slate-400 uppercase tracking-wider mt-1 px-1">
+                          {msg.sender === "user" ? "You" : "Course AI"}
+                        </span>
+                      </div>
+                    ))
+                  )}
+
+                  {isAiLoading && (
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 animate-pulse">
+                        <Bot className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="px-3.5 py-2.5 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-medium flex items-center gap-2 rounded-tl-none">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
+                        <span>Thinking...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {aiErrorMessage && (
+                    <div className="bg-rose-50 border border-rose-100 rounded-xl px-3 py-2 text-xs text-rose-600 font-medium">
+                      {aiErrorMessage}
+                    </div>
+                  )}
+                  <div ref={aiChatEndRef} />
+                </div>
+
+                {/* Suggested Questions */}
+                <div className="px-3 py-2 bg-white border-t border-b border-slate-100 flex flex-wrap gap-1.5 shrink-0 max-h-[85px] overflow-y-auto hidden-scrollbar">
+                  <span className="text-[10px] font-bold text-slate-400 w-full flex items-center gap-1">
+                    <HelpCircle className="w-3 h-3 text-indigo-500" /> Suggested for this course:
+                  </span>
+                  {suggestedQuestions.map((qText, qIdx) => (
+                    <button
+                      key={qIdx}
+                      disabled={isAiLoading}
+                      onClick={() => handleSendAiQuestion(qText)}
+                      className="px-2.5 py-1 rounded-full border border-slate-200/80 bg-slate-50 text-[10.5px] font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-95 text-left disabled:opacity-50"
+                    >
+                      {qText}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Input Row */}
+                <div className="p-3 bg-white shrink-0">
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={aiInputQuery}
+                      disabled={isAiLoading}
+                      onChange={(e) => setAiInputQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendAiQuestion();
+                        }
+                      }}
+                      placeholder={`Ask a question...`}
+                      className="flex-1 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs text-slate-800 placeholder:text-slate-400 outline-none hover:bg-slate-50 focus-visible:ring-slate-900 transition-all h-9"
+                    />
+                    <Button
+                      onClick={() => handleSendAiQuestion()}
+                      disabled={isAiLoading || !aiInputQuery.trim()}
+                      className={cn(
+                        aiInputQuery.trim() && !isAiLoading
+                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                          : "bg-slate-100 text-slate-400",
+                        "h-9 w-9 rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0 p-0 disabled:opacity-50"
+                      )}
+                    >
+                      {isAiLoading ? (
+                        <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </motion.div>
             </>
           )}

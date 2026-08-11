@@ -72,7 +72,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.youtube.com/watch?v=LlvBzyy-558",
       description: "Master React useState, useEffect, useContext, and custom hooks in one crash course.",
       category: "Videos",
-      icon: <Video className="w-4.5 h-4.5 text-rose-500" />
+      icon: <Video className="w-4.5 h-4.5 text-indigo-500" />
     },
     {
       id: "res-3",
@@ -104,7 +104,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://lawsofux.com/",
       description: "A highly visual guide covering design heuristics and psychological principles for premium UIs.",
       category: "Design",
-      icon: <Sparkles className="w-4.5 h-4.5 text-pink-500" />
+      icon: <Sparkles className="w-4.5 h-4.5 text-indigo-500" />
     },
     {
       id: "res-v4",
@@ -112,7 +112,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.youtube.com/watch?v=FTFaQWZBqA8",
       description: "Step-by-step video tutorial on creating stunning UI components and prototypes in Figma.",
       category: "Videos",
-      icon: <Video className="w-4.5 h-4.5 text-pink-500" />
+      icon: <Video className="w-4.5 h-4.5 text-indigo-500" />
     },
     {
       id: "res-6",
@@ -128,7 +128,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.headspace.com/mindfulness",
       description: "Curated mindfulness and focused deep-learning tips to avoid mental burnout.",
       category: "Wellness",
-      icon: <Smile className="w-4.5 h-4.5 text-rose-500" />
+      icon: <Smile className="w-4.5 h-4.5 text-indigo-500" />
     }
   ];
 

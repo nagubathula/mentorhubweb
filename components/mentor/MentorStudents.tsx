@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const AESTHETIC_GRADIENTS = [
   "from-indigo-500 to-purple-600",
   "from-emerald-500 to-teal-600",
-  "from-pink-500 to-rose-600",
+  "from-indigo-500 to-sky-500",
   "from-amber-500 to-orange-600",
   "from-cyan-500 to-blue-600",
   "from-violet-500 to-indigo-600",
@@ -34,7 +34,7 @@ const STUDENT_AESTHETIC_GRADIENTS = [
   "from-violet-50 to-violet-100/80 text-violet-600 border-violet-200/40",
   "from-fuchsia-50 to-fuchsia-100/80 text-fuchsia-600 border-fuchsia-200/40",
   "from-pink-50 to-pink-100/80 text-pink-600 border-pink-200/40",
-  "from-rose-50 to-rose-100/80 text-rose-600 border-rose-200/40",
+  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
   "from-amber-50 to-amber-100/80 text-amber-600 border-amber-200/40",
   "from-emerald-50 to-emerald-100/80 text-emerald-600 border-emerald-200/40",
   "from-cyan-50 to-cyan-100/80 text-cyan-600 border-cyan-200/40",
@@ -1312,7 +1312,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
 
               <button className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 transition-all group active:scale-[0.98] shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shadow-3xs"><Heart className="w-4 h-4"/></div>
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-3xs"><Heart className="w-4 h-4"/></div>
                   <p className="text-[13px] font-medium text-slate-700">Send Kudos</p>
                 </div>
                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition-colors" />

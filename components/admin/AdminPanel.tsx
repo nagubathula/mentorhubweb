@@ -534,15 +534,15 @@ function DashboardPage({ data, onNavigate, openModal }: {
 
   const quickActions = [
     { label: "+ Student",  bg: "bg-blue-500 hover:bg-blue-600",    modal: "add-student" as ModalKey },
-    { label: "+ Mentor",   bg: "bg-rose-500 hover:bg-rose-600",    modal: "add-mentor" as ModalKey },
+    { label: "+ Mentor",   bg: "bg-primary hover:bg-indigo-700",    modal: "add-mentor" as ModalKey },
     { label: "+ Session",  bg: "bg-violet-500 hover:bg-violet-600",modal: "schedule-session" as ModalKey },
-    { label: "+ Inspire",  bg: "bg-pink-500 hover:bg-pink-600",    modal: "send-inspiration" as ModalKey },
+    { label: "+ Inspire",  bg: "bg-sky-500 hover:bg-sky-600",    modal: "send-inspiration" as ModalKey },
     { label: "+ Map",      bg: "bg-emerald-500 hover:bg-emerald-600", modal: "create-mapping" as ModalKey },
   ];
 
   const stats = [
     { label:"Total Students",   value: students.length,   delta:"+2 this month",  deltaColor:"text-emerald-600", icon: Users,        iconBg:"bg-blue-100",   iconColor:"text-blue-600",    page:"mentees" as AdminPage },
-    { label:"Active Mentors",   value: mentors.length,    delta:"+1 new",         deltaColor:"text-emerald-600", icon: UserCheck,    iconBg:"bg-rose-100",   iconColor:"text-rose-600",    page:"mentors" as AdminPage },
+    { label:"Active Mentors",   value: mentors.length,    delta:"+1 new",         deltaColor:"text-emerald-600", icon: UserCheck,    iconBg:"bg-indigo-50",   iconColor:"text-indigo-600",    page:"mentors" as AdminPage },
     { label:"Enrollments",      value: enrollments.length,delta:`${courses.length} courses`, deltaColor:"text-slate-500", icon: BookOpen, iconBg:"bg-violet-100",iconColor:"text-violet-600", page:"enrollments" as AdminPage },
     { label:"Pending Reviews",  value: reviews.length,    delta:`${games.length} games`,    deltaColor:"text-slate-500", icon: Star,  iconBg:"bg-amber-100",  iconColor:"text-amber-600",   page:"reviews" as AdminPage },
   ];
@@ -1853,7 +1853,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                 />
                 <button 
                   onClick={() => removePhase(sIdx)}
-                  className="opacity-0 group-hover:opacity-100 p-3 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -1873,7 +1873,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                       </div>
                       <button 
                         onClick={() => removeQuestion(sIdx, qIdx)}
-                        className="p-3 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all lg:mt-2"
+                        className="p-3 text-slate-200 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all lg:mt-2"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -3778,7 +3778,7 @@ function InterestingFactsPage({ data, openModal, fetchAll }: { data: any; openMo
                 </button>
                 <button 
                   onClick={() => handleDelete(f.id)} 
-                  className="text-[11px] font-bold text-rose-500 hover:text-rose-700 px-2.5 py-1 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1"
+                  className="text-[11px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors flex items-center gap-1"
                 >
                   <Trash2 className="w-3 h-3" /> Delete
                 </button>
@@ -3934,8 +3934,8 @@ function GratitudeWallPage({ data }: { data: any }) {
     <PageShell title="Gratitude Wall" subtitle={`${gratitude_messages.length} posts`}>
       <div className="grid grid-cols-3 gap-4">
         {gratitude_messages.map((p: any) => (
-          <Card key={p.id} className="p-5 bg-gradient-to-br from-rose-50 to-amber-50 border-rose-100">
-            <Heart className="w-5 h-5 text-rose-400 mb-3 fill-rose-200" />
+          <Card key={p.id} className="p-5 bg-white border border-[#E2E8F0] shadow-sm rounded-[16px]">
+            <Heart className="w-5 h-5 text-indigo-600 mb-3 fill-indigo-100" />
             <p className="text-[14px] text-slate-700 italic">"{p.message_content || "—"}"</p>
             {p.display_name && <p className="text-[12px] text-slate-400 mt-3">— {p.display_name}{p.is_anonymous?" (anon)":""}</p>}
             {p.amount && <p className="text-[13px] font-medium text-emerald-600 mt-2">₹{Number(p.amount).toLocaleString()}</p>}

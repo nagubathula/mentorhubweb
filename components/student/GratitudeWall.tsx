@@ -37,8 +37,8 @@ const initialChecklist: ChecklistItem[] = [
     description: "Write a heartfelt handwritten or digital thank-you note telling your mentor how they've helped you grow.",
     category: "express",
     completed: false,
-    color: "text-rose-500",
-    bgColor: "bg-rose-50",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
     icon: "✉️"
   },
   {
@@ -87,8 +87,8 @@ const initialChecklist: ChecklistItem[] = [
     description: "Ask if there's anything you can help with — research, a project, or even teaching what you've learned to others.",
     category: "action",
     completed: false,
-    color: "text-pink-500",
-    bgColor: "bg-pink-50",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
     icon: "🤝"
   },
   {
@@ -138,7 +138,7 @@ const initialChecklist: ChecklistItem[] = [
     category: "daily",
     completed: true,
     color: "text-rose-400",
-    bgColor: "bg-rose-50",
+    bgColor: "bg-indigo-50",
     icon: "💖"
   },
   {
@@ -305,7 +305,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                     : "text-gray-400 hover:text-gray-600"
                 }`}
               >
-                <IconComponent className={`w-3.5 h-3.5 ${activeTab === tab.key ? "text-rose-500 fill-rose-50" : ""}`} />
+                <IconComponent className={`w-3.5 h-3.5 ${activeTab === tab.key ? "text-indigo-600 fill-rose-50" : ""}`} />
                 {tab.label}
               </button>
             );
@@ -325,7 +325,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
               className="space-y-4"
             >
               {/* Support Banner Info Card */}
-              <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-5 text-white relative overflow-hidden shadow-md">
+              <div className="bg-gradient-to-br from-[#4F46E5] to-[#3B82F6] rounded-2xl p-5 text-white relative overflow-hidden shadow-md">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
                 <div className="relative space-y-2.5">
                   <div className="flex items-center gap-2">
@@ -343,7 +343,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
               <AnimatePresence>
                 {isFormOpen ? (
                   <motion.div
-                    className="bg-white border border-rose-100 rounded-2xl p-4 shadow-sm space-y-4"
+                    className="bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm space-y-4"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -377,7 +377,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                             value={supportName}
                             onChange={e => setSupportName(e.target.value)}
                             disabled={isAnonymous}
-                            className="w-full text-xs text-gray-900 placeholder-gray-300 bg-gray-50 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-rose-200 border border-gray-100 disabled:opacity-50"
+                            className="w-full text-xs text-gray-900 placeholder-gray-300 bg-gray-50 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-100 border border-gray-100 disabled:opacity-50"
                           />
                         </div>
 
@@ -389,7 +389,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                             value={supportMsg}
                             onChange={e => setSupportMsg(e.target.value)}
                             rows={3}
-                            className="w-full text-xs text-gray-700 placeholder-gray-300 bg-gray-50 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-rose-200 resize-none border border-gray-100"
+                            className="w-full text-xs text-gray-700 placeholder-gray-300 bg-gray-50 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-100 resize-none border border-gray-100"
                           />
                         </div>
 
@@ -403,7 +403,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                                 onClick={() => setSupportAmount(amt)}
                                 className={`py-2 rounded-xl text-xs font-medium border transition-all ${
                                   supportAmount === amt
-                                    ? "bg-rose-500 text-white border-transparent"
+                                    ? "bg-indigo-600 text-white border-transparent"
                                     : "bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-200"
                                 }`}
                               >
@@ -423,7 +423,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                               if (e.target.checked) setSupportName("Anonymous");
                               else setSupportName("");
                             }}
-                            className="rounded border-gray-200 text-rose-500 focus:ring-rose-200"
+                            className="rounded border-gray-200 text-indigo-600 focus:ring-indigo-100"
                           />
                           <span>Pledge as Anonymous</span>
                         </label>
@@ -433,7 +433,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                           disabled={!supportMsg.trim()}
                           className={`w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-md ${
                             supportMsg.trim()
-                              ? "bg-rose-500 text-white shadow-rose-500/10 hover:bg-rose-600"
+                              ? "bg-primary text-white shadow-indigo-600/10 hover:bg-indigo-700"
                               : "bg-gray-100 text-gray-300 pointer-events-none"
                           }`}
                         >
@@ -446,9 +446,9 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                 ) : (
                   <button
                     onClick={() => setIsFormOpen(true)}
-                    className="w-full py-3 bg-white border border-rose-100 rounded-2xl flex items-center justify-center gap-2 text-rose-600 text-xs font-medium shadow-sm hover:bg-rose-50/50 active:scale-95 transition-all"
+                    className="w-full py-3 bg-white border border-indigo-100 rounded-2xl flex items-center justify-center gap-2 text-indigo-600 text-xs font-medium shadow-sm hover:bg-indigo-50/50 active:scale-95 transition-all"
                   >
-                    <Heart className="w-4 h-4 fill-current text-rose-500" />
+                    <Heart className="w-4 h-4 fill-current text-indigo-600" />
                     Support the Platform
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
@@ -472,7 +472,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
                         ⭐
                       </div>
                     )}
-                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 font-medium text-xs">
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 font-medium text-xs">
                       {item.anonymous ? "👤" : item.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
