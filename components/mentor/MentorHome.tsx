@@ -340,7 +340,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
       .select('student:profiles!mapping_student_id_fkey(*)')
       .eq('mentor_id', currentUserId);
     
-    let assigned = mappings?.map(m => m.student).filter(Boolean) || [];
+    let assigned = mappings?.map((m: any) => m.student).filter(Boolean) || [];
 
     if (isGuest) {
       assigned = [
@@ -378,17 +378,17 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
       if (!isGuest) {
         const { data: enrollments } = await supabase.from('enrollments')
           .select('*, course:courses(*)')
-          .in('student_id', assigned.map(s => s.id))
+          .in('student_id', assigned.map((s: any) => s.id))
           .eq('status', 'Active');
 
         if (enrollments) {
-          enrollments.forEach(e => {
+          enrollments.forEach((e: any) => {
             enrollmentMap.set(e.student_id, e);
           });
         }
       }
 
-      enrichedStudents = assigned.map(p => {
+      enrichedStudents = assigned.map((p: any) => {
         let progressPercent = 0;
         if (p.id === "mock-student-1") progressPercent = 65;
         else if (p.id === "mock-student-2") progressPercent = 30;
@@ -520,15 +520,15 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
         }
       ];
       sessionsList = [...mockSessions, ...sessionsList] as any;
-      sessionsList.sort((a, b) => new Date(a.scheduled_at as string).getTime() - new Date(b.scheduled_at as string).getTime());
+      sessionsList.sort((a: any, b: any) => new Date(a.scheduled_at as string).getTime() - new Date(b.scheduled_at as string).getTime());
     }
     if (isMounted) {
       setSessions(sessionsList);
     }
 
     // Calculate completed sessions total hours
-    const completedSessions = sessionsList.filter(s => s.status === 'Completed' || s.status === 'completed');
-    const totalMinutes = completedSessions.reduce((sum, s) => sum + (s.duration_minutes || 30), 0);
+    const completedSessions = sessionsList.filter((s: any) => s.status === 'Completed' || s.status === 'completed');
+    const totalMinutes = completedSessions.reduce((sum: number, s: any) => sum + (s.duration_minutes || 30), 0);
     const totalHours = Math.round(totalMinutes / 60) || 0;
 
     // Fetch reviews written for this mentor
@@ -540,9 +540,9 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
     if (isGuest) {
       avgRating = 4.9;
     } else if (reviewsReceived && reviewsReceived.length > 0) {
-      const rated = reviewsReceived.filter(r => r.rating !== null);
+      const rated = reviewsReceived.filter((r: any) => r.rating !== null);
       if (rated.length > 0) {
-        avgRating = Math.round((rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
+        avgRating = Math.round((rated.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
       }
     }
 
@@ -560,15 +560,15 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
       const { data: reviewsWritten } = await supabase.from('reviews')
         .select('session_id')
         .eq('reviewer_id', currentUserId);
-      reviewedSessionIds = new Set(reviewsWritten?.map(r => r.session_id).filter(Boolean) || []);
+      reviewedSessionIds = new Set(reviewsWritten?.map((r: any) => r.session_id).filter(Boolean) || []);
     }
 
-    const pendingReviewSessions = sessionsList.filter(s => 
+    const pendingReviewSessions = sessionsList.filter((s: any) => 
       (s.status === 'Completed' || s.status === 'completed' || (s.scheduled_at && new Date(s.scheduled_at) < new Date())) && 
       !reviewedSessionIds.has(s.id)
     );
 
-    const formattedPendingReviews = pendingReviewSessions.map(s => ({
+    const formattedPendingReviews = pendingReviewSessions.map((s: any) => ({
       id: s.id,
       title: s.title || "Session Review",
       student: s.student?.name || s.student?.email?.split('@')[0] || "Student",

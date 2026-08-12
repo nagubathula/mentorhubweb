@@ -454,16 +454,16 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
       .select('student:profiles!mapping_student_id_fkey(*)')
       .eq('mentor_id', session.user.id);
     
-    const assigned = mappings?.map(m => m.student).filter(Boolean) || [];
+    const assigned = mappings?.map((m: any) => m.student).filter(Boolean) || [];
 
     if (assigned.length > 0) {
       // Fetch active enrollments for these students
       const { data: enrollments } = await supabase.from('enrollments')
         .select('*, course:courses(*)')
-        .in('student_id', assigned.map(s => s.id))
+        .in('student_id', assigned.map((s: any) => s.id))
         .eq('status', 'Active');
 
-      const parsedEnrollments = (enrollments || []).map(enr => {
+      const parsedEnrollments = (enrollments || []).map((enr: any) => {
         let c = enr.course;
         if (c) {
           try {
@@ -492,11 +492,11 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
       });
 
       const enrollmentMap = new Map();
-      parsedEnrollments.forEach(e => {
+      parsedEnrollments.forEach((e: any) => {
         enrollmentMap.set(e.student_id, e);
       });
 
-      setStudents(assigned.map(p => {
+      setStudents(assigned.map((p: any) => {
         const studentEnrollment = enrollmentMap.get(p.id);
         const courseTitle = studentEnrollment?.course?.title || "No Active Course";
         
@@ -551,7 +551,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
     const localCatalog = mentorCoursesCatalog;
     const combined = [
       ...parsedCourses,
-      ...localCatalog.filter(c => !parsedCourses.some(sc => sc.title === c.title))
+      ...localCatalog.filter((c: any) => !parsedCourses.some((sc: any) => sc.title === c.title))
     ];
     setCourses(combined);
   };
@@ -562,7 +562,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
 
   useEffect(() => {
     if (activeStudentId && students.length > 0) {
-      const match = students.find(s => s.id === activeStudentId);
+      const match = students.find((s: any) => s.id === activeStudentId);
       if (match) {
         setSelectedStudent(match);
       }

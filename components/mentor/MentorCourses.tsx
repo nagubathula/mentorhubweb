@@ -241,7 +241,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
         return;
       }
 
-      const parsedEnrollments = (enrollments || []).map(enr => {
+      const parsedEnrollments = (enrollments || []).map((enr: any) => {
         let c = enr.course;
         if (c) {
           try {
@@ -291,7 +291,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
         const { data: mappings } = await supabase.from('mapping')
           .select('student_id')
           .eq('mentor_id', session.user.id);
-        filterStudentIds = mappings?.map(m => m.student_id).filter(Boolean) || [];
+        filterStudentIds = mappings?.map((m: any) => m.student_id).filter(Boolean) || [];
       }
 
       if (filterStudentIds.length === 0) {
@@ -374,7 +374,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
       } else {
         setIsSubmitReviewOpen(false);
         setSelectedSubmission(null);
-        const studentIds = assignedStudents.map(s => s.id);
+        const studentIds = assignedStudents.map((s: any) => s.id);
         fetchReviewQueue(studentIds);
       }
     } catch (e) {
@@ -403,8 +403,8 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
       ]);
 
       const dbCourses = coursesRes.data || [];
-      const assigned = mappingsRes.data?.map(m => m.student).filter(Boolean) || [];
-      const studentIds = assigned.map(s => s.id);
+      const assigned = mappingsRes.data?.map((m: any) => m.student).filter(Boolean) || [];
+      const studentIds = assigned.map((s: any) => s.id);
       setAssignedStudents(assigned);
 
       if (studentIds.length > 0) {
@@ -437,11 +437,11 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
 
       const localCatalog = mentorCoursesCatalog;
       const combined = [
-        ...parsedDbCourses.map(c => ({
+        ...parsedDbCourses.map((c: any) => ({
           ...c,
           modules: c.modules || c.content || []
         })),
-        ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
+        ...localCatalog.filter((c: any) => !parsedDbCourses.some((sc: any) => sc.title === c.title))
       ];
 
       setCourses(combined.map(l5));

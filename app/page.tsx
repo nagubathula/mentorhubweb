@@ -91,7 +91,7 @@ const getCourseIcon = (category: string) => {
   return <BookOpen className="w-5 h-5" />;
 };
 
-const setCookie = (name: string, value: string, days = 7) => {
+const setCookie = (name: string, value: string, days = 365) => {
   if (typeof window === "undefined") return;
   const date = new Date();
   date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -434,9 +434,9 @@ export default function OnboardingFlow() {
           .eq('is_active', true);
         
         if (data) {
-          const studentQuiz = data.find(q => q.title.includes("Student Onboarding"));
-          const studentScreening = data.find(q => q.title.includes("Student Behavioral"));
-          const mentorQuiz = data.find(q => q.title.includes("Mentor Onboarding"));
+          const studentQuiz = data.find((q: any) => q.title?.includes("Student Onboarding"));
+          const studentScreening = data.find((q: any) => q.title?.includes("Student Behavioral"));
+          const mentorQuiz = data.find((q: any) => q.title?.includes("Mentor Onboarding"));
 
           if (studentQuiz) setStudentQuizSteps(studentQuiz.questions as any);
           if (studentScreening) setStudentScreeningSteps(studentScreening.questions as any);
@@ -465,36 +465,75 @@ export default function OnboardingFlow() {
 
   useEffect(() => {
     let isMounted = true;
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+    let handledInitialSession = false;
+
+    // Safety timeout: Ensure authInitializing is NEVER stuck on "Restoring session..." forever.
+    // If auth checking takes over 6 seconds due to slow network, gracefully complete initialization.
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && authInitializing) {
+        console.warn("Auth initialization timed out. Gracefully resolving session check.");
+        setAuthInitializing(false);
+      }
+    }, 6000);
+
+    const processSession = async (session: any, source: string) => {
+      if (!isMounted) return;
+      if (session?.user) {
+        try {
           await handleSessionSync(session);
-        } else {
-          if (isMounted) setState("WELCOME");
+        } catch (err) {
+          console.error(`Session sync error from ${source}:`, err);
+        } finally {
+          if (isMounted) {
+            handledInitialSession = true;
+            setAuthInitializing(false);
+          }
         }
-      } catch (err) {
-        console.error("Auth init error:", err);
-        if (isMounted) setState("WELCOME");
-      } finally {
-        if (isMounted) setAuthInitializing(false);
+      } else {
+        if (isMounted) {
+          // If no active Supabase session exists, set WELCOME (login) screen
+          setState("WELCOME");
+          handledInitialSession = true;
+          setAuthInitializing(false);
+        }
       }
     };
 
-    initAuth();
+    // 1. Initial Session Check via getSession()
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error fetching session:", error);
+        }
+        if (!handledInitialSession) {
+          await processSession(session, "getSession");
+        }
+      } catch (err) {
+        console.error("Auth init exception:", err);
+        if (isMounted && !handledInitialSession) {
+          setState("WELCOME");
+          setAuthInitializing(false);
+        }
+      }
+    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        await handleSessionSync(session);
-        if (isMounted) setAuthInitializing(false);
+    checkInitialSession();
+
+    // 2. Auth State Change Listener (handles SIGNED_IN, INITIAL_SESSION, TOKEN_REFRESHED, SIGNED_OUT)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
+        await processSession(session, `onAuthStateChange:${event}`);
       } else if (event === 'SIGNED_OUT') {
         if (isMounted) {
           setState("WELCOME");
           setRole(null);
           setName("");
           setEmail("");
+          setUserProfile(null);
           setAuthInitializing(false);
         }
+        // Wipes state cookies only on explicit user sign out
         setCookie('mentorhub_state', '', -1);
         setCookie('mentorhub_role', '', -1);
         setCookie('mentorhub_name', '', -1);
@@ -513,6 +552,7 @@ export default function OnboardingFlow() {
 
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -602,19 +642,30 @@ export default function OnboardingFlow() {
     if (userFullName) setName(userFullName);
 
     try {
-      // Fetch feature flags
-      const { data: flags } = await supabase.from('feature_flags').select('key, is_enabled');
-      if (flags && flags.length > 0) {
-        const flagsMap = { ...DEFAULT_FEATURE_FLAGS };
-        flags.forEach((f: any) => flagsMap[f.key] = f.is_enabled);
-        setFeatureFlags(flagsMap);
+      // 1. Fetch feature flags (with resilient fallback)
+      try {
+        const { data: flags } = await supabase.from('feature_flags').select('key, is_enabled');
+        if (flags && flags.length > 0) {
+          const flagsMap = { ...DEFAULT_FEATURE_FLAGS };
+          flags.forEach((f: any) => flagsMap[f.key] = f.is_enabled);
+          setFeatureFlags(flagsMap);
+        }
+      } catch (fErr) {
+        console.warn("Failed to fetch feature flags, using defaults:", fErr);
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      // 2. Fetch user profile
+      let profile = null;
+      try {
+        const { data: profData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        profile = profData;
+      } catch (pErr) {
+        console.warn("Failed to fetch profile:", pErr);
+      }
 
       if (profile) {
         setUserProfile(profile);
@@ -630,11 +681,15 @@ export default function OnboardingFlow() {
         }
 
         // Fetch quiz answers for student
-        const { data: quizResp } = await supabase
-          .from('student_quiz_responses')
-          .select('*')
-          .eq('student_id', session.user.id);
-        if (quizResp) setStudentQuizAnswersList(quizResp);
+        try {
+          const { data: quizResp } = await supabase
+            .from('student_quiz_responses')
+            .select('*')
+            .eq('student_id', session.user.id);
+          if (quizResp) setStudentQuizAnswersList(quizResp);
+        } catch (qErr) {
+          console.warn("Quiz responses fetch warning:", qErr);
+        }
 
         // Handle referral code persistence
         if (prefs.referral_code) {
@@ -643,9 +698,14 @@ export default function OnboardingFlow() {
           const generatedCode = `MHUB-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
           setReferralCode(generatedCode);
           const updatedPrefs = { ...prefs, referral_code: generatedCode };
-          await supabase.from('profiles').update({ preferences: updatedPrefs }).eq('id', profile.id);
+          try {
+            await supabase.from('profiles').update({ preferences: updatedPrefs }).eq('id', profile.id);
+          } catch (refErr) {
+            console.warn("Referral update warning:", refErr);
+          }
         }
 
+        // Restore User Role & Flow State
         const userRole = profile.role || session.user.user_metadata?.role;
         if (userRole === "STUDENT" || userRole === "MENTOR") {
           setRole(userRole);
@@ -671,51 +731,59 @@ export default function OnboardingFlow() {
           setState("ROLE");
         }
 
-        // Fetch enrollments for student
-        const { data: enrolls } = await supabase
-          .from('enrollments')
-          .select('*, course:courses(*)')
-          .eq('student_id', session.user.id);
-        
-        if (enrolls) {
-          setStudentEnrollments(enrolls);
-          if (enrolls.length > 0 && !enrolledCourse) {
-            setEnrollmentId(enrolls[0].id);
-            setEnrolledCourse(enrolls[0].course);
-            setCourseProgress((enrolls[0].progress as string[]) || []);
+        // Fetch enrollments, notes, custom_todos safely with try/catch blocks
+        try {
+          const { data: enrolls } = await supabase
+            .from('enrollments')
+            .select('*, course:courses(*)')
+            .eq('student_id', session.user.id);
+          
+          if (enrolls) {
+            setStudentEnrollments(enrolls);
+            if (enrolls.length > 0 && !enrolledCourse) {
+              setEnrollmentId(enrolls[0].id);
+              setEnrolledCourse(enrolls[0].course);
+              setCourseProgress((enrolls[0].progress as string[]) || []);
+            }
           }
+        } catch (e) {
+          console.warn("Enrollments sync warning:", e);
         }
 
-        // Fetch notes for student
-        const { data: dbNotes } = await supabase
-          .from('student_notes')
-          .select('*')
-          .eq('student_id', session.user.id)
-          .order('timestamp', { ascending: false });
-        
-        if (dbNotes) setNotes(dbNotes);
+        try {
+          const { data: dbNotes } = await supabase
+            .from('student_notes')
+            .select('*')
+            .eq('student_id', session.user.id)
+            .order('timestamp', { ascending: false });
+          
+          if (dbNotes) setNotes(dbNotes);
+        } catch (e) {
+          console.warn("Notes sync warning:", e);
+        }
 
-        // Fetch custom todos
-        const { data: dbTodos } = await supabase
-          .from('custom_todos')
-          .select('*')
-          .eq('student_id', session.user.id)
-          .order('created_at', { ascending: false });
+        try {
+          const { data: dbTodos } = await supabase
+            .from('custom_todos')
+            .select('*')
+            .eq('student_id', session.user.id)
+            .order('created_at', { ascending: false });
 
-        if (dbTodos) setCustomTodos(dbTodos);
+          if (dbTodos) setCustomTodos(dbTodos);
+        } catch (e) {
+          console.warn("Todos sync warning:", e);
+        }
 
-        // Fetch assigned students for mentor
-        const { data: mappings } = await supabase
-          .from('mapping')
-          .select('student_id')
-          .eq('mentor_id', session.user.id);
       } else {
+        // Create new profile for first-time user
         const avatarUrl = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || null;
+        const userRole = session.user.user_metadata?.role || null;
+        
         await supabase.from('profiles').insert({
           id: session.user.id,
           name: userFullName || 'User',
           email: userEmail,
-          role: null,
+          role: userRole,
           preferences: {
             coins: 0,
             streak: 1,
@@ -723,11 +791,23 @@ export default function OnboardingFlow() {
             avatar_url: avatarUrl
           }
         });
-        setRole(null);
-        setState("ROLE");
+
+        if (userRole === "STUDENT" || userRole === "MENTOR") {
+          setRole(userRole);
+          setState(userRole === "STUDENT" ? "DASHBOARD_MAIN" : "MENTOR_DASHBOARD");
+        } else {
+          setRole(null);
+          setState("ROLE");
+        }
       }
     } catch (e) {
       console.error("Session sync error:", e);
+      // Fallback: If profile fetch failed completely, still restore session using metadata
+      const userRole = session.user.user_metadata?.role;
+      if (userRole === "STUDENT" || userRole === "MENTOR") {
+        setRole(userRole);
+        setState(userRole === "STUDENT" ? "DASHBOARD_MAIN" : "MENTOR_DASHBOARD");
+      }
     }
   };
 
@@ -1226,8 +1306,8 @@ export default function OnboardingFlow() {
               .select('post_id')
               .eq('student_id', session.user.id);
 
-            const readIds = readPosts ? readPosts.map(r => r.post_id) : [];
-            const unread = dbInspirations.filter(insp => !readIds.includes(insp.id));
+            const readIds = readPosts ? readPosts.map((r: any) => r.post_id) : [];
+            const unread = dbInspirations.filter((insp: any) => !readIds.includes(insp.id));
 
             if (unread.length > 0) {
               const latest = unread[0];
@@ -1388,7 +1468,7 @@ export default function OnboardingFlow() {
       const fetchStudents = async () => {
         const { data } = await supabase.from('profiles').select('*').eq('role', 'STUDENT');
         if (data && data.length > 0) {
-          const formatted = data.map(profile => {
+          const formatted = data.map((profile: any) => {
              const prefs = (profile.preferences as any) || {};
              const tags = [];
              if (prefs.q2) {
@@ -1470,7 +1550,7 @@ export default function OnboardingFlow() {
           .eq('status', 'Active')
           .order('enrolled_at', { ascending: false });
 
-        const parsedEnrollments = (enrollments || []).map(enr => {
+        const parsedEnrollments = (enrollments || []).map((enr: any) => {
           let c = enr.course;
           if (c) {
             try {
@@ -1566,11 +1646,11 @@ export default function OnboardingFlow() {
 
         const localCatalog = mentorCoursesCatalog;
         const combined = [
-          ...parsedDbCourses.map(c => ({
+          ...parsedDbCourses.map((c: any) => ({
             ...c,
             modules: c.modules || c.content || []
           })),
-          ...localCatalog.filter(c => !parsedDbCourses.some(sc => sc.title === c.title))
+          ...localCatalog.filter((c: any) => !parsedDbCourses.some((sc: any) => sc.title === c.title))
         ];
         setAvailableCourses(combined);
 
@@ -1594,7 +1674,7 @@ export default function OnboardingFlow() {
           .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${session.user.id}` },
-            (payload) => {
+            (payload: any) => {
               setMessages(prev => [...prev, payload.new]);
             }
           )

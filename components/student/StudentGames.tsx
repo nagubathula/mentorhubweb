@@ -239,7 +239,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
           .eq('is_active', true);
         
         if (data) {
-          const processedBanks = data.map(q => {
+          const processedBanks = data.map((q: any) => {
             const allQs = Array.isArray(q.questions) 
               ? q.questions.flatMap((phase: any) => 
                   Array.isArray(phase.questions) ? phase.questions.map((pq: any) => ({
@@ -252,7 +252,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
           });
 
           const courseTitle = enrolledCourse?.title?.toLowerCase() || "";
-          const relevant = processedBanks.filter(b => 
+          const relevant = processedBanks.filter((b: any) => 
             b.title.toLowerCase().includes(courseTitle) || 
             courseTitle.includes(b.title.toLowerCase().replace(" question bank", ""))
           );
@@ -513,7 +513,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
 
   const selectRandomQuestion = useCallback(() => {
     // Combine questions from all dbGames
-    const dbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    const dbQuestions = (dbGames || []).flatMap((g: any) => g.flattenedQuestions || []);
     const source = dbQuestions.length > 0 ? dbQuestions : SNAKES_QUESTIONS;
     
     const unasked = source.filter((q: any) => !questionPool.has(q.id || q.question));
@@ -1242,7 +1242,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
   const selectRandomQuestion = useCallback(() => {
     // Combine questions from all dbGames
-    const dbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    const dbQuestions = (dbGames || []).flatMap((g: any) => g.flattenedQuestions || []);
     const source = dbQuestions.length > 0 ? dbQuestions : LUDO_QUESTIONS;
     
     const unasked = source.filter((q: any) => !questionPool.has(q.id || q.question));
@@ -1880,14 +1880,14 @@ function KbcGame({ userName, userCoins, onCoinsEarned, onPlayComplete, dbGames }
 
   useEffect(() => {
     // Combine questions from all dbGames
-    const allDbQuestions = (dbGames || []).flatMap(g => g.flattenedQuestions || []);
+    const allDbQuestions = (dbGames || []).flatMap((g: any) => g.flattenedQuestions || []);
     setDbQuestions(allDbQuestions);
   }, [dbGames]);
 
   const selectRandomQuestions = useCallback(() => {
     const source = dbQuestions.length > 0 ? dbQuestions : KBC_QUESTIONS;
-    const easy = [...source].filter((q) => q.difficulty === "easy").sort(() => Math.random() - 0.5).slice(0, 5);
-    const medium = [...source].filter((q) => q.difficulty === "medium").sort(() => Math.random() - 0.5).slice(0, 5);
+    const easy = [...source].filter((q: any) => q.difficulty === "easy").sort(() => Math.random() - 0.5).slice(0, 5);
+    const medium = [...source].filter((q: any) => q.difficulty === "medium").sort(() => Math.random() - 0.5).slice(0, 5);
     const hard = [...source].filter((q) => q.difficulty === "hard").sort(() => Math.random() - 0.5).slice(0, 5);
     
     // If we don't have enough difficulty-specific questions, just take random ones

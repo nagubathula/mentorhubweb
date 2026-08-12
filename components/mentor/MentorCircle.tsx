@@ -47,7 +47,7 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
       const userCircles = new Set<string>();
 
       if (allMembers) {
-        allMembers.forEach((m) => {
+        allMembers.forEach((m: any) => {
           if (m.circle_id) {
             memberCountMap[m.circle_id] = (memberCountMap[m.circle_id] || 0) + 1;
             if (activeUser && m.student_id === activeUser.id) {
@@ -58,7 +58,7 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
       }
 
       if (dbCircles) {
-        const circlesWithCount = dbCircles.map((c) => ({
+        const circlesWithCount = dbCircles.map((c: any) => ({
           ...c,
           memberCount: memberCountMap[c.id] || 0,
           isMember: userCircles.has(c.id)
@@ -67,7 +67,7 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
 
         // Keep selectedCircle details in sync
         if (selectedCircleRef.current) {
-          const updated = circlesWithCount.find(c => c.id === selectedCircleRef.current.id);
+          const updated = circlesWithCount.find((c: any) => c.id === selectedCircleRef.current.id);
           if (updated) {
             setSelectedCircle(updated);
           }
@@ -112,7 +112,7 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
     const fetchMentors = async () => {
       const { data } = await supabase.from('profiles').select('*').eq('role', 'MENTOR');
       if (data) {
-        setMentors(data.map((m, idx) => ({
+        setMentors(data.map((m: any, idx: number) => ({
           id: m.id,
           name: m.name || m.email?.split('@')[0] || 'Unknown Mentor',
           role: m.expertise || "Mentor",
@@ -199,14 +199,14 @@ export function MentorCircle({ onClose }: { onClose?: () => void } = {}) {
         .eq('circle_id', circleId);
 
       if (memberships && memberships.length > 0) {
-        const memberIds = memberships.map(m => m.student_id).filter((id): id is string => !!id);
+        const memberIds = memberships.map((m: any) => m.student_id).filter((id: any): id is string => !!id);
         const { data: dbProfiles } = await supabase
           .from('profiles')
           .select('*')
           .in('id', memberIds);
 
         if (dbProfiles) {
-          setCircleMembers(dbProfiles.map(p => ({
+          setCircleMembers(dbProfiles.map((p: any) => ({
             id: p.id,
             name: p.name || p.email?.split('@')[0] || "Member",
             role: p.role,

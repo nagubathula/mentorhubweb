@@ -193,7 +193,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
         .limit(50);
 
       if (data && data.length > 0) {
-        const formatted: Donation[] = data.map(row => ({
+        const formatted: Donation[] = data.map((row: any) => ({
           id: row.id,
           name: row.display_name || (row.is_anonymous ? "Anonymous" : "Kind Student"),
           message: row.message_content || "",

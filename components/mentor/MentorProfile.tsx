@@ -74,9 +74,9 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
 
     let avgRating = 5.0;
     if (reviewsReceived && reviewsReceived.length > 0) {
-      const rated = reviewsReceived.filter(r => r.rating !== null);
+      const rated = reviewsReceived.filter((r: any) => r.rating !== null);
       if (rated.length > 0) {
-        avgRating = Math.round((rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
+        avgRating = Math.round((rated.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
       }
     }
 

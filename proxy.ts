@@ -25,6 +25,9 @@ export async function proxy(request: NextRequest) {
     url,
     key,
     {
+      cookieOptions: {
+        maxAge: 365 * 24 * 60 * 60,
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -33,7 +36,10 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              maxAge: 365 * 24 * 60 * 60, // 1 year cookie persistence
+            })
           )
         },
       },

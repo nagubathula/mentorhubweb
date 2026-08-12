@@ -47,10 +47,10 @@ export function TopHeader() {
         .select('student_id');
 
       if (studentProfiles && mappings) {
-        const mappedIds = new Set(mappings.map(m => m.student_id));
-        const unmappedList = studentProfiles.filter(s => !mappedIds.has(s.id));
+        const mappedIds = new Set(mappings.map((m: any) => m.student_id));
+        const unmappedList = studentProfiles.filter((s: any) => !mappedIds.has(s.id));
         // Sort by created_at descending
-        unmappedList.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+        unmappedList.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
         setUnmapped(unmappedList);
       } else {
         setUnmapped([]);
@@ -89,14 +89,14 @@ export function TopHeader() {
   }, []);
 
   const notifications = [
-    ...unassigned.map(u => ({
+    ...unassigned.map((u: any) => ({
       id: `unassigned-${u.id}`,
       type: "unassigned",
       title: "New Google Registration",
       description: `${u.name || u.email || 'Google User'} needs role assignment.`,
       time: u.created_at,
     })),
-    ...unmapped.map(s => ({
+    ...unmapped.map((s: any) => ({
       id: `unmapped-${s.id}`,
       type: "unmapped",
       title: "Unmapped Student",
@@ -105,7 +105,7 @@ export function TopHeader() {
     }))
   ];
 
-  notifications.sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
+  notifications.sort((a: any, b: any) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-4 md:px-8 bg-white shrink-0">
