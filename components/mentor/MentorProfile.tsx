@@ -3,13 +3,15 @@
 import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { MentorSettingsModal } from "./MentorSettingsModal";
 
 const supabase = createClient();
 
 export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => void; onSwitchRole?: () => void }) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [profile, setProfile] = useState<any>({
     name: "Vikram Patel",
     email: "vikram.p@kindmentor.com",
@@ -24,70 +26,70 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
     rating: 5.0
   });
 
-  useEffect(() => {
-    const fetchMentorProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+  const fetchMentorProfile = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
 
-      const currentUserId = session.user.id;
+    const currentUserId = session.user.id;
 
-      // Fetch profile
-      const { data: profData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUserId)
-        .single();
+    // Fetch profile
+    const { data: profData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUserId)
+      .single();
 
-      if (profData) {
-        setProfile({
-          name: profData.name || profData.email?.split("@")[0] || "Mentor",
-          email: profData.email || "",
-          role: profData.expertise || "Senior Software Developer",
-          location: (profData.preferences as any)?.location || "Bangalore, India",
-          avatar: profData.avatar_url || null
-        });
-      }
-
-      // Fetch mentees mapping count
-      const { data: mappings } = await supabase
-        .from("mapping")
-        .select("id")
-        .eq("mentor_id", currentUserId);
-
-      const menteesCount = mappings?.length || 0;
-
-      // Fetch completed sessions count
-      const { data: sessData } = await supabase
-        .from("sessions")
-        .select("id")
-        .eq("mentor_id", currentUserId)
-        .eq("status", "Completed");
-
-      const completedCount = sessData?.length || 0;
-
-      // Fetch ratings average
-      const { data: reviewsReceived } = await supabase
-        .from("reviews")
-        .select("rating")
-        .eq("reviewee_id", currentUserId);
-
-      let avgRating = 5.0;
-      if (reviewsReceived && reviewsReceived.length > 0) {
-        const rated = reviewsReceived.filter(r => r.rating !== null);
-        if (rated.length > 0) {
-          avgRating = Math.round((rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
-        }
-      }
-
-      setMetrics({
-        mentees: menteesCount,
-        sessions: completedCount,
-        rating: avgRating
+    if (profData) {
+      setProfile({
+        name: profData.name || profData.email?.split("@")[0] || "Mentor",
+        email: profData.email || "",
+        role: profData.expertise || "Senior Software Developer",
+        location: (profData.preferences as any)?.location || "Bangalore, India",
+        avatar: profData.avatar_url || null
       });
-    };
+    }
 
-    fetchMentorProfile();
+    // Fetch mentees mapping count
+    const { data: mappings } = await supabase
+      .from("mapping")
+      .select("id")
+      .eq("mentor_id", currentUserId);
+
+    const menteesCount = mappings?.length || 0;
+
+    // Fetch completed sessions count
+    const { data: sessData } = await supabase
+      .from("sessions")
+      .select("id")
+      .eq("mentor_id", currentUserId)
+      .eq("status", "Completed");
+
+    const completedCount = sessData?.length || 0;
+
+    // Fetch ratings average
+    const { data: reviewsReceived } = await supabase
+      .from("reviews")
+      .select("rating")
+      .eq("reviewee_id", currentUserId);
+
+    let avgRating = 5.0;
+    if (reviewsReceived && reviewsReceived.length > 0) {
+      const rated = reviewsReceived.filter(r => r.rating !== null);
+      if (rated.length > 0) {
+        avgRating = Math.round((rated.reduce((sum, r) => sum + (r.rating || 0), 0) / rated.length) * 10) / 10;
+      }
+    }
+
+    setMetrics({
+      mentees: menteesCount,
+      sessions: completedCount,
+      rating: avgRating
+    });
   }, []);
+
+  useEffect(() => {
+    fetchMentorProfile();
+  }, [fetchMentorProfile]);
 
   const myCourses = [
     { id: 1, title: "Advanced Mentoring Techniques", modules: 12, duration: "4 hours", progress: 100, locked: false },
@@ -99,7 +101,12 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between mt-8 px-1">
         <h2 className="text-xl font-medium tracking-tight text-slate-900">My Profile</h2>
-        <Button variant="ghost" size="icon" className="w-11 h-11 rounded-2xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600 active:scale-95 transition-transform">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setIsSettingsOpen(true)}
+          className="w-11 h-11 rounded-2xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600 active:scale-95 transition-transform cursor-pointer"
+        >
           <Settings className="w-5 h-5" />
         </Button>
       </div>
@@ -216,6 +223,16 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
           Sign Out
         </Button>
       </div>
+
+      {/* Mentor Settings Modal */}
+      <MentorSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        profile={profile}
+        onProfileUpdate={fetchMentorProfile}
+        onSignOut={onSignOut}
+      />
     </div>
   );
 }
+
