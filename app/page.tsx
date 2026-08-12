@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { getSupabaseCredentials } from "@/lib/supabase/env";
 const supabase = createClient();
@@ -324,6 +324,81 @@ export default function OnboardingFlow() {
   const [copiedInstagramToast, setCopiedInstagramToast] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Student Settings state
+  const [isStudentSettingsOpen, setIsStudentSettingsOpen] = useState(false);
+  const [studentSettingsView, setStudentSettingsView] = useState<"MAIN" | "EDIT_PROFILE" | "CHANGE_PASSWORD" | "NOTIFICATIONS" | "PRIVACY">("MAIN");
+  const [editStudentName, setEditStudentName] = useState("");
+  const [editStudentEmail, setEditStudentEmail] = useState("");
+  const [newStudentPassword, setNewStudentPassword] = useState("");
+  const [confirmStudentPassword, setConfirmStudentPassword] = useState("");
+  const [settingsFeedback, setSettingsFeedback] = useState<string | null>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [studentNotifEmail, setStudentNotifEmail] = useState(true);
+  const [studentNotifPush, setStudentNotifPush] = useState(true);
+  const [studentNotifCourses, setStudentNotifCourses] = useState(true);
+  const [studentPrivacyPublic, setStudentPrivacyPublic] = useState(true);
+
+  const handleSaveStudentProfile = async () => {
+    if (!editStudentName.trim()) return;
+    setIsSavingSettings(true);
+    setSettingsFeedback(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ name: editStudentName.trim(), email: editStudentEmail.trim() } as any)
+          .eq("id", session.user.id);
+        if (error) {
+          setSettingsFeedback("Error updating profile: " + error.message);
+        } else {
+          setName(editStudentName.trim());
+          if (editStudentEmail.trim()) setEmail(editStudentEmail.trim());
+          setSettingsFeedback("Profile updated successfully!");
+          setTimeout(() => {
+            setSettingsFeedback(null);
+            setStudentSettingsView("MAIN");
+          }, 1200);
+        }
+      }
+    } catch (err: any) {
+      setSettingsFeedback("Failed to update profile.");
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleUpdateStudentPassword = async () => {
+    if (!newStudentPassword || newStudentPassword.length < 6) {
+      setSettingsFeedback("Password must be at least 6 characters.");
+      return;
+    }
+    if (newStudentPassword !== confirmStudentPassword) {
+      setSettingsFeedback("Passwords do not match.");
+      return;
+    }
+    setIsSavingSettings(true);
+    setSettingsFeedback(null);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newStudentPassword });
+      if (error) {
+        setSettingsFeedback(error.message);
+      } else {
+        setSettingsFeedback("Password updated successfully!");
+        setNewStudentPassword("");
+        setConfirmStudentPassword("");
+        setTimeout(() => {
+          setSettingsFeedback(null);
+          setStudentSettingsView("MAIN");
+        }, 1200);
+      }
+    } catch (err: any) {
+      setSettingsFeedback("Failed to update password.");
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   // Messaging state
   const [mappedMentor, setMappedMentor] = useState<any>(null);
@@ -2077,7 +2152,8 @@ export default function OnboardingFlow() {
     if (!messageInput.trim()) return;
     
     if (!mappedMentor) {
-      alert("No mentor assigned yet. Please wait for an admin to match you with a mentor.");
+      // Direct question to AI Assistant when no human mentor is assigned yet
+      setState("AI_ASSISTANT");
       return;
     }
 
@@ -4598,13 +4674,28 @@ export default function OnboardingFlow() {
                   {/* Purple Top Block */}
                   <div className="bg-[#0f172a] pt-8 pb-16 px-6 md:px-8 relative">
                     <div className="flex justify-between items-center text-white mb-6">
-                      <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0 cursor-pointer">
                         <ArrowLeft className="w-5 h-5" />
                       </button>
                       <p className="font-medium text-[15px]">My Profile</p>
-                      <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-rose-500/80 transition-colors shrink-0" onClick={handleSignOut}>
-                        <LogOut className="w-[17px] h-[17px]" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => {
+                            setEditStudentName(name || "");
+                            setEditStudentEmail(email || "");
+                            setStudentSettingsView("MAIN");
+                            setSettingsFeedback(null);
+                            setIsStudentSettingsOpen(true);
+                          }} 
+                          className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shrink-0 cursor-pointer" 
+                          title="Settings"
+                        >
+                          <Settings className="w-[17px] h-[17px]" />
+                        </button>
+                        <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-rose-500/80 transition-colors shrink-0 cursor-pointer" onClick={handleSignOut} title="Sign Out">
+                          <LogOut className="w-[17px] h-[17px]" />
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="flex flex-col items-center gap-3">
@@ -5765,6 +5856,288 @@ export default function OnboardingFlow() {
                         )}
                       </button>
                     </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Student Settings Modal */}
+          <AnimatePresence>
+            {isStudentSettingsOpen && (
+              <div 
+                className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200"
+                onClick={() => setIsStudentSettingsOpen(false)}
+              >
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Modal Header */}
+                  <div className="bg-slate-900 text-white p-5 relative shrink-0 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {studentSettingsView !== "MAIN" && (
+                        <button 
+                          onClick={() => { setStudentSettingsView("MAIN"); setSettingsFeedback(null); }}
+                          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                        </button>
+                      )}
+                      <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400">
+                        <Settings className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold tracking-tight">
+                          {studentSettingsView === "MAIN" && "Account Settings"}
+                          {studentSettingsView === "EDIT_PROFILE" && "Edit Profile"}
+                          {studentSettingsView === "CHANGE_PASSWORD" && "Change Password"}
+                          {studentSettingsView === "NOTIFICATIONS" && "Notifications"}
+                          {studentSettingsView === "PRIVACY" && "Privacy & Security"}
+                        </h3>
+                        <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Student Dashboard</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsStudentSettingsOpen(false)}
+                      className="text-slate-400 hover:text-white transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Feedback Banner */}
+                  {settingsFeedback && (
+                    <div className={cn(
+                      "px-4 py-2.5 text-xs font-semibold text-center border-b",
+                      settingsFeedback.includes("success") ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100"
+                    )}>
+                      {settingsFeedback}
+                    </div>
+                  )}
+
+                  {/* View Content */}
+                  <div className="p-5 overflow-y-auto hidden-scrollbar flex-1 space-y-4">
+                    {studentSettingsView === "MAIN" && (
+                      <div className="space-y-2.5">
+                        <button 
+                          onClick={() => setStudentSettingsView("EDIT_PROFILE")}
+                          className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shrink-0">
+                              <User className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-bold text-slate-800">Edit Profile</p>
+                              <p className="text-xs text-slate-400 font-medium">Update name and email address</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+                        </button>
+
+                        <button 
+                          onClick={() => setStudentSettingsView("CHANGE_PASSWORD")}
+                          className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-amber-100/70 text-amber-600 flex items-center justify-center shrink-0">
+                              <Key className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-bold text-slate-800">Change Password</p>
+                              <p className="text-xs text-slate-400 font-medium">Update account security password</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+                        </button>
+
+                        <button 
+                          onClick={() => setStudentSettingsView("NOTIFICATIONS")}
+                          className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-600 flex items-center justify-center shrink-0">
+                              <Bell className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-bold text-slate-800">Notification Settings</p>
+                              <p className="text-xs text-slate-400 font-medium">Manage email and push alerts</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+                        </button>
+
+                        <button 
+                          onClick={() => setStudentSettingsView("PRIVACY")}
+                          className="w-full p-4 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 transition-all flex items-center justify-between group active:scale-[0.99]"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-sky-100/70 text-sky-600 flex items-center justify-center shrink-0">
+                              <Eye className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-bold text-slate-800">Privacy & Security</p>
+                              <p className="text-xs text-slate-400 font-medium">Manage visibility preferences</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+                        </button>
+
+                        <button 
+                          onClick={() => { setIsStudentSettingsOpen(false); handleSignOut(); }}
+                          className="w-full p-4 rounded-2xl bg-rose-50/70 hover:bg-rose-100/80 border border-rose-100 transition-all flex items-center justify-between group active:scale-[0.99] mt-2"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">
+                              <LogOut className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-sm font-bold text-rose-700">Sign Out</p>
+                              <p className="text-xs text-rose-500 font-medium">Log out of your active session</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-rose-400 group-hover:text-rose-600 transition-colors" />
+                        </button>
+                      </div>
+                    )}
+
+                    {studentSettingsView === "EDIT_PROFILE" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">Full Name</Label>
+                          <Input 
+                            value={editStudentName} 
+                            onChange={(e) => setEditStudentName(e.target.value)}
+                            placeholder="Enter your name"
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold focus:bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">Email Address</Label>
+                          <Input 
+                            value={editStudentEmail} 
+                            onChange={(e) => setEditStudentEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold focus:bg-white"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Button variant="ghost" onClick={() => setStudentSettingsView("MAIN")} className="flex-1 h-11 rounded-xl text-slate-500">Cancel</Button>
+                          <Button onClick={handleSaveStudentProfile} disabled={isSavingSettings} className="flex-1 h-11 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-xs">
+                            {isSavingSettings ? "Saving..." : "Save Changes"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {studentSettingsView === "CHANGE_PASSWORD" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">New Password</Label>
+                          <Input 
+                            type="password"
+                            value={newStudentPassword} 
+                            onChange={(e) => setNewStudentPassword(e.target.value)}
+                            placeholder="At least 6 characters"
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold focus:bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">Confirm New Password</Label>
+                          <Input 
+                            type="password"
+                            value={confirmStudentPassword} 
+                            onChange={(e) => setConfirmStudentPassword(e.target.value)}
+                            placeholder="Re-enter new password"
+                            className="h-11 rounded-xl bg-slate-50 border-slate-200 text-sm font-semibold focus:bg-white"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Button variant="ghost" onClick={() => setStudentSettingsView("MAIN")} className="flex-1 h-11 rounded-xl text-slate-500">Cancel</Button>
+                          <Button onClick={handleUpdateStudentPassword} disabled={isSavingSettings} className="flex-1 h-11 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-xs">
+                            {isSavingSettings ? "Updating..." : "Update Password"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {studentSettingsView === "NOTIFICATIONS" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">Email Notifications</p>
+                            <p className="text-[11px] text-slate-400 font-medium">Receive mentor session & homework updates</p>
+                          </div>
+                          <input 
+                            type="checkbox" 
+                            checked={studentNotifEmail} 
+                            onChange={(e) => setStudentNotifEmail(e.target.checked)}
+                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">Push Notifications</p>
+                            <p className="text-[11px] text-slate-400 font-medium">Browser alerts for direct messages</p>
+                          </div>
+                          <input 
+                            type="checkbox" 
+                            checked={studentNotifPush} 
+                            onChange={(e) => setStudentNotifPush(e.target.checked)}
+                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">Course Announcements</p>
+                            <p className="text-[11px] text-slate-400 font-medium">Alerts for new syllabus modules</p>
+                          </div>
+                          <input 
+                            type="checkbox" 
+                            checked={studentNotifCourses} 
+                            onChange={(e) => setStudentNotifCourses(e.target.checked)}
+                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </div>
+                        <Button onClick={() => { setSettingsFeedback("Preferences saved!"); setTimeout(() => { setSettingsFeedback(null); setStudentSettingsView("MAIN"); }, 1000); }} className="w-full h-11 rounded-xl bg-slate-900 text-white font-bold text-xs mt-2">
+                          Save Preferences
+                        </Button>
+                      </div>
+                    )}
+
+                    {studentSettingsView === "PRIVACY" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800">Public Profile</p>
+                            <p className="text-[11px] text-slate-400 font-medium">Allow peers to see your completed projects</p>
+                          </div>
+                          <input 
+                            type="checkbox" 
+                            checked={studentPrivacyPublic} 
+                            onChange={(e) => setStudentPrivacyPublic(e.target.checked)}
+                            className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-medium p-1 leading-relaxed">
+                          Your profile data and project information is stored securely in Supabase. You can change these settings at any time.
+                        </p>
+                        <Button onClick={() => setStudentSettingsView("MAIN")} className="w-full h-11 rounded-xl bg-slate-900 text-white font-bold text-xs mt-2">
+                          Back to Settings
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 text-center shrink-0">
+                    <Button variant="ghost" onClick={() => setIsStudentSettingsOpen(false)} className="h-9 px-6 text-slate-500 text-xs font-semibold rounded-xl">
+                      Close Settings
+                    </Button>
                   </div>
                 </motion.div>
               </div>
