@@ -404,11 +404,11 @@ export function CourseDetailsScreen({
 
             <button
               onClick={() => setIsAiPanelOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200/80 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-2xs group shrink-0"
-              title={`Ask AI about ${course.title}`}
+              className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-semibold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm border border-indigo-400/30 focus:ring-2 focus:ring-indigo-400 focus:outline-none shrink-0"
+              title={`Ask AI Mentor about ${course.title}`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
-              <span>Ask AI</span>
+              <Sparkles className="w-4 h-4 text-white animate-pulse" />
+              <span>✨ Ask AI Mentor</span>
             </button>
           </div>
 

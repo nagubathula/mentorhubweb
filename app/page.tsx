@@ -114,12 +114,12 @@ const getCookie = (name: string): string | null => {
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
 
 const AESTHETIC_GRADIENTS = [
-  "from-indigo-500 to-purple-600",
-  "from-emerald-500 to-teal-600",
-  "from-indigo-500 to-sky-500",
-  "from-amber-500 to-orange-600",
-  "from-cyan-500 to-blue-600",
-  "from-violet-500 to-indigo-600",
+  "from-slate-900 to-slate-800",
+  "from-blue-900 to-slate-900",
+  "from-slate-800 to-blue-950",
+  "from-blue-800 to-slate-900",
+  "from-slate-900 to-blue-900",
+  "from-blue-950 to-slate-900",
 ];
 
 const getGradientClass = (id: string) => {
@@ -2682,7 +2682,7 @@ export default function OnboardingFlow() {
           </div>
           <h1 className="text-xl font-medium text-slate-900 tracking-tight">KindMentor</h1>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+            <div className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
             <span className="text-xs font-medium text-slate-500">Restoring session...</span>
           </div>
         </div>
@@ -2691,7 +2691,7 @@ export default function OnboardingFlow() {
   }
 
   return (
-    <div className="min-h-[100dvh] md:min-h-screen mesh-bg flex items-stretch md:items-center justify-center p-0 md:p-6 selection:bg-indigo-100 font-inter">
+    <div className="min-h-[100dvh] md:min-h-screen mesh-bg flex items-stretch md:items-center justify-center p-0 md:p-6 selection:bg-blue-100 font-inter">
       <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-[100dvh] md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white border-[#E2E8F0]' : 'w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[16px] bg-white border-[#E2E8F0] shadow-sm'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
         <div className={`flex-1 relative ${isDashboard ? 'px-0 pt-0 pb-0 overflow-hidden' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white overflow-hidden' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#F8FAFC] overflow-y-auto hidden-scrollbar' : 'px-5 sm:px-8 py-6 sm:py-8 flex flex-col justify-start md:justify-center overflow-y-auto hidden-scrollbar pb-[calc(4rem+env(safe-area-inset-bottom))]'}`}>
@@ -2706,8 +2706,8 @@ export default function OnboardingFlow() {
                   </div>
                   <h1 className="text-xl font-medium text-slate-900 mb-5 font-inter tracking-tight">KindMentor</h1>
                   
-                  <div className="bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors cursor-pointer text-white px-4 py-2 rounded-full flex items-center gap-2 text-[13px] font-medium mb-10 shadow-sm">
-                    <Sparkles className="w-4 h-4" /> 60-Day Mentorship Journey
+                  <div className="bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer text-white px-4 py-2 rounded-full flex items-center gap-2 text-[13px] font-medium mb-10 shadow-sm">
+                    <Sparkles className="w-4 h-4 text-blue-400" /> 60-Day Mentorship Journey
                   </div>
 
                   <div className="space-y-4 text-[15px] text-slate-700 font-medium w-full max-w-xs mx-auto pl-2">
