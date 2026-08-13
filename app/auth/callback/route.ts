@@ -39,7 +39,17 @@ export async function GET(request: Request) {
       } catch (profileError) {
         console.error("Failed to auto-create profile in OAuth callback:", profileError)
       }
-      return NextResponse.redirect(`${origin}${next}`)
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
   }
 

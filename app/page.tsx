@@ -541,6 +541,7 @@ export default function OnboardingFlow() {
   useEffect(() => {
     let isMounted = true;
     let handledInitialSession = false;
+    let syncing = false;
 
     // Safety timeout: Ensure authInitializing is NEVER stuck on "Restoring session..." forever.
     // If auth checking takes over 6 seconds due to slow network, gracefully complete initialization.
@@ -552,24 +553,25 @@ export default function OnboardingFlow() {
     }, 6000);
 
     const processSession = async (session: any, source: string) => {
-      if (!isMounted) return;
-      if (session?.user) {
-        try {
+      if (!isMounted || syncing) return;
+      syncing = true;
+
+      try {
+        if (session?.user) {
           await handleSessionSync(session);
-        } catch (err) {
-          console.error(`Session sync error from ${source}:`, err);
-        } finally {
+        } else {
           if (isMounted) {
-            handledInitialSession = true;
-            setAuthInitializing(false);
+            setState("WELCOME");
+            setRole(null);
           }
         }
-      } else {
+      } catch (err) {
+        console.error(`Session sync error from ${source}:`, err);
+      } finally {
         if (isMounted) {
-          // If no active Supabase session exists, set WELCOME (login) screen
-          setState("WELCOME");
           handledInitialSession = true;
           setAuthInitializing(false);
+          syncing = false;
         }
       }
     };
@@ -581,8 +583,10 @@ export default function OnboardingFlow() {
         if (error) {
           console.error("Error fetching session:", error);
         }
-        if (!handledInitialSession) {
+        if (isMounted && session?.user) {
           await processSession(session, "getSession");
+        } else if (isMounted && !session?.user && !handledInitialSession) {
+          await processSession(null, "getSession:null");
         }
       } catch (err) {
         console.error("Auth init exception:", err);
@@ -599,6 +603,10 @@ export default function OnboardingFlow() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
         await processSession(session, `onAuthStateChange:${event}`);
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        if (isMounted && !handledInitialSession) {
+          await processSession(null, `onAuthStateChange:${event}`);
+        }
       } else if (event === 'SIGNED_OUT') {
         if (isMounted) {
           setState("WELCOME");
@@ -936,6 +944,13 @@ export default function OnboardingFlow() {
           if (selectedRole === 'MENTOR') {
             setMentorExpertise("");
           }
+
+          // Update active role column in database
+          await supabase
+            .from('profiles')
+            .update({ role: selectedRole })
+            .eq('id', userId);
+
           setState(selectedRole === 'STUDENT' ? 'STUDENT_PROFILE' : 'MENTOR_PROFILE');
         }
       } else {
@@ -944,6 +959,15 @@ export default function OnboardingFlow() {
         setName(session.user.user_metadata?.full_name || 'Google User');
         setEmail(session.user.email || '');
         if (selectedRole === 'MENTOR') setMentorExpertise("");
+
+        await supabase.from('profiles').insert({
+          id: userId,
+          name: session.user.user_metadata?.full_name || 'User',
+          email: session.user.email || '',
+          role: selectedRole,
+          preferences: { roles: [] }
+        });
+
         setState(selectedRole === 'STUDENT' ? 'STUDENT_PROFILE' : 'MENTOR_PROFILE');
       }
     } catch (e) {
@@ -2018,37 +2042,27 @@ export default function OnboardingFlow() {
       setAuthLoading(true);
       setAuthError("");
 
-      setName("Google User");
-      setEmail("google.user@gmail.com");
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mentorhubweb.vercel.app';
+      const redirectUrl = `${origin}/auth/callback`;
 
-      // Attempt background auth sync if available
-      try {
-        const { data: signInData } = await supabase.auth.signInWithPassword({
-          email: "google.user@gmail.com",
-          password: "GoogleUser123!",
-        });
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
+        },
+      });
 
-        if (!signInData?.user) {
-          await supabase.auth.signUp({
-            email: "google.user@gmail.com",
-            password: "GoogleUser123!",
-            options: {
-              data: { full_name: "Google User" }
-            }
-          });
-        }
-      } catch (dbErr) {
-        console.warn("Google Auth DB sync skipped:", dbErr);
+      if (error) {
+        setAuthError(error.message);
+        setAuthLoading(false);
       }
-
-      setRole(null);
-      setState("ROLE");
-    } catch (e) {
+    } catch (e: any) {
       console.error("Google Sign-In Exception:", e);
-      setName("Google User");
-      setEmail("google.user@gmail.com");
-      setState("ROLE");
-    } finally {
+      setAuthError(e?.message || "Google Sign-In failed. Please try again.");
       setAuthLoading(false);
     }
   };
