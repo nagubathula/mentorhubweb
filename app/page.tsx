@@ -1122,6 +1122,8 @@ export default function OnboardingFlow() {
   const [availableCourses, setAvailableCourses] = useState<any[]>(mentorCoursesCatalog);
   const [studentEnrollments, setStudentEnrollments] = useState<any[]>([]);
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+  const [unenrollingCourseId, setUnenrollingCourseId] = useState<string | null>(null);
+  const [courseToUnenrollMain, setCourseToUnenrollMain] = useState<any | null>(null);
 
   // Fetch user enrollments from Supabase DB (Database is source of truth)
   const fetchUserEnrollments = useCallback(async (userId?: string) => {
@@ -2503,6 +2505,81 @@ export default function OnboardingFlow() {
     alert("Successfully enrolled in " + courseObj.title + "!");
     setIsCourseCatalogOpen(false);
     setState("COURSE_DETAILS");
+  };
+
+  const handleStudentUnenrollCourse = async (courseObj: any) => {
+    if (!courseObj) return;
+    setUnenrollingCourseId(courseObj.id);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id || "guest-student-id";
+
+    try {
+      if (userId !== "guest-student-id") {
+        const { data: existingEnrollments } = await supabase
+          .from('enrollments')
+          .select('*, course:courses(*)')
+          .eq('student_id', userId);
+
+        const targetEnr = (existingEnrollments || []).find((e: any) =>
+          e.course_id === courseObj.id ||
+          e.course?.id === courseObj.id ||
+          (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
+        );
+
+        if (targetEnr) {
+          const { error: deleteErr } = await supabase
+            .from('enrollments')
+            .delete()
+            .eq('id', targetEnr.id);
+
+          if (deleteErr) {
+            console.error("Failed to delete enrollment from database:", deleteErr.message);
+            alert("Failed to unenroll: " + deleteErr.message);
+            setUnenrollingCourseId(null);
+            return;
+          }
+        }
+      }
+
+      // Cleanup local storage fallback
+      const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+      if (localEnrollmentsStr) {
+        try {
+          const localEnrs = JSON.parse(localEnrollmentsStr);
+          const filtered = localEnrs.filter((e: any) =>
+            e.course_id !== courseObj.id && e.course?.id !== courseObj.id && e.course?.title !== courseObj.title
+          );
+          localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(filtered));
+        } catch (e) {
+          console.error("Localstorage unenroll filter error:", e);
+        }
+      }
+
+      // Update state immediately in React
+      setStudentEnrollments(prev =>
+        prev.filter((e: any) =>
+          e.course_id !== courseObj.id &&
+          e.course?.id !== courseObj.id &&
+          !(e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
+        )
+      );
+
+      if (enrolledCourse && (enrolledCourse.id === courseObj.id || enrolledCourse.title === courseObj.title)) {
+        setEnrolledCourse(null);
+        setEnrollmentId(null);
+        setCourseProgress([]);
+      }
+
+      if (userId !== "guest-student-id") {
+        await fetchUserEnrollments(userId);
+      }
+    } catch (e: any) {
+      console.error("Unenroll exception:", e);
+      alert("Failed to unenroll: " + (e.message || "Unknown error"));
+    } finally {
+      setUnenrollingCourseId(null);
+    }
   };
 
   const handleSignIn = async () => {
@@ -4153,7 +4230,7 @@ export default function OnboardingFlow() {
                     </div>
                     <Button 
                       onClick={() => setIsCourseCatalogOpen(true)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                      className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5" /> Browse Catalog
                     </Button>
@@ -4162,7 +4239,7 @@ export default function OnboardingFlow() {
                   {/* Courses Listing */}
                   {studentEnrollments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-white rounded-3xl border border-dashed border-slate-200 shadow-2xs">
-                      <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm text-slate-400">
+                      <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center mb-4 border border-blue-100 shadow-sm text-[#2563EB]">
                         <GraduationCap className="w-8 h-8 stroke-[1.5]" />
                       </div>
                       <p className="text-[16px] font-bold text-slate-800">No Courses Enrolled Yet</p>
@@ -4171,7 +4248,7 @@ export default function OnboardingFlow() {
                       </p>
                       <Button 
                         onClick={() => setIsCourseCatalogOpen(true)} 
-                        className="mt-5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
+                        className="mt-5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
                       >
                         <BookOpen className="w-4 h-4" /> View Course Catalog
                       </Button>
@@ -4275,15 +4352,57 @@ export default function OnboardingFlow() {
                                     setCourseProgress(completedLessonsList);
                                     setState("COURSE_DETAILS");
                                   }}
-                                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                                  className="flex-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                                 >
                                   <PlayCircle className="w-4 h-4" /> Continue Learning
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setCourseToUnenrollMain(course)}
+                                  disabled={unenrollingCourseId === course.id}
+                                  className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold h-11 px-4 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-xs disabled:opacity-50"
+                                >
+                                  {unenrollingCourseId === course.id ? "Unenrolling..." : "Unenroll"}
                                 </Button>
                               </div>
                             </div>
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+
+                  {/* Main Page Unenroll Confirmation Dialog */}
+                  {courseToUnenrollMain && (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[120] flex items-center justify-center p-4">
+                      <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+                        <div className="space-y-1">
+                          <h4 className="text-base font-bold text-slate-900">Unenroll from this course?</h4>
+                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                            Your course enrollment for &quot;{courseToUnenrollMain.title}&quot; will be removed.
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                          <Button
+                            variant="outline"
+                            onClick={() => setCourseToUnenrollMain(null)}
+                            disabled={unenrollingCourseId === courseToUnenrollMain.id}
+                            className="h-9 px-4 rounded-xl text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={async () => {
+                              await handleStudentUnenrollCourse(courseToUnenrollMain);
+                              setCourseToUnenrollMain(null);
+                            }}
+                            disabled={unenrollingCourseId === courseToUnenrollMain.id}
+                            className="h-9 px-4 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                          >
+                            {unenrollingCourseId === courseToUnenrollMain.id ? "Unenrolling..." : "Unenroll"}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -5357,7 +5476,9 @@ export default function OnboardingFlow() {
                   courses={availableCourses}
                   enrolledCourseIds={enrolledIdsSet}
                   onEnrollCourse={(course) => handleStudentEnrollCourse(course)}
+                  onUnenrollCourse={(course) => handleStudentUnenrollCourse(course)}
                   enrollingCourseId={enrollingCourseId}
+                  unenrollingCourseId={unenrollingCourseId}
                 />
               </motion.div>
             )}

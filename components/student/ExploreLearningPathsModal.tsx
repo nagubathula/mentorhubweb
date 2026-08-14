@@ -39,7 +39,9 @@ export interface ExploreLearningPathsModalProps {
   courses: any[];
   enrolledCourseIds?: string[] | Set<string>;
   onEnrollCourse: (course: any) => void;
+  onUnenrollCourse?: (course: any) => void;
   enrollingCourseId?: string | null;
+  unenrollingCourseId?: string | null;
   title?: string;
   subtitle?: string;
   actionButtonLabel?: (course: any, isEnrolled: boolean) => React.ReactNode;
@@ -72,13 +74,16 @@ export function ExploreLearningPathsModal({
   courses,
   enrolledCourseIds = new Set(),
   onEnrollCourse,
+  onUnenrollCourse,
   enrollingCourseId,
+  unenrollingCourseId,
   title = "Explore Learning Paths",
   subtitle = "Choose from expert-designed course domains",
   actionButtonLabel,
 }: ExploreLearningPathsModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("All");
+  const [courseToUnenroll, setCourseToUnenroll] = useState<any | null>(null);
 
   const enrolledSet = useMemo(() => {
     if (enrolledCourseIds instanceof Set) return enrolledCourseIds;
@@ -177,26 +182,26 @@ export function ExploreLearningPathsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0B1220]/70 backdrop-blur-xs z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
       <div className="bg-[#F8FAFC] text-[#0F172A] rounded-t-[2rem] sm:rounded-[2rem] w-full sm:max-w-4xl md:max-w-5xl overflow-hidden shadow-2xl border border-[#E2E8F0] flex flex-col max-h-[94vh] h-[90vh] animate-in slide-in-from-bottom duration-300">
         
         {/* Mobile Pull handle bar */}
-        <div className="w-full flex justify-center py-2 bg-[#0B1220] shrink-0 sm:hidden">
-          <div className="w-12 h-1 rounded-full bg-white/20"></div>
+        <div className="w-full flex justify-center py-2.5 bg-white shrink-0 sm:hidden border-b border-[#E2E8F0]">
+          <div className="w-12 h-1 rounded-full bg-slate-300"></div>
         </div>
 
-        {/* Modal Top Header (#0B1220 Deep Navy) */}
-        <div className="bg-[#0B1220] text-white px-5 pt-5 pb-4 md:px-7 md:pt-6 border-b border-white/10 shrink-0 space-y-4 shadow-md">
+        {/* Modal Top Header (Light Professional Theme) */}
+        <div className="bg-white text-[#0F172A] px-5 pt-5 pb-4 md:px-7 md:pt-6 border-b border-[#E2E8F0] shrink-0 space-y-4 shadow-2xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/40 flex items-center justify-center text-[#2563EB] shadow-xs">
-                <GraduationCap className="w-5.5 h-5.5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] shadow-2xs">
+                <GraduationCap className="w-5.5 h-5.5 text-[#2563EB]" />
               </div>
               <div>
-                <h3 className="text-lg md:text-xl font-bold text-white tracking-tight leading-tight">
+                <h3 className="text-lg md:text-xl font-bold text-[#0F172A] tracking-tight leading-tight">
                   {title}
                 </h3>
-                <p className="text-[11px] text-[#CBD5E1] font-medium uppercase tracking-wider mt-0.5">
+                <p className="text-[11px] text-[#64748B] font-medium uppercase tracking-wider mt-0.5">
                   {subtitle}
                 </p>
               </div>
@@ -204,14 +209,14 @@ export function ExploreLearningPathsModal({
 
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-90"
+              className="w-9 h-9 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] flex items-center justify-center text-[#475569] hover:text-[#0F172A] transition-all active:scale-90"
               aria-label="Close modal"
             >
               <X className="w-4.5 h-4.5" />
             </button>
           </div>
 
-          {/* Search Bar (#FFFFFF background, #CBD5E1 border, #0F172A text, #94A3B8 placeholder) */}
+          {/* Search Bar */}
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
               <Search className="w-4.5 h-4.5 text-[#2563EB]" />
@@ -221,7 +226,7 @@ export function ExploreLearningPathsModal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search categories or courses..."
-              className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs md:text-sm text-[#0F172A] placeholder-[#94A3B8] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-all font-medium shadow-xs"
+              className="w-full pl-10 pr-10 py-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl text-xs md:text-sm text-[#0F172A] placeholder-[#94A3B8] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-all font-medium shadow-2xs"
             />
             {searchQuery && (
               <button
@@ -294,7 +299,7 @@ export function ExploreLearningPathsModal({
           
           {/* Selected Domain Header */}
           {activeCategoryDetail && (
-            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
               <div className="flex items-center gap-3.5">
                 <div className="w-11 h-11 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] shrink-0 shadow-2xs">
                   {renderCategoryIcon(activeCategoryDetail.icon, "w-5.5 h-5.5")}
@@ -315,7 +320,7 @@ export function ExploreLearningPathsModal({
 
           {/* Empty Search Result State */}
           {filteredCategoriesWithCourses.length === 0 ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center px-4 space-y-3 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs">
+            <div className="py-16 flex flex-col items-center justify-center text-center px-4 space-y-3 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs">
               <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] mb-1">
                 <Search className="w-6 h-6" />
               </div>
@@ -355,7 +360,7 @@ export function ExploreLearningPathsModal({
 
                   {/* Course Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {displayCourses.map((course: any) => {
+                    {displayCourses.map((course: any, idx: number) => {
                       const isEnrolled = enrolledSet.has(course.id) ||
                                          enrolledSet.has(course.title) ||
                                          (course.title && enrolledSet.has(course.title.toLowerCase())) ||
@@ -367,10 +372,11 @@ export function ExploreLearningPathsModal({
                         }, 0) || 0;
 
                       const isEnrollingThis = enrollingCourseId === course.id;
+                      const isUnenrollingThis = unenrollingCourseId === course.id;
 
                       return (
                         <div
-                          key={`${cat.id}-${course.id}`}
+                          key={`${cat.id}-${course.id}-${idx}`}
                           className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-3.5 transition-all duration-200 group hover:shadow-md shadow-2xs"
                         >
                           <div className="space-y-2.5">
@@ -424,13 +430,24 @@ export function ExploreLearningPathsModal({
                             </p>
                           </div>
 
-                          {/* Action Button */}
-                          <div className="pt-2.5 border-t border-[#E2E8F0] flex justify-end items-center">
+                          {/* Action Buttons */}
+                          <div className="pt-2.5 border-t border-[#E2E8F0] flex justify-end items-center gap-2">
                             {actionButtonLabel ? (
                               actionButtonLabel(course, isEnrolled)
                             ) : isEnrolled ? (
-                              <div className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs">
-                                <Check className="w-3.5 h-3.5 text-[#10B981]" strokeWidth={3} /> Enrolled
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs">
+                                  <Check className="w-3.5 h-3.5 text-[#10B981]" strokeWidth={3} /> Enrolled
+                                </div>
+                                {onUnenrollCourse && (
+                                  <Button
+                                    onClick={() => setCourseToUnenroll(course)}
+                                    disabled={isUnenrollingThis}
+                                    className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[11px] font-bold px-3 py-1.5 h-auto rounded-xl uppercase tracking-wider active:scale-95 transition-all shadow-2xs disabled:opacity-50"
+                                  >
+                                    {isUnenrollingThis ? "Unenrolling..." : "Unenroll"}
+                                  </Button>
+                                )}
                               </div>
                             ) : (
                               <Button
@@ -451,6 +468,42 @@ export function ExploreLearningPathsModal({
             })
           )}
         </div>
+
+        {/* Unenroll Confirmation Modal Dialog */}
+        {courseToUnenroll && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[120] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-slate-900">Unenroll from this course?</h4>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Your course enrollment for &quot;{courseToUnenroll.title}&quot; will be removed.
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  onClick={() => setCourseToUnenroll(null)}
+                  disabled={unenrollingCourseId === courseToUnenroll.id}
+                  className="h-9 px-4 rounded-xl text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (onUnenrollCourse) {
+                      await onUnenrollCourse(courseToUnenroll);
+                    }
+                    setCourseToUnenroll(null);
+                  }}
+                  disabled={unenrollingCourseId === courseToUnenroll.id}
+                  className="h-9 px-4 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                >
+                  {unenrollingCourseId === courseToUnenroll.id ? "Unenrolling..." : "Unenroll"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
