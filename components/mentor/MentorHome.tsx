@@ -70,12 +70,12 @@ const ROADMAP_WEEKS = [
 ];
 
 const AESTHETIC_GRADIENTS = [
-  "from-indigo-500 to-purple-600",
-  "from-emerald-500 to-teal-600",
-  "from-indigo-500 to-sky-500",
-  "from-amber-500 to-orange-600",
-  "from-cyan-500 to-blue-600",
-  "from-violet-500 to-indigo-600",
+  "from-slate-900 to-slate-800",
+  "from-blue-900 to-slate-900",
+  "from-slate-800 to-blue-950",
+  "from-blue-800 to-slate-900",
+  "from-slate-900 to-blue-900",
+  "from-blue-950 to-slate-900",
 ];
 
 const getGradientClass = (id: string) => {
@@ -89,14 +89,10 @@ const getGradientClass = (id: string) => {
 };
 
 const STUDENT_AESTHETIC_GRADIENTS = [
-  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
-  "from-violet-50 to-violet-100/80 text-violet-600 border-violet-200/40",
-  "from-fuchsia-50 to-fuchsia-100/80 text-fuchsia-600 border-fuchsia-200/40",
-  "from-pink-50 to-pink-100/80 text-pink-600 border-pink-200/40",
-  "from-indigo-50 to-indigo-100/80 text-indigo-600 border-indigo-200/40",
-  "from-amber-50 to-amber-100/80 text-amber-600 border-amber-200/40",
-  "from-emerald-50 to-emerald-100/80 text-emerald-600 border-emerald-200/40",
-  "from-cyan-50 to-cyan-100/80 text-cyan-600 border-cyan-200/40",
+  "from-blue-50 to-slate-100 text-blue-700 border-blue-200/60",
+  "from-slate-50 to-blue-50 text-slate-700 border-slate-200",
+  "from-blue-50/80 to-slate-100 text-blue-600 border-blue-200/50",
+  "from-slate-100 to-blue-50 text-slate-800 border-slate-200/80",
 ];
 
 const getStudentAestheticGradient = (id: string) => {

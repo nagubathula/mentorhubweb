@@ -108,43 +108,43 @@ export function TopHeader() {
   notifications.sort((a: any, b: any) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-4 md:px-8 bg-white shrink-0">
+    <header className="h-16 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 bg-[#0F172A] text-white shrink-0 shadow-sm">
       <div className="flex-1 flex max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-300" />
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#2563EB]" />
           <Input
             type="search"
             placeholder="Search..."
-            className="w-full pl-10 bg-slate-50/50 border border-slate-100 shadow-none text-[13px] font-medium placeholder:text-slate-400 h-10 rounded-xl focus-visible:ring-1 focus-visible:ring-slate-200"
+            className="w-full pl-10 bg-white/10 border border-slate-700 shadow-none text-[13px] font-medium text-white placeholder-[#94A3B8] h-10 rounded-xl focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20"
           />
         </div>
       </div>
 
       <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-4">
-        <Link href="#" className="hidden lg:block text-[13px] text-slate-400 font-medium hover:text-slate-900 transition-colors">
+        <Link href="#" className="hidden lg:block text-[13px] text-[#CBD5E1] font-semibold hover:text-white transition-colors">
           Mobile App
         </Link>
         
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-xl border border-slate-100 focus:outline-none"
+            className="relative p-2 text-[#CBD5E1] hover:text-white hover:bg-[#1E293B] transition-colors bg-white/10 rounded-xl border border-slate-700 focus:outline-none"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-5 h-5 text-white" />
             {notifications.length > 0 && (
               <>
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-ping"></span>
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-[#0F172A]"></span>
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-[#0F172A] animate-ping"></span>
               </>
             )}
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-slate-100 shadow-xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center justify-between px-4 pb-2 border-b border-slate-50">
-                <span className="text-[14px] font-bold text-slate-800">Pending Actions</span>
+            <div className="absolute right-0 mt-2 w-80 bg-white text-[#0F172A] rounded-2xl border border-slate-200 shadow-xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between px-4 pb-2 border-b border-slate-100">
+                <span className="text-[14px] font-bold text-[#0F172A]">Pending Actions</span>
                 {notifications.length > 0 && (
-                  <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[11px] font-semibold">
+                  <span className="px-2 py-0.5 bg-red-50 text-[#EF4444] rounded-full text-[11px] font-semibold">
                     {notifications.length} Action{notifications.length > 1 ? 's' : ''}
                   </span>
                 )}
@@ -152,22 +152,22 @@ export function TopHeader() {
 
               <div className="max-h-80 overflow-y-auto mt-2">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-slate-400 text-[13px] flex flex-col items-center gap-2">
-                    <Bell className="w-8 h-8 text-slate-200" />
+                  <div className="py-8 text-center text-[#64748B] text-[13px] flex flex-col items-center gap-2">
+                    <Bell className="w-8 h-8 text-slate-300" />
                     <span>All caught up! No pending actions.</span>
                   </div>
                 ) : (
                   notifications.map((n) => (
-                    <div key={n.id} className="px-4 py-3 hover:bg-slate-50/50 transition-colors flex items-start gap-3 border-b border-slate-50/50 last:border-0">
+                    <div key={n.id} className="px-4 py-3 hover:bg-[#EFF6FF] transition-colors flex items-start gap-3 border-b border-slate-100 last:border-0">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                        n.type === 'unassigned' ? 'bg-amber-50 text-amber-600' : 'bg-violet-50 text-violet-600'
+                        n.type === 'unassigned' ? 'bg-amber-50 text-[#F59E0B]' : 'bg-blue-50 text-[#2563EB]'
                       }`}>
                         {n.type === 'unassigned' ? <UserPlus className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-semibold text-slate-800 leading-tight truncate">{n.title}</p>
-                        <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">{n.description}</p>
-                        <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
+                        <p className="text-[13px] font-semibold text-[#0F172A] leading-tight truncate">{n.title}</p>
+                        <p className="text-[12px] text-[#475569] mt-0.5 leading-snug">{n.description}</p>
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-[#64748B]">
                           <Clock className="w-3 h-3" />
                           <span>{timeAgo(n.time)}</span>
                         </div>
@@ -180,7 +180,7 @@ export function TopHeader() {
           )}
         </div>
 
-        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-sm font-medium text-white cursor-pointer shadow-lg border-2 border-white ring-1 ring-slate-100 overflow-hidden">
+        <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-sm font-bold text-white cursor-pointer shadow-md border-2 border-white ring-1 ring-slate-700 overflow-hidden">
            M
         </div>
       </div>

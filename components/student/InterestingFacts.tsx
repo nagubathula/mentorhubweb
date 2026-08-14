@@ -40,23 +40,23 @@ const factsData = [
 
 // Categories definition matching g0 in unminified_index.js
 const categories = [
-  { key: "all", label: "All", icon: Sparkles, color: "text-violet-600", bg: "bg-violet-100" },
-  { key: "tech", label: "Tech", icon: Code, color: "text-blue-600", bg: "bg-blue-100" },
-  { key: "career", label: "Career", icon: Briefcase, color: "text-orange-600", bg: "bg-orange-100" },
-  { key: "brain", label: "Brain", icon: Brain, color: "text-pink-600", bg: "bg-pink-100" },
-  { key: "science", label: "Science", icon: FlaskConical, color: "text-emerald-600", bg: "bg-emerald-100" },
-  { key: "code", label: "Code", icon: Lightbulb, color: "text-cyan-600", bg: "bg-cyan-100" },
-  { key: "motivation", label: "Inspire", icon: Award, color: "text-amber-600", bg: "bg-amber-100" }
+  { key: "all", label: "All", icon: Sparkles, color: "text-[#2563EB]", bg: "bg-[#EFF6FF]" },
+  { key: "tech", label: "Tech", icon: Code, color: "text-[#2563EB]", bg: "bg-[#EFF6FF]" },
+  { key: "career", label: "Career", icon: Briefcase, color: "text-[#0F172A]", bg: "bg-slate-100" },
+  { key: "brain", label: "Brain", icon: Brain, color: "text-[#2563EB]", bg: "bg-[#EFF6FF]" },
+  { key: "science", label: "Science", icon: FlaskConical, color: "text-[#10B981]", bg: "bg-emerald-50" },
+  { key: "code", label: "Code", icon: Lightbulb, color: "text-[#2563EB]", bg: "bg-[#EFF6FF]" },
+  { key: "motivation", label: "Inspire", icon: Award, color: "text-[#F59E0B]", bg: "bg-amber-50" }
 ];
 
 // Aesthetic tokens matching Ld in unminified_index.js
 const aestheticStyles: Record<string, any> = {
-  tech: { border: "border-blue-200", badge: "bg-blue-50", badgeText: "text-blue-600", glow: "from-blue-500/10 to-transparent" },
-  career: { border: "border-orange-200", badge: "bg-orange-50", badgeText: "text-orange-600", glow: "from-orange-500/10 to-transparent" },
-  brain: { border: "border-pink-200", badge: "bg-pink-50", badgeText: "text-pink-600", glow: "from-pink-500/10 to-transparent" },
-  science: { border: "border-emerald-200", badge: "bg-emerald-50", badgeText: "text-emerald-600", glow: "from-emerald-500/10 to-transparent" },
-  code: { border: "border-cyan-200", badge: "bg-cyan-50", badgeText: "text-cyan-600", glow: "from-cyan-500/10 to-transparent" },
-  motivation: { border: "border-amber-200", badge: "bg-amber-50", badgeText: "text-amber-600", glow: "from-amber-500/10 to-transparent" }
+  tech: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#2563EB]", glow: "from-[#2563EB]/10 to-transparent" },
+  career: { border: "border-[#E2E8F0]", badge: "bg-slate-100", badgeText: "text-[#0F172A]", glow: "from-slate-900/10 to-transparent" },
+  brain: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#2563EB]", glow: "from-[#2563EB]/10 to-transparent" },
+  science: { border: "border-[#E2E8F0]", badge: "bg-emerald-50", badgeText: "text-[#10B981]", glow: "from-emerald-500/10 to-transparent" },
+  code: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#2563EB]", glow: "from-[#2563EB]/10 to-transparent" },
+  motivation: { border: "border-[#E2E8F0]", badge: "bg-amber-50", badgeText: "text-[#F59E0B]", glow: "from-amber-500/10 to-transparent" }
 };
 
 // Quiz Question matching ti in unminified_index.js

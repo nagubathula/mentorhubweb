@@ -256,27 +256,24 @@ export function AiLearningAssistant() {
   }
 
   return (
-    <Card className="w-full relative z-10 rounded-[1.5rem] shadow-xs border border-slate-100 bg-white overflow-hidden font-inter transition-all">
-      {/* Background Accent Aura */}
-      <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
-
+    <Card className="w-full relative z-10 rounded-[1.5rem] shadow-xs border border-[#E2E8F0] bg-white overflow-hidden font-sans transition-all">
       <CardContent className="p-4 sm:p-5 flex flex-col gap-4">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 w-full border-b border-slate-100/80 pb-3.5">
+        <div className="flex items-center justify-between gap-3 w-full border-b border-[#E2E8F0] pb-3.5">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100/80 p-2.5 rounded-2xl text-indigo-600 shrink-0 shadow-xs border border-indigo-200/50">
+            <div className="bg-[#EFF6FF] p-2.5 rounded-2xl text-[#2563EB] shrink-0 shadow-2xs border border-[#2563EB]/20">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">
+                <h3 className="text-[15px] font-bold text-[#0F172A] tracking-tight">
                   AI Learning Assistant
                 </h3>
-                <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-100 uppercase tracking-wider">
+                <span className="bg-[#EFF6FF] text-[#2563EB] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#2563EB]/20 uppercase tracking-wider">
                   24/7 Tutor
                 </span>
               </div>
-              <p className="text-[12.5px] font-medium text-slate-400">
+              <p className="text-[12.5px] font-medium text-[#64748B]">
                 Have a doubt? Ask me anything about your studies.
               </p>
             </div>
@@ -285,7 +282,7 @@ export function AiLearningAssistant() {
           {messages.length > 0 && (
             <button
               onClick={handleClearChat}
-              className="text-[11px] font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-100 px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+              className="text-[11px] font-semibold text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
               title="Clear chat history"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -306,15 +303,15 @@ export function AiLearningAssistant() {
               >
                 <div className="flex items-end gap-2 max-w-[90%] sm:max-w-[85%]">
                   {msg.sender === "ai" && (
-                    <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-xs">
+                    <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0 mb-1 shadow-xs">
                       <Bot className="w-4 h-4" />
                     </div>
                   )}
                   <div
                     className={`px-4 py-3 rounded-2xl text-[13.5px] font-medium leading-relaxed ${
                       msg.sender === "user"
-                        ? "bg-slate-900 text-white rounded-tr-none shadow-sm shadow-slate-900/5"
-                        : "bg-slate-50 text-slate-800 border border-slate-100/80 rounded-tl-none shadow-2xs"
+                        ? "bg-[#0F172A] text-white rounded-tr-none shadow-sm"
+                        : "bg-[#F8FAFC] text-[#0F172A] border border-[#E2E8F0] rounded-tl-none shadow-2xs"
                     }`}
                   >
                     {msg.sender === "user" ? (
@@ -324,7 +321,7 @@ export function AiLearningAssistant() {
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] font-medium text-slate-300 uppercase tracking-wider mt-1 px-1">
+                <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mt-1 px-1">
                   {msg.sender === "user" ? "You" : "AI Assistant"}
                 </span>
               </div>
@@ -333,11 +330,11 @@ export function AiLearningAssistant() {
             {/* Thinking / Loading indicator */}
             {isLoading && (
               <div className="flex items-start gap-2">
-                <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 animate-pulse">
+                <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0 animate-pulse">
                   <Bot className="w-4 h-4" />
                 </div>
-                <div className="px-4 py-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-indigo-700 text-[13px] font-medium flex items-center gap-2 rounded-tl-none">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                <div className="px-4 py-3 rounded-2xl bg-[#EFF6FF] border border-[#2563EB]/20 text-[#2563EB] text-[13px] font-semibold flex items-center gap-2 rounded-tl-none">
+                  <div className="w-2 h-2 rounded-full bg-[#2563EB] animate-ping" />
                   <span>Thinking...</span>
                 </div>
               </div>
@@ -349,14 +346,14 @@ export function AiLearningAssistant() {
 
         {/* Error Banner */}
         {errorMessage && (
-          <div className="bg-rose-50 border border-rose-100 rounded-2xl px-4 py-3 text-[13px] text-rose-600 font-medium flex items-center justify-between gap-2 animate-in fade-in">
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-[13px] text-[#EF4444] font-medium flex items-center justify-between gap-2 animate-in fade-in">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#EF4444]" />
               <span>{errorMessage}</span>
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-600 text-xs font-bold"
+              className="text-red-400 hover:text-[#EF4444] text-xs font-bold"
             >
               Dismiss
             </button>
@@ -378,7 +375,7 @@ export function AiLearningAssistant() {
                   }
                 }}
                 placeholder="Ask your doubt..."
-                className="w-full border border-slate-200 rounded-2xl pl-4 pr-10 py-3 bg-slate-50/50 text-[14px] text-slate-800 placeholder:text-slate-400 outline-none hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-slate-950 transition-all disabled:opacity-50 h-11"
+                className="w-full border border-[#CBD5E1] rounded-2xl pl-4 pr-10 py-3 bg-[#F8FAFC] text-[14px] text-[#0F172A] placeholder-[#94A3B8] outline-none hover:bg-white hover:border-[#2563EB] focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20 transition-all disabled:opacity-50 h-11"
               />
               {/* Optional Speech-to-Text Button */}
               <button
@@ -388,8 +385,8 @@ export function AiLearningAssistant() {
                 title={isListening ? "Listening... Click to stop" : "Voice Input"}
                 className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-xl transition-all ${
                   isListening
-                    ? "bg-rose-500 text-white animate-pulse"
-                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50"
+                    ? "bg-[#EF4444] text-white animate-pulse"
+                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/50"
                 }`}
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -401,7 +398,7 @@ export function AiLearningAssistant() {
               disabled={isLoading || !inputQuery.trim()}
               className={`${
                 inputQuery.trim() && !isLoading
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                  ? "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm"
                   : "bg-slate-100 text-slate-400"
               } h-11 px-4 sm:px-5 rounded-2xl font-semibold text-[13px] flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 disabled:opacity-50`}
             >
@@ -418,15 +415,15 @@ export function AiLearningAssistant() {
 
           {/* Suggested Question Chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[11px] font-semibold text-slate-400 mr-1 flex items-center gap-1">
-              <HelpCircle className="w-3 h-3" /> Suggested:
+            <span className="text-[11px] font-bold text-[#64748B] mr-1 flex items-center gap-1">
+              <HelpCircle className="w-3 h-3 text-[#2563EB]" /> Suggested:
             </span>
             {SUGGESTED_QUESTIONS.map((chipText, cIdx) => (
               <button
                 key={cIdx}
                 disabled={isLoading}
                 onClick={() => handleSendQuestion(chipText)}
-                className="px-3 py-1 rounded-full border border-slate-200/70 bg-slate-50/80 text-[11.5px] font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-95 disabled:opacity-50 text-left"
+                className="px-3 py-1 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] text-[11.5px] font-semibold text-[#475569] hover:bg-[#EFF6FF] hover:text-[#2563EB] hover:border-[#2563EB]/30 transition-all active:scale-95 disabled:opacity-50 text-left"
               >
                 {chipText}
               </button>

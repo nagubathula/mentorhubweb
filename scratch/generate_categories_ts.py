@@ -109,8 +109,8 @@ for cat in categories_data:
     description: "{cat['description']}",
     icon: "{cat['icon']}",
     domain: "{cat['domain']}",
-    bgColor: "{cat['bgColor']}",
-    textColor: "{cat['textColor']}",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: {len(cat['courses'])}
   }}"""
     categories_ts.append(cat_code)
@@ -124,8 +124,6 @@ for cat in categories_data:
     cat_name = cat['name']
     domain = cat['domain']
     cat_icon = cat['icon']
-    cat_bg = cat['bgColor']
-    cat_text = cat['textColor']
 
     for course_item in cat['courses']:
         title, desc, difficulty, duration, keywords = course_item
@@ -138,8 +136,8 @@ for cat in categories_data:
     title: "{title}",
     shortTitle: "{title}",
     description: "{desc}",
-    color: "{cat_text}",
-    bgColor: "{cat_bg}",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <{cat_icon} className="w-5 h-5" />,
     category: "{cat_name}",
     categoryId: "{cat_id}",
@@ -152,7 +150,7 @@ for cat in categories_data:
     keywords: {json.dumps(keywords)},
     modules: [
       {{
-        id: "{mod_prefix}-m1", title: "Foundations & Core Principles of {title}", description: "Core concepts, syntax, principles, and environment setup", color: "{cat_bg}",
+        id: "{mod_prefix}-m1", title: "Foundations & Core Principles of {title}", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           {{ id: "{mod_prefix}-l1", title: "Introduction to {title}", duration: "12 min", type: "video" }},
@@ -171,7 +169,7 @@ for cat in categories_data:
         ],
       }},
       {{
-        id: "{mod_prefix}-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "{mod_prefix}-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           {{ id: "{mod_prefix}-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" }},
@@ -179,7 +177,7 @@ for cat in categories_data:
         ],
       }},
       {{
-        id: "{mod_prefix}-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "{mod_prefix}-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           {{ id: "{mod_prefix}-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" }},
@@ -200,4 +198,4 @@ with open(output_file, "w") as f:
     f.write(",\n".join(courses_ts))
     f.write("\n];\n")
 
-print("Successfully written lib/mentorCoursesData.tsx!")
+print("Successfully written lib/mentorCoursesData.tsx with unified Navy/Blue palette!")

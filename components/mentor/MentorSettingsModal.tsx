@@ -210,7 +210,7 @@ export function MentorSettingsModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="bg-[#0f172a] text-white px-6 py-5 relative shrink-0 flex items-center justify-between">
+        <div className="bg-[#0F172A] text-white px-6 py-5 relative shrink-0 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             {currentView !== "MAIN" ? (
               <button 
@@ -222,19 +222,19 @@ export function MentorSettingsModal({
                 <ArrowLeft className="w-5 h-5" />
               </button>
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+              <div className="w-10 h-10 rounded-2xl bg-[#2563EB]/20 border border-[#2563EB]/40 flex items-center justify-center text-[#2563EB]">
                 <Settings className="w-5 h-5" />
               </div>
             )}
             <div>
-              <h3 className="text-lg font-semibold tracking-tight">
+              <h3 className="text-lg font-bold tracking-tight text-white">
                 {currentView === "MAIN" && "Settings"}
                 {currentView === "EDIT_PROFILE" && "Edit Profile"}
                 {currentView === "CHANGE_PASSWORD" && "Change Password"}
                 {currentView === "NOTIFICATIONS" && "Notification Settings"}
                 {currentView === "PRIVACY" && "Privacy Settings"}
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">
+              <p className="text-[11px] text-[#CBD5E1] font-semibold uppercase tracking-wider">
                 {currentView === "MAIN" && "Manage your mentor profile & options"}
                 {currentView === "EDIT_PROFILE" && "Update your public profile details"}
                 {currentView === "CHANGE_PASSWORD" && "Update your account password"}

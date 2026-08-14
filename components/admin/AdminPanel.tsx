@@ -428,7 +428,7 @@ function CreateEnrollmentModal({ onClose, students, courses, circles }: { onClos
         const coursePayload = {
           title: selectedCourse.title,
           description: serializedDescription,
-          status: 'Active'
+          status: 'Published'
         };
         const { data: newCourse, error: createError } = await supabase.from('courses').insert(coursePayload).select().single();
         if (createError) {

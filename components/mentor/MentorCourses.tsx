@@ -544,7 +544,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
         title: activeCourse.title,
         description: serializedDescription,
         mentor_id: session?.user?.id,
-        status: 'Custom'
+        status: 'Published'
       };
 
       if (isUUID && isCustom) {
@@ -588,7 +588,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
         title: activeCourse.title,
         description: serializedDescription,
         mentor_id: session?.user?.id,
-        status: activeCourse.status || 'Active'
+        status: 'Published'
       };
 
       if (isUUID) {
@@ -797,7 +797,7 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
         title: assigningCourse.title,
         description: serializedDescription,
         mentor_id: session?.user?.id,
-        status: 'Active'
+        status: 'Published'
       };
 
       const { data: newCourse, error } = await supabase.from('courses').insert(payload).select().single();

@@ -25,8 +25,8 @@ categories_data = [
         "description": "Master modern web design, responsive frontend frameworks, backend servers, and full stack applications.",
         "icon": "Monitor",
         "domain": "Programming",
-        "bgColor": "bg-cyan-600",
-        "textColor": "text-cyan-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("HTML & CSS", "Learn modern semantic HTML5, CSS Flexbox, Grid layouts, animations, and responsive web design.", "Beginner", "24 hours", ["html", "css", "flexbox", "grid", "responsive"]),
             ("JavaScript", "Deep dive into JS for front-end interactivity, DOM manipulation, events, and API integration.", "Beginner", "38 hours", ["javascript", "js", "es6", "web", "dom"]),
@@ -42,8 +42,8 @@ categories_data = [
         "description": "Analyze data, extract business insights, build predictive models, and master BI dashboard tools.",
         "icon": "BarChart3",
         "domain": "Data",
-        "bgColor": "bg-emerald-600",
-        "textColor": "text-emerald-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Data Analytics", "Master data analysis with Python, SQL, and visualization tools to derive actionable business insights.", "Intermediate", "42 hours", ["data analytics", "sql", "excel", "tableau", "power bi", "analytics"]),
             ("Data Science", "Learn end-to-end data science: wrangling, exploratory analysis, statistical modeling, and ML pipelines.", "Intermediate", "50 hours", ["data science", "python", "pandas", "numpy", "statistics", "eda"]),
@@ -59,8 +59,8 @@ categories_data = [
         "description": "Explore intelligent algorithms, deep neural networks, computer vision, NLP, and Generative AI models.",
         "icon": "Brain",
         "domain": "AI/ML",
-        "bgColor": "bg-purple-600",
-        "textColor": "text-purple-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Artificial Intelligence", "Introduction to AI principles, search algorithms, knowledge representation, game playing, and logic.", "Intermediate", "46 hours", ["ai", "artificial intelligence", "search", "heuristics", "logic"]),
             ("Machine Learning", "Supervised and unsupervised learning, regression, classification, decision trees, SVMs, and Scikit-Learn.", "Intermediate", "48 hours", ["machine learning", "ml", "scikit-learn", "regression", "classification"]),
@@ -77,8 +77,8 @@ categories_data = [
         "description": "Learn user interface design, user experience, Figma prototyping, graphic design, and design thinking.",
         "icon": "Palette",
         "domain": "Design",
-        "bgColor": "bg-pink-600",
-        "textColor": "text-pink-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("UI Design", "Master visual hierarchy, typography, color theory, component layouts, and high-fidelity interface design.", "Beginner", "32 hours", ["ui design", "user interface", "visual design", "typography", "layout"]),
             ("UX Design", "Design user-centered digital experiences: user research, wireframing, prototyping, and usability testing.", "Beginner", "38 hours", ["ux design", "user experience", "research", "wireframing", "usability"]),
@@ -94,8 +94,8 @@ categories_data = [
         "description": "Build hardware systems using microcontrollers, Embedded C, Linux, and real-time operating systems.",
         "icon": "Zap",
         "domain": "Electronics",
-        "bgColor": "bg-emerald-600",
-        "textColor": "text-emerald-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Embedded Systems", "Design real-time embedded hardware using ARM microcontrollers, RTOS, embedded C, and peripherals.", "Intermediate", "48 hours", ["embedded systems", "arm", "rtos", "microcontroller", "peripherals"]),
             ("Embedded C", "Specialized C programming techniques for hardware registers, bitwise operations, volatile, and memory I/O.", "Beginner", "30 hours", ["embedded c", "registers", "bitwise", "volatile", "firmware"]),
@@ -112,8 +112,8 @@ categories_data = [
         "description": "Design integrated circuits, RTL logic, Verilog/SystemVerilog HDL, FPGA, and CMOS physical design.",
         "icon": "Cpu",
         "domain": "Electronics",
-        "bgColor": "bg-rose-600",
-        "textColor": "text-rose-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("VLSI Design", "Learn VLSI chip design flow from RTL specification to GDSII layout, CMOS logic, and physical signoff.", "Advanced", "56 hours", ["vlsi", "vlsi design", "cmos", "rtl", "verilog", "gdsii"]),
             ("Digital VLSI", "Digital IC design, standard cell synthesis, static timing analysis (STA), clock distribution, and low power.", "Advanced", "48 hours", ["digital vlsi", "sta", "synthesis", "stdcell", "low power", "ic design"]),
@@ -131,8 +131,8 @@ categories_data = [
         "description": "Build connected IoT sensors, autonomous robots, ROS2 navigation, and motor control systems.",
         "icon": "Bot",
         "domain": "Electronics",
-        "bgColor": "bg-teal-600",
-        "textColor": "text-teal-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Internet of Things", "Build connected IoT devices using microcontrollers, sensors, MQTT protocol, and cloud dashboards.", "Intermediate", "40 hours", ["iot", "internet of things", "mqtt", "cloud", "sensors", "wifi"]),
             ("IoT with Arduino", "Combine Arduino hardware with WiFi/Bluetooth modules to transmit sensor data to IoT cloud platforms.", "Beginner", "30 hours", ["iot with arduino", "arduino", "esp8266", "esp32", "sensors", "cloud"]),
@@ -148,8 +148,8 @@ categories_data = [
         "description": "Protect computer networks, perform vulnerability testing, cryptography, and ethical hacking.",
         "icon": "Shield",
         "domain": "Other",
-        "bgColor": "bg-red-700",
-        "textColor": "text-red-700",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Cybersecurity Fundamentals", "CIA triad, threat landscape, risk management, security frameworks (NIST, ISO 27001), and defense.", "Beginner", "36 hours", ["cybersecurity", "cia triad", "nist", "infosec", "security"]),
             ("Network Security", "Firewalls, Intrusion Detection Systems (IDS/IPS), VPNs, TCP/IP security, and network monitoring.", "Intermediate", "40 hours", ["network security", "firewall", "ids", "vpn", "tcp/ip", "packet"]),
@@ -164,8 +164,8 @@ categories_data = [
         "description": "Master computer networking protocols, TCP/IP, network administration, and wireless security.",
         "icon": "Wifi",
         "domain": "Other",
-        "bgColor": "bg-indigo-600",
-        "textColor": "text-indigo-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Computer Networks", "OSI 7-layer model, TCP/IP protocol suite, IP addressing, subnetting, routing protocols, and HTTP/S.", "Intermediate", "36 hours", ["computer networks", "tcp/ip", "osi", "routing", "subnetting", "dns"]),
             ("Network Administration", "Configure routers, switches, VLANs, NAT, DHCP, DNS servers, and network monitoring tools.", "Intermediate", "38 hours", ["network administration", "cisco", "routers", "switches", "vlan", "nat"]),
@@ -180,8 +180,8 @@ categories_data = [
         "description": "Master AWS, Azure, Docker containers, Kubernetes orchestration, CI/CD pipelines, and DevOps.",
         "icon": "Cloud",
         "domain": "Other",
-        "bgColor": "bg-sky-600",
-        "textColor": "text-sky-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Cloud Computing", "Cloud architecture concepts across AWS, Azure, and GCP: compute, storage, IAM, and virtual networks.", "Intermediate", "44 hours", ["cloud computing", "aws", "azure", "gcp", "serverless", "cloud"]),
             ("AWS", "Amazon Web Services core services: EC2, S3, RDS, Lambda, VPC, IAM, and cloud solution architecture.", "Intermediate", "40 hours", ["aws", "ec2", "s3", "lambda", "vpc", "iam", "cloud"]),
@@ -199,8 +199,8 @@ categories_data = [
         "description": "Design relational and NoSQL databases, write SQL queries, and manage database systems.",
         "icon": "Database",
         "domain": "Data",
-        "bgColor": "bg-teal-700",
-        "textColor": "text-teal-700",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Database Management Systems", "Relational database concepts, ER modeling, schema design, indexing, transactions, and ACID properties.", "Intermediate", "38 hours", ["dbms", "database", "relational", "acid", "indexing", "er model"]),
             ("SQL", "Master SQL query writing, joins, subqueries, CTEs, window functions, and performance tuning.", "Beginner", "30 hours", ["sql", "queries", "postgresql", "mysql", "joins", "database"]),
@@ -216,8 +216,8 @@ categories_data = [
         "description": "Learn software engineering principles, OOP, Data Structures & Algorithms, and Git version control.",
         "icon": "Wrench",
         "domain": "Programming",
-        "bgColor": "bg-blue-700",
-        "textColor": "text-blue-700",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Software Engineering", "Software lifecycle methodologies, Agile/Scrum, requirement analysis, software architecture, and QA.", "Beginner", "34 hours", ["software engineering", "agile", "scrum", "sdlc", "testing", "architecture"]),
             ("Object-Oriented Programming", "OOP design principles, SOLID guidelines, encapsulation, inheritance, polymorphism, and design patterns.", "Beginner", "28 hours", ["oop", "object-oriented", "solid", "classes", "inheritance", "polymorphism"]),
@@ -233,8 +233,8 @@ categories_data = [
         "description": "Build native and cross-platform mobile apps using Android, Flutter, and React Native.",
         "icon": "Smartphone",
         "domain": "Programming",
-        "bgColor": "bg-sky-600",
-        "textColor": "text-sky-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Android Development", "Build native Android applications with Kotlin, Android Jetpack, UI layouts, activities, and Room DB.", "Intermediate", "44 hours", ["android", "kotlin", "jetpack", "mobile", "app", "android studio"]),
             ("Flutter", "Build beautiful cross-platform iOS and Android apps from a single codebase using Dart and Flutter widgets.", "Intermediate", "42 hours", ["flutter", "dart", "mobile app", "cross platform", "widgets", "ios", "android"]),
@@ -248,8 +248,8 @@ categories_data = [
         "description": "Explore digital & analog electronics, signals & systems, DSP, RF, antennas, and PCB design.",
         "icon": "Radio",
         "domain": "Electronics",
-        "bgColor": "bg-amber-600",
-        "textColor": "text-amber-600",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Digital Electronics", "Digital logic gates, Boolean algebra, combinational and sequential circuit design, flip-flops, and counters.", "Beginner", "36 hours", ["digital electronics", "logic gates", "boolean algebra", "flip flops", "counters"]),
             ("Analog Electronics", "Operational amplifiers, diodes, BJT/MOSFET biasing, frequency response, and active filter design.", "Intermediate", "40 hours", ["analog electronics", "op-amp", "diodes", "bjt", "amplifiers", "filters"]),
@@ -269,8 +269,8 @@ categories_data = [
         "description": "Mechanical design & CAD, civil structural engineering, biotechnology, and aerospace engineering.",
         "icon": "Wrench",
         "domain": "Other",
-        "bgColor": "bg-slate-700",
-        "textColor": "text-slate-700",
+        "bgColor": "bg-blue-600",
+        "textColor": "text-blue-600",
         "courses": [
             ("Mechanical Design & CAD", "Master mechanical engineering design principles, 3D CAD modeling, FEA simulation, and manufacturing.", "Intermediate", "40 hours", ["mechanical", "cad", "solidworks", "fea", "design", "drawing"]),
             ("Civil & Structural Engineering", "Structural analysis, concrete & steel design, geotechnical engineering, and construction management.", "Intermediate", "44 hours", ["civil", "structural", "concrete", "steel", "rcc", "building", "construction"]),
@@ -279,7 +279,3 @@ categories_data = [
         ]
     }
 ]
-
-print("Total categories:", len(categories_data))
-total_c = sum(len(cat["courses"]) for cat in categories_data)
-print("Total courses:", total_c)

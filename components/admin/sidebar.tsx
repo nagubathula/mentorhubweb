@@ -59,13 +59,13 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-white border-r h-full flex flex-col justify-between hidden md:flex shrink-0">
+    <div className="w-64 bg-[#111827] text-[#CBD5E1] border-r border-slate-800 h-full flex flex-col justify-between hidden md:flex shrink-0">
       <div className="overflow-y-auto w-full pt-6">
         <div className="px-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-md">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <span className="font-medium text-xl flex-1 tracking-tight text-slate-900">MentorHub</span>
+          <span className="font-bold text-xl flex-1 tracking-tight text-white">MentorHub</span>
         </div>
 
         <div className="flex flex-col px-3 space-y-1">
@@ -76,19 +76,19 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors group",
+                  "flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all group font-semibold",
                   isActive
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100 font-medium"
+                    ? "bg-[#2563EB] text-white shadow-sm font-bold"
+                    : "text-[#CBD5E1] hover:bg-[#1E293B] hover:text-white font-medium"
                 )}
               >
-                <item.icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
+                <item.icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400 group-hover:text-white")} />
                 <span>{item.name}</span>
               </Link>
             )
           })}
 
-          <div className="mt-8 mb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="mt-8 mb-2 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
             OTHERS
           </div>
 
@@ -99,13 +99,13 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors group",
+                  "flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all group font-semibold",
                   isActive
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100 font-medium"
+                    ? "bg-[#2563EB] text-white shadow-sm font-bold"
+                    : "text-[#CBD5E1] hover:bg-[#1E293B] hover:text-white font-medium"
                 )}
               >
-                <item.icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
+                <item.icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400 group-hover:text-white")} />
                 <span>{item.name}</span>
               </Link>
             )

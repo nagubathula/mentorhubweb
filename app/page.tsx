@@ -2295,7 +2295,7 @@ export default function OnboardingFlow() {
       const payload = {
         title: courseObj.title,
         description: serializedDescription,
-        status: 'Active'
+        status: 'Published'
       };
 
       const { data: newCourse, error } = await supabase.from('courses').insert(payload).select().single();
@@ -5027,34 +5027,34 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-100 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                <div className="absolute bottom-0 left-0 right-0 bg-[#0F172A] border-t border-slate-800 z-50 shadow-lg">
                   <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                     {featureFlags.student_dashboard !== false && (
-                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "DASHBOARD_MAIN" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "DASHBOARD_MAIN" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
                         <Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/>
                         <span className="text-[10px]">Home</span>
                       </button>
                     )}
                     {featureFlags.student_courses !== false && (
-                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
                         <BookOpen className="w-5 h-5" strokeWidth={["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? 2.5 : 2}/>
                         <span className="text-[10px]">Courses</span>
                       </button>
                     )}
                     {featureFlags.student_games !== false && (
-                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 relative ${state === "GAMES" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 relative ${state === "GAMES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
                         <Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>
-                        {state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>}
+                        {state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-[#0F172A]"></div>}
                         <span className="text-[10px]">Games</span>
                       </button>
                     )}
                     {featureFlags.student_notes !== false && (
-                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "NOTES" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
                         <NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/>
                         <span className="text-[10px]">Notes</span>
                       </button>
                     )}
-                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 active:scale-95 ${state === "PROFILE" ? "text-slate-900 font-semibold" : "text-slate-400 hover:text-slate-600"}`}>
+                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "PROFILE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
                       <User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/>
                       <span className="text-[10px]">Profile</span>
                     </button>
@@ -5651,27 +5651,27 @@ export default function OnboardingFlow() {
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100/80 z-50 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.08)]">
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#0F172A] border-t border-slate-800 z-50 shadow-lg">
                     <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_DASHBOARD" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <Home className={`w-5 h-5 ${state === "MENTOR_DASHBOARD" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-semibold" : "font-medium"}`}>Home</span>
+                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_DASHBOARD" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                        <Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-bold" : "font-medium"}`}>Home</span>
                       </button>}
-                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_STUDENTS" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <Users className={`w-5 h-5 ${state === "MENTOR_STUDENTS" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-semibold" : "font-medium"}`}>Students</span>
+                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_STUDENTS" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                        <Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-bold" : "font-medium"}`}>Students</span>
                       </button>}
-                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_NOTES" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <NotebookPen className={`w-5 h-5 ${state === "MENTOR_NOTES" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-semibold" : "font-medium"}`}>Notes</span>
+                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                        <NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-bold" : "font-medium"}`}>Notes</span>
                       </button>}
-                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_CIRCLE" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <Users className={`w-5 h-5 ${state === "MENTOR_CIRCLE" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-semibold" : "font-medium"}`}>Circle</span>
+                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_CIRCLE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                        <Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-bold" : "font-medium"}`}>Circle</span>
                       </button>}
-                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${state === "MENTOR_ACCOUNT" ? "text-slate-900 scale-110" : "text-slate-400 hover:text-slate-600 hover:scale-105"}`}>
-                        <User className={`w-5 h-5 ${state === "MENTOR_ACCOUNT" ? "fill-slate-900" : ""}`} strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
-                        <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-semibold" : "font-medium"}`}>Profile</span>
+                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_ACCOUNT" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                        <User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
+                        <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-bold" : "font-medium"}`}>Profile</span>
                       </button>}
                     </div>
                   </div>

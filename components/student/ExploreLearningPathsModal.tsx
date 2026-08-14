@@ -153,7 +153,6 @@ export function ExploreLearningPathsModal({
         return false;
       }
       if (activeSearchQuery) {
-        // Show if category name matches or if it contains matching courses
         const catMatch = cat.name.toLowerCase().includes(activeSearchQuery);
         return catMatch || cat.filteredCourses.length > 0;
       }
@@ -178,26 +177,26 @@ export function ExploreLearningPathsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-xs z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
-      <div className="bg-[#0f172a] text-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full sm:max-w-4xl md:max-w-5xl overflow-hidden shadow-2xl border-t sm:border border-white/10 flex flex-col max-h-[94vh] h-[90vh] animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 bg-[#0B1220]/70 backdrop-blur-xs z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+      <div className="bg-[#F8FAFC] text-[#0F172A] rounded-t-[2rem] sm:rounded-[2rem] w-full sm:max-w-4xl md:max-w-5xl overflow-hidden shadow-2xl border border-[#E2E8F0] flex flex-col max-h-[94vh] h-[90vh] animate-in slide-in-from-bottom duration-300">
         
         {/* Mobile Pull handle bar */}
-        <div className="w-full flex justify-center py-2 bg-[#0f172a] shrink-0 sm:hidden">
+        <div className="w-full flex justify-center py-2 bg-[#0B1220] shrink-0 sm:hidden">
           <div className="w-12 h-1 rounded-full bg-white/20"></div>
         </div>
 
-        {/* Modal Header */}
-        <div className="px-5 pt-4 pb-3 md:px-7 md:pt-5 border-b border-white/10 shrink-0 space-y-3.5">
+        {/* Modal Top Header (#0B1220 Deep Navy) */}
+        <div className="bg-[#0B1220] text-white px-5 pt-5 pb-4 md:px-7 md:pt-6 border-b border-white/10 shrink-0 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xs">
-                <GraduationCap className="w-5.5 h-5.5" />
+              <div className="w-10 h-10 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/40 flex items-center justify-center text-[#2563EB] shadow-xs">
+                <GraduationCap className="w-5.5 h-5.5 text-white" />
               </div>
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-white tracking-tight leading-tight">
                   {title}
                 </h3>
-                <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+                <p className="text-[11px] text-[#CBD5E1] font-medium uppercase tracking-wider mt-0.5">
                   {subtitle}
                 </p>
               </div>
@@ -212,22 +211,22 @@ export function ExploreLearningPathsModal({
             </button>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar (#FFFFFF background, #CBD5E1 border, #0F172A text, #94A3B8 placeholder) */}
           <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Search className="w-4.5 h-4.5" />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
+              <Search className="w-4.5 h-4.5 text-[#2563EB]" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search categories or courses..."
-              className="w-full pl-10 pr-10 py-2.5 bg-white/10 border border-white/15 rounded-2xl text-xs md:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20 transition-all font-medium"
+              className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#CBD5E1] rounded-xl text-xs md:text-sm text-[#0F172A] placeholder-[#94A3B8] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 transition-all font-medium shadow-xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white transition-colors"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#64748B] hover:text-[#0F172A] transition-colors"
                 aria-label="Clear search input"
               >
                 <X className="w-4 h-4" />
@@ -237,21 +236,21 @@ export function ExploreLearningPathsModal({
 
           {/* TOP DOMAIN NAVIGATION BAR (Horizontally Scrollable) */}
           <div className="flex items-center gap-2 overflow-x-auto hidden-scrollbar py-1 -mx-1 px-1">
-            {/* "All" Tab */}
+            {/* "All Courses" Tab */}
             <button
               onClick={() => setSelectedCategoryId("All")}
               className={cn(
-                "px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 flex items-center gap-1.5",
+                "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 flex items-center gap-1.5 cursor-pointer",
                 selectedCategoryId === "All"
-                  ? "bg-white text-slate-900 shadow-md scale-[1.02]"
-                  : "bg-white/10 text-slate-300 hover:bg-white/15 hover:text-white border border-white/10"
+                  ? "bg-[#2563EB] text-white shadow-sm font-bold scale-[1.02]"
+                  : "bg-white text-[#475569] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0]"
               )}
             >
               All Courses
               <span
                 className={cn(
-                  "text-[10px] px-1.5 py-0.2 rounded-full font-extrabold",
-                  selectedCategoryId === "All" ? "bg-slate-200 text-slate-900" : "bg-white/15 text-slate-300"
+                  "text-[9.5px] px-1.5 py-0.2 rounded-full font-bold",
+                  selectedCategoryId === "All" ? "bg-white/20 text-white" : "bg-[#F1F5F9] text-[#475569]"
                 )}
               >
                 {allCoursesList.length}
@@ -268,18 +267,18 @@ export function ExploreLearningPathsModal({
                   key={cat.id}
                   onClick={() => setSelectedCategoryId(cat.id)}
                   className={cn(
-                    "px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 flex items-center gap-1.5",
+                    "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 flex items-center gap-1.5 cursor-pointer",
                     isSelected
-                      ? "bg-white text-slate-900 shadow-md scale-[1.02]"
-                      : "bg-white/10 text-slate-300 hover:bg-white/15 hover:text-white border border-white/10"
+                      ? "bg-[#2563EB] text-white shadow-sm font-bold scale-[1.02]"
+                      : "bg-white text-[#475569] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] border border-[#E2E8F0]"
                   )}
                 >
                   {renderCategoryIcon(cat.icon, "w-3.5 h-3.5")}
                   {cat.name}
                   <span
                     className={cn(
-                      "text-[9.5px] px-1.5 py-0.2 rounded-full font-extrabold",
-                      isSelected ? "bg-slate-200 text-slate-900" : "bg-white/15 text-slate-300"
+                      "text-[9.5px] px-1.5 py-0.2 rounded-full font-bold",
+                      isSelected ? "bg-white/20 text-white" : "bg-[#F1F5F9] text-[#475569]"
                     )}
                   >
                     {catCourseCount}
@@ -290,30 +289,25 @@ export function ExploreLearningPathsModal({
           </div>
         </div>
 
-        {/* Modal Body / Courses Display */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 md:px-7 space-y-6 hidden-scrollbar bg-slate-900/50">
+        {/* Modal Body / Courses Display (#F8FAFC) */}
+        <div className="flex-1 overflow-y-auto px-4 py-5 md:px-7 space-y-6 hidden-scrollbar bg-[#F8FAFC]">
           
-          {/* Selected Domain Header (When a single domain is selected) */}
+          {/* Selected Domain Header */}
           {activeCategoryDetail && (
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
               <div className="flex items-center gap-3.5">
-                <div
-                  className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md",
-                    activeCategoryDetail.bgColor || "bg-indigo-600"
-                  )}
-                >
-                  {renderCategoryIcon(activeCategoryDetail.icon, "w-6 h-6")}
+                <div className="w-11 h-11 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] shrink-0 shadow-2xs">
+                  {renderCategoryIcon(activeCategoryDetail.icon, "w-5.5 h-5.5")}
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-white leading-tight">{activeCategoryDetail.name}</h4>
-                  <p className="text-xs text-slate-300 font-medium leading-normal mt-1">
+                  <h4 className="text-base font-bold text-[#0F172A] leading-tight">{activeCategoryDetail.name}</h4>
+                  <p className="text-xs text-[#475569] font-medium leading-normal mt-0.5">
                     {activeCategoryDetail.description}
                   </p>
                 </div>
               </div>
 
-              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full shrink-0">
+              <span className="bg-[#EFF6FF] text-[#2563EB] border border-[#2563EB]/20 text-xs font-bold px-3 py-1 rounded-full shrink-0">
                 {totalDisplayedCoursesCount} Available Courses
               </span>
             </div>
@@ -321,17 +315,17 @@ export function ExploreLearningPathsModal({
 
           {/* Empty Search Result State */}
           {filteredCategoriesWithCourses.length === 0 ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center px-4 space-y-3 bg-white/5 rounded-3xl border border-white/10">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-slate-400 mb-1">
-                <Search className="w-7 h-7" />
+            <div className="py-16 flex flex-col items-center justify-center text-center px-4 space-y-3 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] mb-1">
+                <Search className="w-6 h-6" />
               </div>
-              <p className="text-base font-bold text-white">No courses found</p>
-              <p className="text-xs text-slate-400 max-w-xs leading-relaxed font-medium">
+              <p className="text-base font-bold text-[#0F172A]">No courses found</p>
+              <p className="text-xs text-[#475569] max-w-xs leading-relaxed font-medium">
                 We couldn&apos;t find any course matching your search in the selected domain.
               </p>
               <Button
                 onClick={handleClearSearch}
-                className="mt-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5"
+                className="mt-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Clear Search
               </Button>
@@ -343,22 +337,17 @@ export function ExploreLearningPathsModal({
               if (displayCourses.length === 0) return null;
 
               return (
-                <div key={cat.id} className="space-y-3.5">
-                  {/* Category Section Header (Shown when 'All' domain is selected or searching) */}
+                <div key={cat.id} className="space-y-3">
+                  {/* Category Section Header (Shown when 'All' domain is selected) */}
                   {selectedCategoryId === "All" && (
-                    <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={cn(
-                            "w-7 h-7 rounded-xl flex items-center justify-center text-white text-xs",
-                            cat.bgColor || "bg-indigo-600"
-                          )}
-                        >
-                          {renderCategoryIcon(cat.icon, "w-4 h-4")}
+                    <div className="flex items-center justify-between pb-1.5 border-b border-[#E2E8F0]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#EFF6FF] border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] text-xs">
+                          {renderCategoryIcon(cat.icon, "w-3.5 h-3.5")}
                         </div>
-                        <h4 className="text-sm font-bold text-white tracking-tight">{cat.name}</h4>
+                        <h4 className="text-sm font-bold text-[#0F172A] tracking-tight">{cat.name}</h4>
                       </div>
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <span className="text-[11px] font-medium text-[#64748B] uppercase tracking-wider">
                         {displayCourses.length} Courses
                       </span>
                     </div>
@@ -378,30 +367,25 @@ export function ExploreLearningPathsModal({
 
                       return (
                         <div
-                          key={course.id}
-                          className="bg-white/5 border border-white/10 hover:border-white/20 rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-3.5 transition-all duration-200 group hover:bg-white/[0.07] shadow-sm"
+                          key={`${cat.id}-${course.id}`}
+                          className="bg-white border border-[#E2E8F0] hover:border-slate-300 rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-3.5 transition-all duration-200 group hover:shadow-md shadow-2xs"
                         >
-                          <div className="space-y-3">
+                          <div className="space-y-2.5">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex gap-3 min-w-0">
-                                <div
-                                  className={cn(
-                                    "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-sm transition-transform group-hover:scale-105 duration-300",
-                                    course.bgColor || cat.bgColor || "bg-indigo-500"
-                                  )}
-                                >
-                                  {course.icon || renderCategoryIcon(cat.icon, "w-5.5 h-5.5")}
+                                <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] border border-[#2563EB]/20 text-[#2563EB] flex items-center justify-center shrink-0 shadow-2xs transition-transform group-hover:scale-105 duration-200">
+                                  {course.icon || renderCategoryIcon(cat.icon, "w-5 h-5")}
                                 </div>
                                 <div className="min-w-0">
-                                  <h4 className="text-sm md:text-base font-bold text-white truncate leading-snug">
+                                  <h4 className="text-sm md:text-base font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors truncate leading-snug">
                                     {course.title}
                                   </h4>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[10px] font-bold text-[#2563EB] uppercase tracking-wider">
                                       {cat.shortName}
                                     </span>
-                                    <span className="w-1 h-1 rounded-full bg-slate-600" />
-                                    <span className="bg-white/10 text-slate-300 text-[9.5px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                    <span className="bg-[#F1F5F9] text-[#475569] text-[9.5px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider border border-[#E2E8F0]">
                                       {course.difficulty || "Beginner"}
                                     </span>
                                   </div>
@@ -410,21 +394,21 @@ export function ExploreLearningPathsModal({
                             </div>
 
                             {/* Course Stats */}
-                            <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                            <div className="flex items-center gap-2.5 text-[11px] font-medium text-[#64748B] bg-[#F8FAFC] px-3 py-1.5 rounded-xl border border-[#E2E8F0]/80">
                               <span className="flex items-center gap-1">
-                                <Layers className="w-3.5 h-3.5 text-slate-400" />
+                                <Layers className="w-3.5 h-3.5 text-[#64748B]" />
                                 {modulesCount} modules
                               </span>
                               <span>•</span>
                               <span className="flex items-center gap-1">
-                                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                                <BookOpen className="w-3.5 h-3.5 text-[#64748B]" />
                                 {lessonsCount} lessons
                               </span>
                               {course.duration && (
                                 <>
                                   <span>•</span>
                                   <span className="flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                    <Clock className="w-3.5 h-3.5 text-[#64748B]" />
                                     {course.duration}
                                   </span>
                                 </>
@@ -432,24 +416,24 @@ export function ExploreLearningPathsModal({
                             </div>
 
                             {/* Course Description */}
-                            <p className="text-xs text-slate-300 font-medium leading-relaxed line-clamp-2">
+                            <p className="text-xs text-[#475569] font-medium leading-relaxed line-clamp-2">
                               {course.description || "Master core concepts and build practical projects step by step."}
                             </p>
                           </div>
 
                           {/* Action Button */}
-                          <div className="pt-2 border-t border-white/10 flex justify-end items-center">
+                          <div className="pt-2.5 border-t border-[#E2E8F0] flex justify-end items-center">
                             {actionButtonLabel ? (
                               actionButtonLabel(course, isEnrolled)
                             ) : isEnrolled ? (
-                              <div className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-2xs">
-                                <Check className="w-3.5 h-3.5 text-emerald-400" strokeWidth={3} /> Enrolled
+                              <div className="bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs">
+                                <Check className="w-3.5 h-3.5 text-[#10B981]" strokeWidth={3} /> Enrolled
                               </div>
                             ) : (
                               <Button
                                 onClick={() => onEnrollCourse(course)}
                                 disabled={isEnrollingThis}
-                                className="bg-white hover:bg-slate-100 text-slate-900 text-[11px] font-bold px-5 py-2.5 h-auto rounded-xl uppercase tracking-wider active:scale-95 transition-all shadow-sm disabled:opacity-50"
+                                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[11px] font-bold px-4 py-2 h-auto rounded-xl uppercase tracking-wider active:scale-95 transition-all shadow-xs disabled:opacity-50"
                               >
                                 {isEnrollingThis ? "Enrolling..." : "+ Enroll"}
                               </Button>

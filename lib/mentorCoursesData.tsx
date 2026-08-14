@@ -109,8 +109,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Master modern web design, responsive frontend frameworks, backend servers, and full stack applications.",
     icon: "Monitor",
     domain: "Programming",
-    bgColor: "bg-cyan-600",
-    textColor: "text-cyan-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -120,8 +120,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Analyze data, extract business insights, build predictive models, and master BI dashboard tools.",
     icon: "BarChart3",
     domain: "Data",
-    bgColor: "bg-emerald-600",
-    textColor: "text-emerald-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -131,8 +131,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Explore intelligent algorithms, deep neural networks, computer vision, NLP, and Generative AI models.",
     icon: "Brain",
     domain: "AI/ML",
-    bgColor: "bg-purple-600",
-    textColor: "text-purple-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 6
   },
   {
@@ -142,8 +142,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Learn user interface design, user experience, Figma prototyping, graphic design, and design thinking.",
     icon: "Palette",
     domain: "Design",
-    bgColor: "bg-pink-600",
-    textColor: "text-pink-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -153,8 +153,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Build hardware systems using microcontrollers, Embedded C, Linux, and real-time operating systems.",
     icon: "Zap",
     domain: "Electronics",
-    bgColor: "bg-emerald-600",
-    textColor: "text-emerald-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 6
   },
   {
@@ -164,8 +164,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Design integrated circuits, RTL logic, Verilog/SystemVerilog HDL, FPGA, and CMOS physical design.",
     icon: "Cpu",
     domain: "Electronics",
-    bgColor: "bg-rose-600",
-    textColor: "text-rose-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 7
   },
   {
@@ -175,8 +175,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Build connected IoT sensors, autonomous robots, ROS2 navigation, and motor control systems.",
     icon: "Bot",
     domain: "Electronics",
-    bgColor: "bg-teal-600",
-    textColor: "text-teal-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -186,8 +186,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Protect computer networks, perform vulnerability testing, cryptography, and ethical hacking.",
     icon: "Shield",
     domain: "Other",
-    bgColor: "bg-red-700",
-    textColor: "text-red-700",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 4
   },
   {
@@ -197,8 +197,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Master computer networking protocols, TCP/IP, network administration, and wireless security.",
     icon: "Wifi",
     domain: "Other",
-    bgColor: "bg-indigo-600",
-    textColor: "text-indigo-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 4
   },
   {
@@ -208,8 +208,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Master AWS, Azure, Docker containers, Kubernetes orchestration, CI/CD pipelines, and DevOps.",
     icon: "Cloud",
     domain: "Other",
-    bgColor: "bg-sky-600",
-    textColor: "text-sky-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 7
   },
   {
@@ -219,8 +219,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Design relational and NoSQL databases, write SQL queries, and manage database systems.",
     icon: "Database",
     domain: "Data",
-    bgColor: "bg-teal-700",
-    textColor: "text-teal-700",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -230,8 +230,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Learn software engineering principles, OOP, Data Structures & Algorithms, and Git version control.",
     icon: "Wrench",
     domain: "Programming",
-    bgColor: "bg-blue-700",
-    textColor: "text-blue-700",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 5
   },
   {
@@ -241,8 +241,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Build native and cross-platform mobile apps using Android, Flutter, and React Native.",
     icon: "Smartphone",
     domain: "Programming",
-    bgColor: "bg-sky-600",
-    textColor: "text-sky-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 3
   },
   {
@@ -252,8 +252,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Explore digital & analog electronics, signals & systems, DSP, RF, antennas, and PCB design.",
     icon: "Radio",
     domain: "Electronics",
-    bgColor: "bg-amber-600",
-    textColor: "text-amber-600",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 9
   },
   {
@@ -263,8 +263,8 @@ export const courseCategories: CourseCategory[] = [
     description: "Mechanical design & CAD, civil structural engineering, biotechnology, and aerospace engineering.",
     icon: "Wrench",
     domain: "Other",
-    bgColor: "bg-slate-700",
-    textColor: "text-slate-700",
+    bgColor: "bg-blue-600",
+    textColor: "text-blue-600",
     courseCount: 4
   }
 ];
@@ -308,7 +308,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-1-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-1-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-1-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -316,7 +316,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-1-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-1-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-1-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -364,7 +364,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-2-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-2-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-2-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -372,7 +372,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-2-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-2-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-2-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -420,7 +420,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-3-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-3-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-3-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -428,7 +428,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-3-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-3-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-3-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -476,7 +476,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-4-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-4-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-4-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -484,7 +484,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-4-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-4-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-4-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -532,7 +532,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-5-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-5-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-5-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -540,7 +540,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-5-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-5-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-5-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -555,8 +555,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "HTML & CSS",
     shortTitle: "HTML & CSS",
     description: "Learn modern semantic HTML5, CSS Flexbox, Grid layouts, animations, and responsive web design.",
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Monitor className="w-5 h-5" />,
     category: "Web Development",
     categoryId: "cat-web-dev",
@@ -569,7 +569,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["html", "css", "flexbox", "grid", "responsive"],
     modules: [
       {
-        id: "m-6-m1", title: "Foundations & Core Principles of HTML & CSS", description: "Core concepts, syntax, principles, and environment setup", color: "bg-cyan-600",
+        id: "m-6-m1", title: "Foundations & Core Principles of HTML & CSS", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-6-l1", title: "Introduction to HTML & CSS", duration: "12 min", type: "video" },
@@ -588,7 +588,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-6-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-6-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-6-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -596,7 +596,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-6-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-6-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-6-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -611,8 +611,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "JavaScript",
     shortTitle: "JavaScript",
     description: "Deep dive into JS for front-end interactivity, DOM manipulation, events, and API integration.",
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Monitor className="w-5 h-5" />,
     category: "Web Development",
     categoryId: "cat-web-dev",
@@ -625,7 +625,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["javascript", "js", "es6", "web", "dom"],
     modules: [
       {
-        id: "m-7-m1", title: "Foundations & Core Principles of JavaScript", description: "Core concepts, syntax, principles, and environment setup", color: "bg-cyan-600",
+        id: "m-7-m1", title: "Foundations & Core Principles of JavaScript", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-7-l1", title: "Introduction to JavaScript", duration: "12 min", type: "video" },
@@ -644,7 +644,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-7-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-7-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-7-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -652,7 +652,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-7-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-7-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-7-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -667,8 +667,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "React.js",
     shortTitle: "React.js",
     description: "Build scalable interactive single-page applications using React components, hooks, and state management.",
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Monitor className="w-5 h-5" />,
     category: "Web Development",
     categoryId: "cat-web-dev",
@@ -681,7 +681,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["react", "react.js", "jsx", "hooks", "nextjs", "frontend"],
     modules: [
       {
-        id: "m-8-m1", title: "Foundations & Core Principles of React.js", description: "Core concepts, syntax, principles, and environment setup", color: "bg-cyan-600",
+        id: "m-8-m1", title: "Foundations & Core Principles of React.js", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-8-l1", title: "Introduction to React.js", duration: "12 min", type: "video" },
@@ -700,7 +700,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-8-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-8-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-8-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -708,7 +708,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-8-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-8-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-8-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -723,8 +723,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Node.js",
     shortTitle: "Node.js",
     description: "Build fast event-driven server-side applications and RESTful APIs using Node.js and Express.",
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Monitor className="w-5 h-5" />,
     category: "Web Development",
     categoryId: "cat-web-dev",
@@ -737,7 +737,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["node", "node.js", "express", "backend", "api", "rest"],
     modules: [
       {
-        id: "m-9-m1", title: "Foundations & Core Principles of Node.js", description: "Core concepts, syntax, principles, and environment setup", color: "bg-cyan-600",
+        id: "m-9-m1", title: "Foundations & Core Principles of Node.js", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-9-l1", title: "Introduction to Node.js", duration: "12 min", type: "video" },
@@ -756,7 +756,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-9-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-9-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-9-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -764,7 +764,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-9-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-9-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-9-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -779,8 +779,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Full Stack Development",
     shortTitle: "Full Stack Development",
     description: "Master end-to-end full stack web development using React, Node.js, databases, auth, and deployment.",
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Monitor className="w-5 h-5" />,
     category: "Web Development",
     categoryId: "cat-web-dev",
@@ -793,7 +793,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["full stack", "react", "node", "express", "mongodb", "postgresql"],
     modules: [
       {
-        id: "m-10-m1", title: "Foundations & Core Principles of Full Stack Development", description: "Core concepts, syntax, principles, and environment setup", color: "bg-cyan-600",
+        id: "m-10-m1", title: "Foundations & Core Principles of Full Stack Development", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-10-l1", title: "Introduction to Full Stack Development", duration: "12 min", type: "video" },
@@ -812,7 +812,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-10-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-10-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-10-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -820,7 +820,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-10-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-10-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-10-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -835,8 +835,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Data Analytics",
     shortTitle: "Data Analytics",
     description: "Master data analysis with Python, SQL, and visualization tools to derive actionable business insights.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <BarChart3 className="w-5 h-5" />,
     category: "Data Science & Analytics",
     categoryId: "cat-data-science",
@@ -849,7 +849,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["data analytics", "sql", "excel", "tableau", "power bi", "analytics"],
     modules: [
       {
-        id: "m-11-m1", title: "Foundations & Core Principles of Data Analytics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-11-m1", title: "Foundations & Core Principles of Data Analytics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-11-l1", title: "Introduction to Data Analytics", duration: "12 min", type: "video" },
@@ -868,7 +868,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-11-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-11-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-11-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -876,7 +876,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-11-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-11-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-11-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -891,8 +891,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Data Science",
     shortTitle: "Data Science",
     description: "Learn end-to-end data science: wrangling, exploratory analysis, statistical modeling, and ML pipelines.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <BarChart3 className="w-5 h-5" />,
     category: "Data Science & Analytics",
     categoryId: "cat-data-science",
@@ -905,7 +905,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["data science", "python", "pandas", "numpy", "statistics", "eda"],
     modules: [
       {
-        id: "m-12-m1", title: "Foundations & Core Principles of Data Science", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-12-m1", title: "Foundations & Core Principles of Data Science", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-12-l1", title: "Introduction to Data Science", duration: "12 min", type: "video" },
@@ -924,7 +924,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-12-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-12-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-12-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -932,7 +932,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-12-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-12-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-12-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -947,8 +947,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "SQL",
     shortTitle: "SQL",
     description: "Master database queries, complex joins, window functions, aggregation, and schema query optimization.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <BarChart3 className="w-5 h-5" />,
     category: "Data Science & Analytics",
     categoryId: "cat-data-science",
@@ -961,7 +961,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["sql", "queries", "postgresql", "mysql", "joins", "database"],
     modules: [
       {
-        id: "m-13-m1", title: "Foundations & Core Principles of SQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-13-m1", title: "Foundations & Core Principles of SQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-13-l1", title: "Introduction to SQL", duration: "12 min", type: "video" },
@@ -980,7 +980,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-13-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-13-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-13-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -988,7 +988,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-13-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-13-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-13-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1003,8 +1003,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Excel",
     shortTitle: "Excel",
     description: "Master advanced Excel formulas, pivot tables, Power Query, VLOOKUP/XLOOKUP, and business dashboards.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <BarChart3 className="w-5 h-5" />,
     category: "Data Science & Analytics",
     categoryId: "cat-data-science",
@@ -1017,7 +1017,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["excel", "spreadsheets", "pivot tables", "vlookup", "formulas", "analytics"],
     modules: [
       {
-        id: "m-14-m1", title: "Foundations & Core Principles of Excel", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-14-m1", title: "Foundations & Core Principles of Excel", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-14-l1", title: "Introduction to Excel", duration: "12 min", type: "video" },
@@ -1036,7 +1036,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-14-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-14-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-14-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1044,7 +1044,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-14-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-14-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-14-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1059,8 +1059,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Power BI",
     shortTitle: "Power BI",
     description: "Create interactive business intelligence dashboards, DAX measures, data modeling, and reports in Power BI.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <BarChart3 className="w-5 h-5" />,
     category: "Data Science & Analytics",
     categoryId: "cat-data-science",
@@ -1073,7 +1073,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["power bi", "dax", "bi", "dashboards", "business intelligence", "reports"],
     modules: [
       {
-        id: "m-15-m1", title: "Foundations & Core Principles of Power BI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-15-m1", title: "Foundations & Core Principles of Power BI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-15-l1", title: "Introduction to Power BI", duration: "12 min", type: "video" },
@@ -1092,7 +1092,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-15-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-15-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-15-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1100,7 +1100,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-15-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-15-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-15-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1115,8 +1115,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Artificial Intelligence",
     shortTitle: "Artificial Intelligence",
     description: "Introduction to AI principles, search algorithms, knowledge representation, game playing, and logic.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1129,7 +1129,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["ai", "artificial intelligence", "search", "heuristics", "logic"],
     modules: [
       {
-        id: "m-16-m1", title: "Foundations & Core Principles of Artificial Intelligence", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-16-m1", title: "Foundations & Core Principles of Artificial Intelligence", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-16-l1", title: "Introduction to Artificial Intelligence", duration: "12 min", type: "video" },
@@ -1148,7 +1148,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-16-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-16-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-16-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1156,7 +1156,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-16-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-16-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-16-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1171,8 +1171,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Machine Learning",
     shortTitle: "Machine Learning",
     description: "Supervised and unsupervised learning, regression, classification, decision trees, SVMs, and Scikit-Learn.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1185,7 +1185,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["machine learning", "ml", "scikit-learn", "regression", "classification"],
     modules: [
       {
-        id: "m-17-m1", title: "Foundations & Core Principles of Machine Learning", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-17-m1", title: "Foundations & Core Principles of Machine Learning", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-17-l1", title: "Introduction to Machine Learning", duration: "12 min", type: "video" },
@@ -1204,7 +1204,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-17-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-17-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-17-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1212,7 +1212,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-17-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-17-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-17-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1227,8 +1227,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Deep Learning",
     shortTitle: "Deep Learning",
     description: "Build deep neural networks, CNNs, RNNs, LSTMs, and Transformers using PyTorch and TensorFlow.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1241,7 +1241,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["deep learning", "neural networks", "pytorch", "tensorflow", "cnn", "rnn"],
     modules: [
       {
-        id: "m-18-m1", title: "Foundations & Core Principles of Deep Learning", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-18-m1", title: "Foundations & Core Principles of Deep Learning", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-18-l1", title: "Introduction to Deep Learning", duration: "12 min", type: "video" },
@@ -1260,7 +1260,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-18-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-18-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-18-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1268,7 +1268,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-18-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-18-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-18-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1283,8 +1283,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Generative AI",
     shortTitle: "Generative AI",
     description: "Learn Large Language Models, prompt engineering, RAG, Fine-tuning, LangChain, and AI agent frameworks.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1297,7 +1297,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["generative ai", "genai", "llm", "langchain", "rag", "gpt"],
     modules: [
       {
-        id: "m-19-m1", title: "Foundations & Core Principles of Generative AI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-19-m1", title: "Foundations & Core Principles of Generative AI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-19-l1", title: "Introduction to Generative AI", duration: "12 min", type: "video" },
@@ -1316,7 +1316,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-19-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-19-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-19-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1324,7 +1324,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-19-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-19-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-19-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1339,8 +1339,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Computer Vision",
     shortTitle: "Computer Vision",
     description: "Master image processing, object detection, facial recognition, image segmentation, and OpenCV.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1353,7 +1353,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["computer vision", "opencv", "yolo", "cnn", "image processing"],
     modules: [
       {
-        id: "m-20-m1", title: "Foundations & Core Principles of Computer Vision", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-20-m1", title: "Foundations & Core Principles of Computer Vision", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-20-l1", title: "Introduction to Computer Vision", duration: "12 min", type: "video" },
@@ -1372,7 +1372,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-20-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-20-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-20-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1380,7 +1380,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-20-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-20-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-20-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1395,8 +1395,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Natural Language Processing",
     shortTitle: "Natural Language Processing",
     description: "Process text data using tokenization, word embeddings, sentiment analysis, Transformers, and LLMs.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Brain className="w-5 h-5" />,
     category: "Artificial Intelligence & Machine Learning",
     categoryId: "cat-ai-ml",
@@ -1409,7 +1409,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["nlp", "text", "natural language", "bert", "gpt", "transformers"],
     modules: [
       {
-        id: "m-21-m1", title: "Foundations & Core Principles of Natural Language Processing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-purple-600",
+        id: "m-21-m1", title: "Foundations & Core Principles of Natural Language Processing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-21-l1", title: "Introduction to Natural Language Processing", duration: "12 min", type: "video" },
@@ -1428,7 +1428,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-21-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-21-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-21-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1436,7 +1436,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-21-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-21-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-21-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1451,8 +1451,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "UI Design",
     shortTitle: "UI Design",
     description: "Master visual hierarchy, typography, color theory, component layouts, and high-fidelity interface design.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Palette className="w-5 h-5" />,
     category: "UI/UX & Designing",
     categoryId: "cat-ui-ux",
@@ -1465,7 +1465,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["ui design", "user interface", "visual design", "typography", "layout"],
     modules: [
       {
-        id: "m-22-m1", title: "Foundations & Core Principles of UI Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-pink-600",
+        id: "m-22-m1", title: "Foundations & Core Principles of UI Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-22-l1", title: "Introduction to UI Design", duration: "12 min", type: "video" },
@@ -1484,7 +1484,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-22-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-22-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-22-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1492,7 +1492,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-22-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-22-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-22-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1507,8 +1507,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "UX Design",
     shortTitle: "UX Design",
     description: "Design user-centered digital experiences: user research, wireframing, prototyping, and usability testing.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Palette className="w-5 h-5" />,
     category: "UI/UX & Designing",
     categoryId: "cat-ui-ux",
@@ -1521,7 +1521,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["ux design", "user experience", "research", "wireframing", "usability"],
     modules: [
       {
-        id: "m-23-m1", title: "Foundations & Core Principles of UX Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-pink-600",
+        id: "m-23-m1", title: "Foundations & Core Principles of UX Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-23-l1", title: "Introduction to UX Design", duration: "12 min", type: "video" },
@@ -1540,7 +1540,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-23-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-23-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-23-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1548,7 +1548,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-23-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-23-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-23-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1563,8 +1563,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Figma",
     shortTitle: "Figma",
     description: "Master Figma for UI/UX design: auto-layout, design tokens, interactive prototyping, and component libraries.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Palette className="w-5 h-5" />,
     category: "UI/UX & Designing",
     categoryId: "cat-ui-ux",
@@ -1577,7 +1577,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["figma", "prototyping", "components", "auto layout", "design"],
     modules: [
       {
-        id: "m-24-m1", title: "Foundations & Core Principles of Figma", description: "Core concepts, syntax, principles, and environment setup", color: "bg-pink-600",
+        id: "m-24-m1", title: "Foundations & Core Principles of Figma", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-24-l1", title: "Introduction to Figma", duration: "12 min", type: "video" },
@@ -1596,7 +1596,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-24-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-24-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-24-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1604,7 +1604,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-24-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-24-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-24-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1619,8 +1619,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Graphic Design",
     shortTitle: "Graphic Design",
     description: "Learn design fundamentals, branding, vector graphics, typography, composition, and visual storytelling.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Palette className="w-5 h-5" />,
     category: "UI/UX & Designing",
     categoryId: "cat-ui-ux",
@@ -1633,7 +1633,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["graphic design", "branding", "graphics", "vector", "typography"],
     modules: [
       {
-        id: "m-25-m1", title: "Foundations & Core Principles of Graphic Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-pink-600",
+        id: "m-25-m1", title: "Foundations & Core Principles of Graphic Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-25-l1", title: "Introduction to Graphic Design", duration: "12 min", type: "video" },
@@ -1652,7 +1652,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-25-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-25-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-25-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1660,7 +1660,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-25-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-25-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-25-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1675,8 +1675,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Design Thinking",
     shortTitle: "Design Thinking",
     description: "Human-centered problem solving process: empathize, define, ideate, prototype, and test innovative solutions.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Palette className="w-5 h-5" />,
     category: "UI/UX & Designing",
     categoryId: "cat-ui-ux",
@@ -1689,7 +1689,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["design thinking", "innovation", "problem solving", "empathy", "ideation"],
     modules: [
       {
-        id: "m-26-m1", title: "Foundations & Core Principles of Design Thinking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-pink-600",
+        id: "m-26-m1", title: "Foundations & Core Principles of Design Thinking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-26-l1", title: "Introduction to Design Thinking", duration: "12 min", type: "video" },
@@ -1708,7 +1708,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-26-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-26-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-26-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1716,7 +1716,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-26-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-26-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-26-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1731,8 +1731,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Embedded Systems",
     shortTitle: "Embedded Systems",
     description: "Design real-time embedded hardware using ARM microcontrollers, RTOS, embedded C, and peripherals.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -1745,7 +1745,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["embedded systems", "arm", "rtos", "microcontroller", "peripherals"],
     modules: [
       {
-        id: "m-27-m1", title: "Foundations & Core Principles of Embedded Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-27-m1", title: "Foundations & Core Principles of Embedded Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-27-l1", title: "Introduction to Embedded Systems", duration: "12 min", type: "video" },
@@ -1764,7 +1764,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-27-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-27-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-27-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1772,7 +1772,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-27-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-27-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-27-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1787,8 +1787,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Embedded C",
     shortTitle: "Embedded C",
     description: "Specialized C programming techniques for hardware registers, bitwise operations, volatile, and memory I/O.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -1801,7 +1801,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["embedded c", "registers", "bitwise", "volatile", "firmware"],
     modules: [
       {
-        id: "m-28-m1", title: "Foundations & Core Principles of Embedded C", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-28-m1", title: "Foundations & Core Principles of Embedded C", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-28-l1", title: "Introduction to Embedded C", duration: "12 min", type: "video" },
@@ -1820,7 +1820,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-28-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-28-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-28-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1828,7 +1828,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-28-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-28-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-28-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1843,8 +1843,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Microcontrollers",
     shortTitle: "Microcontrollers",
     description: "8051, PIC, and AVR microcontroller architecture, timers, counter programming, and I/O interfacing.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -1857,7 +1857,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["microcontrollers", "8051", "pic", "avr", "timers", "gpio"],
     modules: [
       {
-        id: "m-29-m1", title: "Foundations & Core Principles of Microcontrollers", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-29-m1", title: "Foundations & Core Principles of Microcontrollers", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-29-l1", title: "Introduction to Microcontrollers", duration: "12 min", type: "video" },
@@ -1876,7 +1876,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-29-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-29-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-29-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1884,7 +1884,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-29-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-29-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-29-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1899,8 +1899,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Arduino",
     shortTitle: "Arduino",
     description: "Hands-on electronics prototyping with Arduino boards, sensor interfacing, motor drivers, and C++ sketches.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -1913,7 +1913,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["arduino", "prototyping", "sensors", "microcontroller", "diy"],
     modules: [
       {
-        id: "m-30-m1", title: "Foundations & Core Principles of Arduino", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-30-m1", title: "Foundations & Core Principles of Arduino", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-30-l1", title: "Introduction to Arduino", duration: "12 min", type: "video" },
@@ -1932,7 +1932,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-30-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-30-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-30-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1940,7 +1940,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-30-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-30-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-30-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -1955,8 +1955,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Raspberry Pi",
     shortTitle: "Raspberry Pi",
     description: "Single-board computing with Raspberry Pi, Linux CLI, Python GPIO control, camera modules, and IoT servers.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -1969,7 +1969,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["raspberry pi", "linux", "python", "gpio", "single board"],
     modules: [
       {
-        id: "m-31-m1", title: "Foundations & Core Principles of Raspberry Pi", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-31-m1", title: "Foundations & Core Principles of Raspberry Pi", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-31-l1", title: "Introduction to Raspberry Pi", duration: "12 min", type: "video" },
@@ -1988,7 +1988,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-31-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-31-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-31-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -1996,7 +1996,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-31-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-31-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-31-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2011,8 +2011,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Embedded Linux",
     shortTitle: "Embedded Linux",
     description: "Build custom embedded Linux systems using Yocto, U-Boot bootloader, Linux kernel compilation, and device tree.",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Zap className="w-5 h-5" />,
     category: "Electronics & Embedded Systems",
     categoryId: "cat-embedded",
@@ -2025,7 +2025,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["embedded linux", "yocto", "u-boot", "kernel", "device tree"],
     modules: [
       {
-        id: "m-32-m1", title: "Foundations & Core Principles of Embedded Linux", description: "Core concepts, syntax, principles, and environment setup", color: "bg-emerald-600",
+        id: "m-32-m1", title: "Foundations & Core Principles of Embedded Linux", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-32-l1", title: "Introduction to Embedded Linux", duration: "12 min", type: "video" },
@@ -2044,7 +2044,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-32-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-32-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-32-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2052,7 +2052,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-32-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-32-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-32-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2067,8 +2067,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "VLSI Design",
     shortTitle: "VLSI Design",
     description: "Learn VLSI chip design flow from RTL specification to GDSII layout, CMOS logic, and physical signoff.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2081,7 +2081,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["vlsi", "vlsi design", "cmos", "rtl", "verilog", "gdsii"],
     modules: [
       {
-        id: "m-33-m1", title: "Foundations & Core Principles of VLSI Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-33-m1", title: "Foundations & Core Principles of VLSI Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-33-l1", title: "Introduction to VLSI Design", duration: "12 min", type: "video" },
@@ -2100,7 +2100,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-33-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-33-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-33-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2108,7 +2108,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-33-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-33-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-33-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2123,8 +2123,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Digital VLSI",
     shortTitle: "Digital VLSI",
     description: "Digital IC design, standard cell synthesis, static timing analysis (STA), clock distribution, and low power.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2137,7 +2137,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["digital vlsi", "sta", "synthesis", "stdcell", "low power", "ic design"],
     modules: [
       {
-        id: "m-34-m1", title: "Foundations & Core Principles of Digital VLSI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-34-m1", title: "Foundations & Core Principles of Digital VLSI", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-34-l1", title: "Introduction to Digital VLSI", duration: "12 min", type: "video" },
@@ -2156,7 +2156,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-34-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-34-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-34-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2164,7 +2164,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-34-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-34-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-34-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2179,8 +2179,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Verilog",
     shortTitle: "Verilog",
     description: "Hardware description language syntax, behavioral and structural modeling, testbenches, and logic synthesis.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2193,7 +2193,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["verilog", "hdl", "rtl", "synthesis", "testbench", "fpga"],
     modules: [
       {
-        id: "m-35-m1", title: "Foundations & Core Principles of Verilog", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-35-m1", title: "Foundations & Core Principles of Verilog", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-35-l1", title: "Introduction to Verilog", duration: "12 min", type: "video" },
@@ -2212,7 +2212,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-35-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-35-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-35-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2220,7 +2220,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-35-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-35-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-35-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2235,8 +2235,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "SystemVerilog",
     shortTitle: "SystemVerilog",
     description: "Advanced verification and design: SystemVerilog OOP testbenches, assertions, coverage, and UVM framework.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2249,7 +2249,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["systemverilog", "sv", "verification", "uvm", "assertions", "coverage"],
     modules: [
       {
-        id: "m-36-m1", title: "Foundations & Core Principles of SystemVerilog", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-36-m1", title: "Foundations & Core Principles of SystemVerilog", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-36-l1", title: "Introduction to SystemVerilog", duration: "12 min", type: "video" },
@@ -2268,7 +2268,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-36-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-36-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-36-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2276,7 +2276,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-36-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-36-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-36-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2291,8 +2291,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "FPGA",
     shortTitle: "FPGA",
     description: "Design digital systems on Xilinx & Intel FPGAs using Vivado/Quartus, timing constraints, and IP core integration.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2305,7 +2305,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["fpga", "xilinx", "vivado", "quartus", "intel fpga", "rtl"],
     modules: [
       {
-        id: "m-37-m1", title: "Foundations & Core Principles of FPGA", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-37-m1", title: "Foundations & Core Principles of FPGA", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-37-l1", title: "Introduction to FPGA", duration: "12 min", type: "video" },
@@ -2324,7 +2324,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-37-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-37-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-37-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2332,7 +2332,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-37-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-37-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-37-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2347,8 +2347,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "CMOS Design",
     shortTitle: "CMOS Design",
     description: "Transistor-level CMOS logic gates, layout techniques, parasitic extraction, delay estimation, and SPICE simulation.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2361,7 +2361,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["cmos", "layout", "spice", "parasitic", "mosfet", "transistor"],
     modules: [
       {
-        id: "m-38-m1", title: "Foundations & Core Principles of CMOS Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-38-m1", title: "Foundations & Core Principles of CMOS Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-38-l1", title: "Introduction to CMOS Design", duration: "12 min", type: "video" },
@@ -2380,7 +2380,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-38-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-38-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-38-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2388,7 +2388,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-38-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-38-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-38-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2403,8 +2403,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "RTL Design",
     shortTitle: "RTL Design",
     description: "Register Transfer Level logic design, finite state machines (FSM), pipeline architectures, and timing closure.",
-    color: "text-rose-600",
-    bgColor: "bg-rose-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cpu className="w-5 h-5" />,
     category: "VLSI & Semiconductor",
     categoryId: "cat-vlsi",
@@ -2417,7 +2417,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["rtl", "rtl design", "fsm", "pipeline", "timing closure", "synthesis"],
     modules: [
       {
-        id: "m-39-m1", title: "Foundations & Core Principles of RTL Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-rose-600",
+        id: "m-39-m1", title: "Foundations & Core Principles of RTL Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-39-l1", title: "Introduction to RTL Design", duration: "12 min", type: "video" },
@@ -2436,7 +2436,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-39-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-39-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-39-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2444,7 +2444,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-39-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-39-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-39-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2459,8 +2459,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Internet of Things",
     shortTitle: "Internet of Things",
     description: "Build connected IoT devices using microcontrollers, sensors, MQTT protocol, and cloud dashboards.",
-    color: "text-teal-600",
-    bgColor: "bg-teal-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Bot className="w-5 h-5" />,
     category: "IoT & Robotics",
     categoryId: "cat-iot-robotics",
@@ -2473,7 +2473,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["iot", "internet of things", "mqtt", "cloud", "sensors", "wifi"],
     modules: [
       {
-        id: "m-40-m1", title: "Foundations & Core Principles of Internet of Things", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-600",
+        id: "m-40-m1", title: "Foundations & Core Principles of Internet of Things", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-40-l1", title: "Introduction to Internet of Things", duration: "12 min", type: "video" },
@@ -2492,7 +2492,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-40-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-40-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-40-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2500,7 +2500,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-40-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-40-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-40-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2515,8 +2515,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "IoT with Arduino",
     shortTitle: "IoT with Arduino",
     description: "Combine Arduino hardware with WiFi/Bluetooth modules to transmit sensor data to IoT cloud platforms.",
-    color: "text-teal-600",
-    bgColor: "bg-teal-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Bot className="w-5 h-5" />,
     category: "IoT & Robotics",
     categoryId: "cat-iot-robotics",
@@ -2529,7 +2529,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["iot with arduino", "arduino", "esp8266", "esp32", "sensors", "cloud"],
     modules: [
       {
-        id: "m-41-m1", title: "Foundations & Core Principles of IoT with Arduino", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-600",
+        id: "m-41-m1", title: "Foundations & Core Principles of IoT with Arduino", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-41-l1", title: "Introduction to IoT with Arduino", duration: "12 min", type: "video" },
@@ -2548,7 +2548,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-41-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-41-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-41-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2556,7 +2556,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-41-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-41-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-41-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2571,8 +2571,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "IoT with Raspberry Pi",
     shortTitle: "IoT with Raspberry Pi",
     description: "Build edge IoT gateways with Raspberry Pi, Python, MQTT, Node-RED, and cloud data analytics.",
-    color: "text-teal-600",
-    bgColor: "bg-teal-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Bot className="w-5 h-5" />,
     category: "IoT & Robotics",
     categoryId: "cat-iot-robotics",
@@ -2585,7 +2585,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["iot with raspberry pi", "raspberry pi", "mqtt", "node-red", "gateway"],
     modules: [
       {
-        id: "m-42-m1", title: "Foundations & Core Principles of IoT with Raspberry Pi", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-600",
+        id: "m-42-m1", title: "Foundations & Core Principles of IoT with Raspberry Pi", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-42-l1", title: "Introduction to IoT with Raspberry Pi", duration: "12 min", type: "video" },
@@ -2604,7 +2604,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-42-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-42-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-42-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2612,7 +2612,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-42-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-42-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-42-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2627,8 +2627,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Robotics",
     shortTitle: "Robotics",
     description: "Build autonomous robots: kinematics, sensors, ROS2 navigation, computer vision, motor control, and path planning.",
-    color: "text-teal-600",
-    bgColor: "bg-teal-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Bot className="w-5 h-5" />,
     category: "IoT & Robotics",
     categoryId: "cat-iot-robotics",
@@ -2641,7 +2641,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["robotics", "ros", "ros2", "kinematics", "sensors", "bot"],
     modules: [
       {
-        id: "m-43-m1", title: "Foundations & Core Principles of Robotics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-600",
+        id: "m-43-m1", title: "Foundations & Core Principles of Robotics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-43-l1", title: "Introduction to Robotics", duration: "12 min", type: "video" },
@@ -2660,7 +2660,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-43-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-43-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-43-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2668,7 +2668,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-43-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-43-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-43-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2683,8 +2683,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Sensors & Actuators",
     shortTitle: "Sensors & Actuators",
     description: "Working principles of accelerometers, LIDAR, ultrasonic, optical, chemical sensors, and motor drivers.",
-    color: "text-teal-600",
-    bgColor: "bg-teal-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Bot className="w-5 h-5" />,
     category: "IoT & Robotics",
     categoryId: "cat-iot-robotics",
@@ -2697,7 +2697,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["sensors", "actuators", "lidar", "accelerometer", "motors", "transducers"],
     modules: [
       {
-        id: "m-44-m1", title: "Foundations & Core Principles of Sensors & Actuators", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-600",
+        id: "m-44-m1", title: "Foundations & Core Principles of Sensors & Actuators", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-44-l1", title: "Introduction to Sensors & Actuators", duration: "12 min", type: "video" },
@@ -2716,7 +2716,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-44-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-44-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-44-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2724,7 +2724,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-44-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-44-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-44-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2739,8 +2739,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Cybersecurity Fundamentals",
     shortTitle: "Cybersecurity Fundamentals",
     description: "CIA triad, threat landscape, risk management, security frameworks (NIST, ISO 27001), and defense.",
-    color: "text-red-700",
-    bgColor: "bg-red-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Shield className="w-5 h-5" />,
     category: "Cybersecurity & Ethical Hacking",
     categoryId: "cat-cybersec",
@@ -2753,7 +2753,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["cybersecurity", "cia triad", "nist", "infosec", "security"],
     modules: [
       {
-        id: "m-45-m1", title: "Foundations & Core Principles of Cybersecurity Fundamentals", description: "Core concepts, syntax, principles, and environment setup", color: "bg-red-700",
+        id: "m-45-m1", title: "Foundations & Core Principles of Cybersecurity Fundamentals", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-45-l1", title: "Introduction to Cybersecurity Fundamentals", duration: "12 min", type: "video" },
@@ -2772,7 +2772,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-45-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-45-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-45-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2780,7 +2780,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-45-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-45-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-45-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2795,8 +2795,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Network Security",
     shortTitle: "Network Security",
     description: "Firewalls, Intrusion Detection Systems (IDS/IPS), VPNs, TCP/IP security, and network monitoring.",
-    color: "text-red-700",
-    bgColor: "bg-red-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Shield className="w-5 h-5" />,
     category: "Cybersecurity & Ethical Hacking",
     categoryId: "cat-cybersec",
@@ -2809,7 +2809,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["network security", "firewall", "ids", "vpn", "tcp/ip", "packet"],
     modules: [
       {
-        id: "m-46-m1", title: "Foundations & Core Principles of Network Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-red-700",
+        id: "m-46-m1", title: "Foundations & Core Principles of Network Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-46-l1", title: "Introduction to Network Security", duration: "12 min", type: "video" },
@@ -2828,7 +2828,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-46-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-46-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-46-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2836,7 +2836,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-46-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-46-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-46-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2851,8 +2851,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Ethical Hacking",
     shortTitle: "Ethical Hacking",
     description: "Penetration testing methodologies, Nmap recon, Metasploit exploitation, Wireshark, and reporting.",
-    color: "text-red-700",
-    bgColor: "bg-red-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Shield className="w-5 h-5" />,
     category: "Cybersecurity & Ethical Hacking",
     categoryId: "cat-cybersec",
@@ -2865,7 +2865,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["ethical hacking", "pentesting", "nmap", "metasploit", "exploitation"],
     modules: [
       {
-        id: "m-47-m1", title: "Foundations & Core Principles of Ethical Hacking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-red-700",
+        id: "m-47-m1", title: "Foundations & Core Principles of Ethical Hacking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-47-l1", title: "Introduction to Ethical Hacking", duration: "12 min", type: "video" },
@@ -2884,7 +2884,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-47-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-47-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-47-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2892,7 +2892,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-47-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-47-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-47-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2907,8 +2907,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Web Security",
     shortTitle: "Web Security",
     description: "Web application security, OWASP Top 10 vulnerabilities, SQL injection, XSS, CSRF, and secure coding.",
-    color: "text-red-700",
-    bgColor: "bg-red-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Shield className="w-5 h-5" />,
     category: "Cybersecurity & Ethical Hacking",
     categoryId: "cat-cybersec",
@@ -2921,7 +2921,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["web security", "owasp", "sqli", "xss", "csrf", "vulnerability"],
     modules: [
       {
-        id: "m-48-m1", title: "Foundations & Core Principles of Web Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-red-700",
+        id: "m-48-m1", title: "Foundations & Core Principles of Web Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-48-l1", title: "Introduction to Web Security", duration: "12 min", type: "video" },
@@ -2940,7 +2940,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-48-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-48-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-48-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -2948,7 +2948,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-48-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-48-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-48-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -2963,8 +2963,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Computer Networks",
     shortTitle: "Computer Networks",
     description: "OSI 7-layer model, TCP/IP protocol suite, IP addressing, subnetting, routing protocols, and HTTP/S.",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wifi className="w-5 h-5" />,
     category: "Networking",
     categoryId: "cat-networking",
@@ -2977,7 +2977,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["computer networks", "tcp/ip", "osi", "routing", "subnetting", "dns"],
     modules: [
       {
-        id: "m-49-m1", title: "Foundations & Core Principles of Computer Networks", description: "Core concepts, syntax, principles, and environment setup", color: "bg-indigo-600",
+        id: "m-49-m1", title: "Foundations & Core Principles of Computer Networks", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-49-l1", title: "Introduction to Computer Networks", duration: "12 min", type: "video" },
@@ -2996,7 +2996,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-49-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-49-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-49-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3004,7 +3004,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-49-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-49-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-49-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3019,8 +3019,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Network Administration",
     shortTitle: "Network Administration",
     description: "Configure routers, switches, VLANs, NAT, DHCP, DNS servers, and network monitoring tools.",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wifi className="w-5 h-5" />,
     category: "Networking",
     categoryId: "cat-networking",
@@ -3033,7 +3033,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["network administration", "cisco", "routers", "switches", "vlan", "nat"],
     modules: [
       {
-        id: "m-50-m1", title: "Foundations & Core Principles of Network Administration", description: "Core concepts, syntax, principles, and environment setup", color: "bg-indigo-600",
+        id: "m-50-m1", title: "Foundations & Core Principles of Network Administration", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-50-l1", title: "Introduction to Network Administration", duration: "12 min", type: "video" },
@@ -3052,7 +3052,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-50-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-50-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-50-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3060,7 +3060,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-50-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-50-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-50-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3075,8 +3075,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Wireless Networking",
     shortTitle: "Wireless Networking",
     description: "WiFi standards (802.11ax/be), cellular networks, 5G architecture, WPA3 security, and RF propagation.",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wifi className="w-5 h-5" />,
     category: "Networking",
     categoryId: "cat-networking",
@@ -3089,7 +3089,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["wireless networking", "wifi", "5g", "wpa3", "rf", "cellular"],
     modules: [
       {
-        id: "m-51-m1", title: "Foundations & Core Principles of Wireless Networking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-indigo-600",
+        id: "m-51-m1", title: "Foundations & Core Principles of Wireless Networking", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-51-l1", title: "Introduction to Wireless Networking", duration: "12 min", type: "video" },
@@ -3108,7 +3108,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-51-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-51-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-51-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3116,7 +3116,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-51-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-51-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-51-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3131,8 +3131,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Network Security",
     shortTitle: "Network Security",
     description: "Network defense, firewalls, intrusion prevention, secure tunneling, and network traffic analysis.",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wifi className="w-5 h-5" />,
     category: "Networking",
     categoryId: "cat-networking",
@@ -3145,7 +3145,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["network security", "firewall", "ids", "vpn", "security", "traffic"],
     modules: [
       {
-        id: "m-52-m1", title: "Foundations & Core Principles of Network Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-indigo-600",
+        id: "m-52-m1", title: "Foundations & Core Principles of Network Security", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-52-l1", title: "Introduction to Network Security", duration: "12 min", type: "video" },
@@ -3164,7 +3164,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-52-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-52-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-52-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3172,7 +3172,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-52-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-52-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-52-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3187,8 +3187,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Cloud Computing",
     shortTitle: "Cloud Computing",
     description: "Cloud architecture concepts across AWS, Azure, and GCP: compute, storage, IAM, and virtual networks.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3201,7 +3201,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["cloud computing", "aws", "azure", "gcp", "serverless", "cloud"],
     modules: [
       {
-        id: "m-53-m1", title: "Foundations & Core Principles of Cloud Computing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-53-m1", title: "Foundations & Core Principles of Cloud Computing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-53-l1", title: "Introduction to Cloud Computing", duration: "12 min", type: "video" },
@@ -3220,7 +3220,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-53-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-53-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-53-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3228,7 +3228,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-53-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-53-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-53-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3243,8 +3243,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "AWS",
     shortTitle: "AWS",
     description: "Amazon Web Services core services: EC2, S3, RDS, Lambda, VPC, IAM, and cloud solution architecture.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3257,7 +3257,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["aws", "ec2", "s3", "lambda", "vpc", "iam", "cloud"],
     modules: [
       {
-        id: "m-54-m1", title: "Foundations & Core Principles of AWS", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-54-m1", title: "Foundations & Core Principles of AWS", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-54-l1", title: "Introduction to AWS", duration: "12 min", type: "video" },
@@ -3276,7 +3276,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-54-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-54-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-54-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3284,7 +3284,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-54-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-54-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-54-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3299,8 +3299,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Microsoft Azure",
     shortTitle: "Microsoft Azure",
     description: "Microsoft Azure cloud platform: Virtual Machines, Blob Storage, Azure Functions, Entra ID, and Azure DevOps.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3313,7 +3313,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["azure", "microsoft azure", "virtual machines", "blob", "entra id"],
     modules: [
       {
-        id: "m-55-m1", title: "Foundations & Core Principles of Microsoft Azure", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-55-m1", title: "Foundations & Core Principles of Microsoft Azure", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-55-l1", title: "Introduction to Microsoft Azure", duration: "12 min", type: "video" },
@@ -3332,7 +3332,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-55-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-55-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-55-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3340,7 +3340,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-55-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-55-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-55-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3355,8 +3355,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "DevOps",
     shortTitle: "DevOps",
     description: "DevOps culture, CI/CD automation, Infrastructure as Code (Terraform), Ansible, and monitoring.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3369,7 +3369,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["devops", "ci/cd", "terraform", "ansible", "jenkins", "automation"],
     modules: [
       {
-        id: "m-56-m1", title: "Foundations & Core Principles of DevOps", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-56-m1", title: "Foundations & Core Principles of DevOps", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-56-l1", title: "Introduction to DevOps", duration: "12 min", type: "video" },
@@ -3388,7 +3388,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-56-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-56-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-56-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3396,7 +3396,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-56-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-56-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-56-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3411,8 +3411,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Docker",
     shortTitle: "Docker",
     description: "Containerization with Docker: Dockerfiles, image optimization, multi-stage builds, and Docker Compose.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3425,7 +3425,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["docker", "containers", "dockerfile", "docker compose", "devops"],
     modules: [
       {
-        id: "m-57-m1", title: "Foundations & Core Principles of Docker", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-57-m1", title: "Foundations & Core Principles of Docker", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-57-l1", title: "Introduction to Docker", duration: "12 min", type: "video" },
@@ -3444,7 +3444,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-57-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-57-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-57-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3452,7 +3452,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-57-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-57-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-57-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3467,8 +3467,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Kubernetes",
     shortTitle: "Kubernetes",
     description: "Container orchestration with Kubernetes: Pods, Deployments, Services, Ingress, Helm charts, and scaling.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3481,7 +3481,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["kubernetes", "k8s", "pods", "deployments", "helm", "orchestration"],
     modules: [
       {
-        id: "m-58-m1", title: "Foundations & Core Principles of Kubernetes", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-58-m1", title: "Foundations & Core Principles of Kubernetes", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-58-l1", title: "Introduction to Kubernetes", duration: "12 min", type: "video" },
@@ -3500,7 +3500,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-58-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-58-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-58-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3508,7 +3508,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-58-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-58-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-58-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3523,8 +3523,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "CI/CD",
     shortTitle: "CI/CD",
     description: "Automate software delivery pipelines using GitHub Actions, GitLab CI, Jenkins, and automated testing.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Cloud className="w-5 h-5" />,
     category: "Cloud Computing & DevOps",
     categoryId: "cat-cloud-devops",
@@ -3537,7 +3537,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["ci/cd", "github actions", "jenkins", "pipelines", "automation", "deploy"],
     modules: [
       {
-        id: "m-59-m1", title: "Foundations & Core Principles of CI/CD", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-59-m1", title: "Foundations & Core Principles of CI/CD", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-59-l1", title: "Introduction to CI/CD", duration: "12 min", type: "video" },
@@ -3556,7 +3556,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-59-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-59-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-59-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3564,7 +3564,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-59-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-59-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-59-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3579,8 +3579,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Database Management Systems",
     shortTitle: "Database Management Systems",
     description: "Relational database concepts, ER modeling, schema design, indexing, transactions, and ACID properties.",
-    color: "text-teal-700",
-    bgColor: "bg-teal-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Database className="w-5 h-5" />,
     category: "Databases",
     categoryId: "cat-databases",
@@ -3593,7 +3593,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["dbms", "database", "relational", "acid", "indexing", "er model"],
     modules: [
       {
-        id: "m-60-m1", title: "Foundations & Core Principles of Database Management Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-700",
+        id: "m-60-m1", title: "Foundations & Core Principles of Database Management Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-60-l1", title: "Introduction to Database Management Systems", duration: "12 min", type: "video" },
@@ -3612,7 +3612,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-60-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-60-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-60-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3620,7 +3620,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-60-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-60-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-60-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3635,8 +3635,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "SQL",
     shortTitle: "SQL",
     description: "Master SQL query writing, joins, subqueries, CTEs, window functions, and performance tuning.",
-    color: "text-teal-700",
-    bgColor: "bg-teal-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Database className="w-5 h-5" />,
     category: "Databases",
     categoryId: "cat-databases",
@@ -3649,7 +3649,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["sql", "queries", "postgresql", "mysql", "joins", "database"],
     modules: [
       {
-        id: "m-61-m1", title: "Foundations & Core Principles of SQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-700",
+        id: "m-61-m1", title: "Foundations & Core Principles of SQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-61-l1", title: "Introduction to SQL", duration: "12 min", type: "video" },
@@ -3668,7 +3668,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-61-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-61-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-61-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3676,7 +3676,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-61-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-61-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-61-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3691,8 +3691,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "MySQL",
     shortTitle: "MySQL",
     description: "Relational database development with MySQL: table design, stored procedures, indexing, and administration.",
-    color: "text-teal-700",
-    bgColor: "bg-teal-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Database className="w-5 h-5" />,
     category: "Databases",
     categoryId: "cat-databases",
@@ -3705,7 +3705,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["mysql", "sql", "relational", "database", "tables", "indexes"],
     modules: [
       {
-        id: "m-62-m1", title: "Foundations & Core Principles of MySQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-700",
+        id: "m-62-m1", title: "Foundations & Core Principles of MySQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-62-l1", title: "Introduction to MySQL", duration: "12 min", type: "video" },
@@ -3724,7 +3724,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-62-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-62-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-62-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3732,7 +3732,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-62-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-62-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-62-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3747,8 +3747,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "PostgreSQL",
     shortTitle: "PostgreSQL",
     description: "Advanced open-source relational database: JSONB data types, spatial extensions (PostGIS), and optimization.",
-    color: "text-teal-700",
-    bgColor: "bg-teal-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Database className="w-5 h-5" />,
     category: "Databases",
     categoryId: "cat-databases",
@@ -3761,7 +3761,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["postgresql", "postgres", "sql", "jsonb", "database", "indexing"],
     modules: [
       {
-        id: "m-63-m1", title: "Foundations & Core Principles of PostgreSQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-700",
+        id: "m-63-m1", title: "Foundations & Core Principles of PostgreSQL", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-63-l1", title: "Introduction to PostgreSQL", duration: "12 min", type: "video" },
@@ -3780,7 +3780,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-63-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-63-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-63-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3788,7 +3788,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-63-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-63-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-63-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3803,8 +3803,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "MongoDB",
     shortTitle: "MongoDB",
     description: "NoSQL document database: BSON collections, aggregation pipeline, indexing, and Mongoose ORM.",
-    color: "text-teal-700",
-    bgColor: "bg-teal-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Database className="w-5 h-5" />,
     category: "Databases",
     categoryId: "cat-databases",
@@ -3817,7 +3817,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["mongodb", "nosql", "document", "bson", "mongoose", "database"],
     modules: [
       {
-        id: "m-64-m1", title: "Foundations & Core Principles of MongoDB", description: "Core concepts, syntax, principles, and environment setup", color: "bg-teal-700",
+        id: "m-64-m1", title: "Foundations & Core Principles of MongoDB", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-64-l1", title: "Introduction to MongoDB", duration: "12 min", type: "video" },
@@ -3836,7 +3836,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-64-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-64-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-64-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3844,7 +3844,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-64-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-64-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-64-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3859,8 +3859,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Software Engineering",
     shortTitle: "Software Engineering",
     description: "Software lifecycle methodologies, Agile/Scrum, requirement analysis, software architecture, and QA.",
-    color: "text-blue-700",
-    bgColor: "bg-blue-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Software Development",
     categoryId: "cat-soft-dev",
@@ -3873,7 +3873,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["software engineering", "agile", "scrum", "sdlc", "testing", "architecture"],
     modules: [
       {
-        id: "m-65-m1", title: "Foundations & Core Principles of Software Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-700",
+        id: "m-65-m1", title: "Foundations & Core Principles of Software Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-65-l1", title: "Introduction to Software Engineering", duration: "12 min", type: "video" },
@@ -3892,7 +3892,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-65-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-65-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-65-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3900,7 +3900,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-65-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-65-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-65-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3915,8 +3915,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Object-Oriented Programming",
     shortTitle: "Object-Oriented Programming",
     description: "OOP design principles, SOLID guidelines, encapsulation, inheritance, polymorphism, and design patterns.",
-    color: "text-blue-700",
-    bgColor: "bg-blue-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Software Development",
     categoryId: "cat-soft-dev",
@@ -3929,7 +3929,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["oop", "object-oriented", "solid", "classes", "inheritance", "polymorphism"],
     modules: [
       {
-        id: "m-66-m1", title: "Foundations & Core Principles of Object-Oriented Programming", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-700",
+        id: "m-66-m1", title: "Foundations & Core Principles of Object-Oriented Programming", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-66-l1", title: "Introduction to Object-Oriented Programming", duration: "12 min", type: "video" },
@@ -3948,7 +3948,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-66-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-66-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-66-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -3956,7 +3956,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-66-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-66-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-66-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -3971,8 +3971,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Data Structures & Algorithms",
     shortTitle: "Data Structures & Algorithms",
     description: "Master arrays, linked lists, stacks, queues, trees, graphs, dynamic programming, and algorithm analysis.",
-    color: "text-blue-700",
-    bgColor: "bg-blue-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Software Development",
     categoryId: "cat-soft-dev",
@@ -3985,7 +3985,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["dsa", "algorithms", "data structures", "leetcode", "trees", "graphs"],
     modules: [
       {
-        id: "m-67-m1", title: "Foundations & Core Principles of Data Structures & Algorithms", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-700",
+        id: "m-67-m1", title: "Foundations & Core Principles of Data Structures & Algorithms", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-67-l1", title: "Introduction to Data Structures & Algorithms", duration: "12 min", type: "video" },
@@ -4004,7 +4004,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-67-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-67-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-67-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4012,7 +4012,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-67-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-67-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-67-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4027,8 +4027,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Software Testing",
     shortTitle: "Software Testing",
     description: "Manual and automated software testing, unit testing, integration tests, Selenium, Cypress, and QA practices.",
-    color: "text-blue-700",
-    bgColor: "bg-blue-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Software Development",
     categoryId: "cat-soft-dev",
@@ -4041,7 +4041,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["software testing", "qa", "selenium", "cypress", "unit test", "automation"],
     modules: [
       {
-        id: "m-68-m1", title: "Foundations & Core Principles of Software Testing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-700",
+        id: "m-68-m1", title: "Foundations & Core Principles of Software Testing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-68-l1", title: "Introduction to Software Testing", duration: "12 min", type: "video" },
@@ -4060,7 +4060,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-68-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-68-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-68-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4068,7 +4068,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-68-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-68-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-68-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4083,8 +4083,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Git & GitHub",
     shortTitle: "Git & GitHub",
     description: "Version control with Git: commits, branching strategies, merge conflicts, pull requests, and GitHub Actions.",
-    color: "text-blue-700",
-    bgColor: "bg-blue-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Software Development",
     categoryId: "cat-soft-dev",
@@ -4097,7 +4097,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["git", "github", "version control", "branching", "commits", "pull requests"],
     modules: [
       {
-        id: "m-69-m1", title: "Foundations & Core Principles of Git & GitHub", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-700",
+        id: "m-69-m1", title: "Foundations & Core Principles of Git & GitHub", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-69-l1", title: "Introduction to Git & GitHub", duration: "12 min", type: "video" },
@@ -4116,7 +4116,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-69-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-69-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-69-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4124,7 +4124,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-69-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-69-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-69-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4139,8 +4139,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Android Development",
     shortTitle: "Android Development",
     description: "Build native Android applications with Kotlin, Android Jetpack, UI layouts, activities, and Room DB.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Smartphone className="w-5 h-5" />,
     category: "Mobile App Development",
     categoryId: "cat-mobile-dev",
@@ -4153,7 +4153,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["android", "kotlin", "jetpack", "mobile", "app", "android studio"],
     modules: [
       {
-        id: "m-70-m1", title: "Foundations & Core Principles of Android Development", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-70-m1", title: "Foundations & Core Principles of Android Development", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-70-l1", title: "Introduction to Android Development", duration: "12 min", type: "video" },
@@ -4172,7 +4172,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-70-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-70-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-70-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4180,7 +4180,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-70-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-70-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-70-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4195,8 +4195,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Flutter",
     shortTitle: "Flutter",
     description: "Build beautiful cross-platform iOS and Android apps from a single codebase using Dart and Flutter widgets.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Smartphone className="w-5 h-5" />,
     category: "Mobile App Development",
     categoryId: "cat-mobile-dev",
@@ -4209,7 +4209,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["flutter", "dart", "mobile app", "cross platform", "widgets", "ios", "android"],
     modules: [
       {
-        id: "m-71-m1", title: "Foundations & Core Principles of Flutter", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-71-m1", title: "Foundations & Core Principles of Flutter", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-71-l1", title: "Introduction to Flutter", duration: "12 min", type: "video" },
@@ -4228,7 +4228,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-71-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-71-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-71-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4236,7 +4236,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-71-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-71-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-71-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4251,8 +4251,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "React Native",
     shortTitle: "React Native",
     description: "Build cross-platform mobile applications using JavaScript, React components, native modules, and Expo.",
-    color: "text-sky-600",
-    bgColor: "bg-sky-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Smartphone className="w-5 h-5" />,
     category: "Mobile App Development",
     categoryId: "cat-mobile-dev",
@@ -4265,7 +4265,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["react native", "react", "expo", "mobile app", "ios", "android", "javascript"],
     modules: [
       {
-        id: "m-72-m1", title: "Foundations & Core Principles of React Native", description: "Core concepts, syntax, principles, and environment setup", color: "bg-sky-600",
+        id: "m-72-m1", title: "Foundations & Core Principles of React Native", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-72-l1", title: "Introduction to React Native", duration: "12 min", type: "video" },
@@ -4284,7 +4284,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-72-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-72-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-72-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4292,7 +4292,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-72-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-72-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-72-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4307,8 +4307,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Digital Electronics",
     shortTitle: "Digital Electronics",
     description: "Digital logic gates, Boolean algebra, combinational and sequential circuit design, flip-flops, and counters.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4321,7 +4321,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["digital electronics", "logic gates", "boolean algebra", "flip flops", "counters"],
     modules: [
       {
-        id: "m-73-m1", title: "Foundations & Core Principles of Digital Electronics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-73-m1", title: "Foundations & Core Principles of Digital Electronics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-73-l1", title: "Introduction to Digital Electronics", duration: "12 min", type: "video" },
@@ -4340,7 +4340,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-73-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-73-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-73-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4348,7 +4348,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-73-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-73-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-73-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4363,8 +4363,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Analog Electronics",
     shortTitle: "Analog Electronics",
     description: "Operational amplifiers, diodes, BJT/MOSFET biasing, frequency response, and active filter design.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4377,7 +4377,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["analog electronics", "op-amp", "diodes", "bjt", "amplifiers", "filters"],
     modules: [
       {
-        id: "m-74-m1", title: "Foundations & Core Principles of Analog Electronics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-74-m1", title: "Foundations & Core Principles of Analog Electronics", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-74-l1", title: "Introduction to Analog Electronics", duration: "12 min", type: "video" },
@@ -4396,7 +4396,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-74-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-74-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-74-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4404,7 +4404,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-74-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-74-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-74-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4419,8 +4419,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Signals & Systems",
     shortTitle: "Signals & Systems",
     description: "Continuous & discrete-time signals, Fourier transform, Laplace transform, and linear time-invariant (LTI) systems.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4433,7 +4433,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["signals and systems", "fourier", "laplace", "lti", "convolution", "frequency"],
     modules: [
       {
-        id: "m-75-m1", title: "Foundations & Core Principles of Signals & Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-75-m1", title: "Foundations & Core Principles of Signals & Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-75-l1", title: "Introduction to Signals & Systems", duration: "12 min", type: "video" },
@@ -4452,7 +4452,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-75-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-75-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-75-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4460,7 +4460,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-75-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-75-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-75-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4475,8 +4475,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Digital Signal Processing",
     shortTitle: "Digital Signal Processing",
     description: "Sampling theorem, Z-transform, FIR & IIR digital filter design, FFT algorithms, and DSP processors.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4489,7 +4489,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["dsp", "digital signal processing", "fft", "fir", "iir", "filters"],
     modules: [
       {
-        id: "m-76-m1", title: "Foundations & Core Principles of Digital Signal Processing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-76-m1", title: "Foundations & Core Principles of Digital Signal Processing", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-76-l1", title: "Introduction to Digital Signal Processing", duration: "12 min", type: "video" },
@@ -4508,7 +4508,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-76-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-76-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-76-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4516,7 +4516,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-76-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-76-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-76-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4531,8 +4531,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Communication Systems",
     shortTitle: "Communication Systems",
     description: "Analog & digital modulation (AM, FM, PSK, QAM), noise analysis, information theory, and receiver design.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4545,7 +4545,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["communication systems", "modulation", "am", "fm", "psk", "qam", "receiver"],
     modules: [
       {
-        id: "m-77-m1", title: "Foundations & Core Principles of Communication Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-77-m1", title: "Foundations & Core Principles of Communication Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-77-l1", title: "Introduction to Communication Systems", duration: "12 min", type: "video" },
@@ -4564,7 +4564,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-77-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-77-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-77-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4572,7 +4572,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-77-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-77-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-77-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4587,8 +4587,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Control Systems",
     shortTitle: "Control Systems",
     description: "Feedback control systems, transfer functions, block diagrams, root locus, Bode plots, and PID tuning.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4601,7 +4601,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["control systems", "pid", "bode plot", "transfer function", "feedback"],
     modules: [
       {
-        id: "m-78-m1", title: "Foundations & Core Principles of Control Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-78-m1", title: "Foundations & Core Principles of Control Systems", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-78-l1", title: "Introduction to Control Systems", duration: "12 min", type: "video" },
@@ -4620,7 +4620,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-78-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-78-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-78-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4628,7 +4628,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-78-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-78-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-78-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4643,8 +4643,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Antenna & Wave Propagation",
     shortTitle: "Antenna & Wave Propagation",
     description: "Electromagnetic wave propagation, dipole antennas, patch antennas, antenna arrays, and radiation patterns.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4657,7 +4657,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["antenna", "wave propagation", "electromagnetics", "rf", "radiation pattern"],
     modules: [
       {
-        id: "m-79-m1", title: "Foundations & Core Principles of Antenna & Wave Propagation", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-79-m1", title: "Foundations & Core Principles of Antenna & Wave Propagation", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-79-l1", title: "Introduction to Antenna & Wave Propagation", duration: "12 min", type: "video" },
@@ -4676,7 +4676,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-79-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-79-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-79-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4684,7 +4684,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-79-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-79-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-79-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4699,8 +4699,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "RF & Microwave Engineering",
     shortTitle: "RF & Microwave Engineering",
     description: "Radio frequency circuit design, Smith charts, S-parameters, microstrip transmission lines, and amplifiers.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4713,7 +4713,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["rf", "microwave", "smith chart", "s-parameters", "microstrip", "power amplifier"],
     modules: [
       {
-        id: "m-80-m1", title: "Foundations & Core Principles of RF & Microwave Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-80-m1", title: "Foundations & Core Principles of RF & Microwave Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-80-l1", title: "Introduction to RF & Microwave Engineering", duration: "12 min", type: "video" },
@@ -4732,7 +4732,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-80-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-80-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-80-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4740,7 +4740,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-80-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-80-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-80-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4755,8 +4755,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "PCB Design",
     shortTitle: "PCB Design",
     description: "Printed circuit board schematic capture, component footprinting, multi-layer routing, and Gerber file export in KiCad.",
-    color: "text-amber-600",
-    bgColor: "bg-amber-600",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Radio className="w-5 h-5" />,
     category: "Core Electronics & Communication",
     categoryId: "cat-core-electronics",
@@ -4769,7 +4769,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["pcb", "pcb design", "kicad", "schematic", "routing", "gerber"],
     modules: [
       {
-        id: "m-81-m1", title: "Foundations & Core Principles of PCB Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-amber-600",
+        id: "m-81-m1", title: "Foundations & Core Principles of PCB Design", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-81-l1", title: "Introduction to PCB Design", duration: "12 min", type: "video" },
@@ -4788,7 +4788,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-81-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-81-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-81-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4796,7 +4796,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-81-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-81-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-81-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4811,8 +4811,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Mechanical Design & CAD",
     shortTitle: "Mechanical Design & CAD",
     description: "Master mechanical engineering design principles, 3D CAD modeling, FEA simulation, and manufacturing.",
-    color: "text-slate-700",
-    bgColor: "bg-slate-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Other Engineering Disciplines",
     categoryId: "cat-other-eng",
@@ -4825,7 +4825,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["mechanical", "cad", "solidworks", "fea", "design", "drawing"],
     modules: [
       {
-        id: "m-82-m1", title: "Foundations & Core Principles of Mechanical Design & CAD", description: "Core concepts, syntax, principles, and environment setup", color: "bg-slate-700",
+        id: "m-82-m1", title: "Foundations & Core Principles of Mechanical Design & CAD", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-82-l1", title: "Introduction to Mechanical Design & CAD", duration: "12 min", type: "video" },
@@ -4844,7 +4844,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-82-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-82-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-82-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4852,7 +4852,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-82-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-82-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-82-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4867,8 +4867,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Civil & Structural Engineering",
     shortTitle: "Civil & Structural Engineering",
     description: "Structural analysis, concrete & steel design, geotechnical engineering, and construction management.",
-    color: "text-slate-700",
-    bgColor: "bg-slate-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Other Engineering Disciplines",
     categoryId: "cat-other-eng",
@@ -4881,7 +4881,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["civil", "structural", "concrete", "steel", "rcc", "building", "construction"],
     modules: [
       {
-        id: "m-83-m1", title: "Foundations & Core Principles of Civil & Structural Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-slate-700",
+        id: "m-83-m1", title: "Foundations & Core Principles of Civil & Structural Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-83-l1", title: "Introduction to Civil & Structural Engineering", duration: "12 min", type: "video" },
@@ -4900,7 +4900,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-83-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-83-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-83-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4908,7 +4908,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-83-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-83-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-83-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4923,8 +4923,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Biotechnology & Genetic Engineering",
     shortTitle: "Biotechnology & Genetic Engineering",
     description: "Molecular biology, genetic engineering, CRISPR, bioinformatics, and bioprocess engineering.",
-    color: "text-slate-700",
-    bgColor: "bg-slate-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Other Engineering Disciplines",
     categoryId: "cat-other-eng",
@@ -4937,7 +4937,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["biotech", "dna", "genetics", "crispr", "bioinformatics", "pcr"],
     modules: [
       {
-        id: "m-84-m1", title: "Foundations & Core Principles of Biotechnology & Genetic Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-slate-700",
+        id: "m-84-m1", title: "Foundations & Core Principles of Biotechnology & Genetic Engineering", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-84-l1", title: "Introduction to Biotechnology & Genetic Engineering", duration: "12 min", type: "video" },
@@ -4956,7 +4956,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-84-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-84-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-84-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -4964,7 +4964,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-84-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-84-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-84-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
@@ -4979,8 +4979,8 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     title: "Aerospace Engineering Fundamentals",
     shortTitle: "Aerospace Engineering Fundamentals",
     description: "Aerodynamics, flight mechanics, propulsion systems, aircraft structures, and space systems.",
-    color: "text-slate-700",
-    bgColor: "bg-slate-700",
+    color: "text-blue-600",
+    bgColor: "bg-blue-600",
     icon: <Wrench className="w-5 h-5" />,
     category: "Other Engineering Disciplines",
     categoryId: "cat-other-eng",
@@ -4993,7 +4993,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
     keywords: ["aerospace", "aerodynamics", "flight", "propulsion", "aircraft", "rockets"],
     modules: [
       {
-        id: "m-85-m1", title: "Foundations & Core Principles of Aerospace Engineering Fundamentals", description: "Core concepts, syntax, principles, and environment setup", color: "bg-slate-700",
+        id: "m-85-m1", title: "Foundations & Core Principles of Aerospace Engineering Fundamentals", description: "Core concepts, syntax, principles, and environment setup", color: "bg-blue-600",
         icon: <Sparkles className="w-4 h-4" />,
         lessons: [
           { id: "m-85-l1", title: "Introduction to Aerospace Engineering Fundamentals", duration: "12 min", type: "video" },
@@ -5012,7 +5012,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-85-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-purple-600",
+        id: "m-85-m3", title: "Advanced Topics & Best Practices", description: "Optimization, architecture patterns, and industry workflows", color: "bg-blue-700",
         icon: <Zap className="w-4 h-4" />,
         lessons: [
           { id: "m-85-l8", title: "Advanced Design & Optimization", duration: "24 min", type: "video" },
@@ -5020,7 +5020,7 @@ export const mentorCoursesCatalog: MentorCourse[] = [
         ],
       },
       {
-        id: "m-85-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-gray-900",
+        id: "m-85-m4", title: "Capstone Project", description: "Build a complete end-to-end production application", color: "bg-slate-800",
         icon: <Award className="w-4 h-4" />,
         lessons: [
           { id: "m-85-l10", title: "Project Architecture & Requirements", duration: "15 min", type: "video" },
