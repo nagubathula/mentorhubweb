@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
+import { ExploreLearningPathsModal } from "@/components/student/ExploreLearningPathsModal";
 
 const supabase = createClient();
 
@@ -1483,106 +1484,76 @@ export function MentorCourses({ onClose }: { onClose?: () => void } = {}) {
           </DialogContent>
         </Dialog>
       )}
-      {/* Browse Catalog Dialog (Explore Learning Paths modal matching Image 1) */}
-      <AnimatePresence>
-        {isCatalogModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 250 }}
-              className="bg-slate-900 text-white rounded-t-[2.5rem] w-full max-w-xl h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+      {/* Browse Catalog Dialog (Explore Learning Paths modal) */}
+      <ExploreLearningPathsModal
+        isOpen={isCatalogModalOpen}
+        onClose={() => setIsCatalogModalOpen(false)}
+        courses={courses.filter(c => c.status !== 'Custom')}
+        enrolledCourseIds={new Set(studentEnrollments.map(e => e.course_id))}
+        onEnrollCourse={async (course) => {
+          try {
+            await supabase.from('enrollments')
+              .update({ status: 'Inactive' })
+              .eq('student_id', selectedStudentId);
+
+            const { error } = await supabase.from('enrollments').insert({
+              student_id: selectedStudentId,
+              course_id: course.id,
+              status: 'Active'
+            });
+
+            if (error) {
+              alert("Error assigning course: " + error.message);
+            } else {
+              alert("Course assigned successfully!");
+              setIsCatalogModalOpen(false);
+              fetchStudentEnrollments(selectedStudentId);
+            }
+          } catch (err: any) {
+            console.error(err);
+          }
+        }}
+        actionButtonLabel={(course) => {
+          const isAlreadyEnrolled = studentEnrollments.some(e => e.course_id === course.id);
+          if (isAlreadyEnrolled) {
+            return (
+              <div className="bg-white/10 text-white/40 text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shrink-0">
+                Assigned
+              </div>
+            );
+          }
+          return (
+            <Button
+              onClick={async () => {
+                try {
+                  await supabase.from('enrollments')
+                    .update({ status: 'Inactive' })
+                    .eq('student_id', selectedStudentId);
+
+                  const { error } = await supabase.from('enrollments').insert({
+                    student_id: selectedStudentId,
+                    course_id: course.id,
+                    status: 'Active'
+                  });
+
+                  if (error) {
+                    alert("Error assigning course: " + error.message);
+                  } else {
+                    alert("Course assigned successfully!");
+                    setIsCatalogModalOpen(false);
+                    fetchStudentEnrollments(selectedStudentId);
+                  }
+                } catch (err: any) {
+                  console.error(err);
+                }
+              }}
+              className="bg-white text-slate-900 hover:bg-slate-100 text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shrink-0 transition-all shadow-sm"
             >
-              {/* Modal Header */}
-              <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-white/10 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white">Explore Learning Paths</h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Choose from expert-designed courses</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsCatalogModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Modal Body / Courses List */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-                {courses
-                  .filter(c => c.status !== 'Custom') // Only show template courses
-                  .map((course) => {
-                    const modulesCount = course.modules.filter(m => m.enabled).length;
-                    const lessonsCount = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
-                    const isAlreadyEnrolled = studentEnrollments.some(e => e.course_id === course.id);
-
-                    return (
-                      <div key={course.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex gap-3 min-w-0">
-                            <div className={`w-10 h-10 rounded-[0.85rem] ${getAestheticColor(course.id, course.category)} flex items-center justify-center shrink-0`}>
-                              {getCourseIcon(course.category)}
-                            </div>
-                            <div className="min-w-0">
-                              <h4 className="text-sm font-bold text-white truncate">{course.title}</h4>
-                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                                {modulesCount} modules · {lessonsCount} lessons
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            onClick={async () => {
-                              try {
-                                // Deactivate existing active enrollments first
-                                await supabase.from('enrollments')
-                                  .update({ status: 'Inactive' })
-                                  .eq('student_id', selectedStudentId);
-
-                                const { error } = await supabase.from('enrollments').insert({
-                                  student_id: selectedStudentId,
-                                  course_id: course.id,
-                                  status: 'Active'
-                                });
-
-                                if (error) {
-                                  alert("Error assigning course: " + error.message);
-                                } else {
-                                  alert("Course assigned successfully!");
-                                  setIsCatalogModalOpen(false);
-                                  fetchStudentEnrollments(selectedStudentId);
-                                }
-                              } catch (err: any) {
-                                console.error(err);
-                              }
-                            }}
-                            disabled={isAlreadyEnrolled}
-                            className={cn(
-                              "text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl shrink-0 transition-all",
-                              isAlreadyEnrolled 
-                                ? "bg-white/10 text-white/40 cursor-default" 
-                                : "bg-white text-slate-900 hover:bg-slate-100 shadow-sm"
-                            )}
-                          >
-                            {isAlreadyEnrolled ? "Assigned" : "+ Enroll"}
-                          </Button>
-                        </div>
-                        <p className="text-xs text-slate-300 font-medium leading-relaxed">
-                          {course.description || "Master core concepts and build practical projects step by step."}
-                        </p>
-                      </div>
-                    );
-                  })}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              + Enroll
+            </Button>
+          );
+        }}
+      />
 
       {/* Submit Review Submission Feedback Dialog */}
       <AnimatePresence>

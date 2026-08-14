@@ -31,6 +31,7 @@ import { StudentResources } from "@/components/student/StudentResources";
 import { AiLearningAssistant } from "@/components/student/AiLearningAssistant";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
+import { ExploreLearningPathsModal } from "@/components/student/ExploreLearningPathsModal";
 
 type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS" | "AI_ASSISTANT";
 
@@ -5265,93 +5266,14 @@ export default function OnboardingFlow() {
                 )}
 
                 {/* Course Catalog Bottom Sheet */}
-                {isCourseCatalogOpen && (
-                  <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-xs z-[100] flex items-end justify-center transition-all">
-                    <div className="bg-white rounded-t-[2rem] w-full sm:max-w-md overflow-hidden shadow-2xl border-t border-slate-100 flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-350">
-                      
-                      {/* Pull handle bar */}
-                      <div className="w-full flex justify-center py-2.5 bg-[#0f172a] shrink-0">
-                        <div className="w-12 h-1 rounded-full bg-white/20"></div>
-                      </div>
-
-                      {/* Header */}
-                      <div className="bg-[#0f172a] text-white px-5 pb-6 pt-1 relative shrink-0">
-                        <button 
-                          onClick={() => setIsCourseCatalogOpen(false)}
-                          className="absolute top-2 right-4 text-slate-300 hover:text-white transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                        <div className="flex items-center gap-3 mt-1">
-                          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-amber-400">
-                            <GraduationCap className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-[17px] font-medium tracking-tight">Explore Learning Paths</h3>
-                            <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Choose from expert-designed courses</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Course Catalog List */}
-                      <div className="p-5 space-y-3.5 overflow-y-auto hidden-scrollbar flex-1">
-                        {availableCourses.map((course) => {
-                          const isEnrolled = studentEnrollments.some(e => e.course?.id === course.id);
-                          const activeModCount = course.modules?.length || course.content?.length || 0;
-                          const totalLessons = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || m.topics?.length || 0), 0) || 0;
-
-                          return (
-                            <div 
-                              key={course.id}
-                              className="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 relative hover:bg-slate-50 transition-all"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex gap-3 min-w-0">
-                                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", course.bgColor || "bg-orange-500", "text-white")}>
-                                    <BookOpen className="w-5 h-5" />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <h4 className="text-[14.5px] font-medium text-slate-800 truncate">{course.title}</h4>
-                                    <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">
-                                      {activeModCount} modules · {totalLessons || "Comprehensive"} lessons
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="shrink-0">
-                                  {isEnrolled ? (
-                                    <div className="flex flex-col items-end gap-1.5">
-                                      <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider flex items-center gap-1">
-                                        <Check className="w-3 h-3" /> Enrolled
-                                      </span>
-                                      <button 
-                                        onClick={() => handleStudentEnrollCourse(course, true)}
-                                        className="text-[10px] text-slate-400 font-medium hover:text-red-500 transition-colors uppercase tracking-tight flex items-center gap-1"
-                                      >
-                                        <RotateCcw className="w-2.5 h-2.5" /> Override
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      onClick={() => handleStudentEnrollCourse(course)}
-                                      disabled={enrollingCourseId === course.id}
-                                      className="bg-[#0f172a] hover:bg-slate-800 text-white font-medium text-xs h-8 px-3.5 rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-50"
-                                    >
-                                      {enrollingCourseId === course.id ? "Adding..." : "+ Enroll"}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                              <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
-                                {course.description || "Master core concepts and build practical projects step by step."}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                    </div>
-                  </div>
-                )}
+                <ExploreLearningPathsModal
+                  isOpen={isCourseCatalogOpen}
+                  onClose={() => setIsCourseCatalogOpen(false)}
+                  courses={availableCourses}
+                  enrolledCourseIds={new Set(studentEnrollments.map(e => e.course?.id || e.course_id || e.course?.title))}
+                  onEnrollCourse={(course) => handleStudentEnrollCourse(course)}
+                  enrollingCourseId={enrollingCourseId}
+                />
               </motion.div>
             )}
 

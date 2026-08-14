@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
+import { ExploreLearningPathsModal } from "@/components/student/ExploreLearningPathsModal";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1321,87 +1322,32 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
          </div>
 
           {/* Course Catalog Bottom Sheet */}
-          {isCourseCatalogOpen && (
-            <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-xs z-[100] flex items-end justify-center transition-all">
-              <div className="bg-white rounded-t-[2.5rem] w-full sm:max-w-md overflow-hidden shadow-2xl border-t border-slate-100 flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-300">
-                
-                {/* Pull handle bar */}
-                <div className="w-full flex justify-center py-3.5 bg-[#0f172a] shrink-0 cursor-pointer" onClick={() => setIsCourseCatalogOpen(false)}>
-                  <div className="w-12 h-1.5 rounded-full bg-white/20"></div>
-                </div>
-
-                {/* Header */}
-                <div className="bg-[#0f172a] text-white px-6 pb-6 pt-1 relative shrink-0">
-                  <button 
-                    onClick={() => setIsCourseCatalogOpen(false)}
-                    className="absolute top-2 right-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <div className="flex items-center gap-3.5 mt-2">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-amber-400 border border-white/10 shadow-inner">
-                      <GraduationCap className="w-5.5 h-5.5 text-amber-300" />
-                    </div>
-                    <div>
-                      <h3 className="text-[17px] font-bold tracking-tight text-white leading-tight">Explore Learning Paths</h3>
-                      <p className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">CHOOSE FROM EXPERT-DESIGNED COURSES</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Course Catalog List */}
-                <div className="p-6 space-y-4 overflow-y-auto flex-1 hidden-scrollbar bg-slate-50/30">
-                  {courses.map((course) => {
-                    const activeModCount = course.modules?.length || course.content?.length || 0;
-                    const totalLessons = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || m.topics?.length || 0), 0) || 0;
-                    const isActive = studentEnrollment && studentEnrollment.course?.title === course.title;
-
-                    return (
-                      <div 
-                        key={course.id}
-                        className="bg-white border border-slate-100 rounded-3xl p-5 flex flex-col gap-4 relative hover:shadow-lg hover:border-slate-200/80 transition-all duration-300 group shadow-2xs"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex gap-4 min-w-0">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${course.bgColor || "bg-indigo-500"} text-white shadow-md transition-transform group-hover:scale-105 duration-300`}>
-                              <BookOpen className="w-6 h-6" />
-                            </div>
-                            <div className="min-w-0 flex flex-col justify-center">
-                              <h4 className="text-[16px] font-black text-slate-900 truncate leading-snug tracking-tight">{course.title}</h4>
-                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.08em] mt-1">
-                                {activeModCount} modules · {totalLessons || "Comprehensive"} lessons
-                              </p>
-                            </div>
-                          </div>
-                          <div className="shrink-0 pt-1">
-                            {isActive ? (
-                              <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] px-3.5 py-2 rounded-xl font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
-                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={3} /> Assigned
-                              </span>
-                            ) : (
-                              <Button 
-                                onClick={() => startCustomizing(course)}
-                                disabled={isAssigning}
-                                className="bg-[#0f172a] hover:bg-slate-800 text-white text-[11px] font-black px-5 py-2.5 h-auto rounded-full uppercase tracking-wider active:scale-95 transition-all shadow-sm"
-                              >
-                                + Enroll
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-
-                        {course.description && (
-                          <p className="text-[13px] text-slate-600 leading-relaxed font-semibold pl-0.5 mt-1 border-t border-slate-50 pt-3">
-                            {course.description}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+          <ExploreLearningPathsModal
+            isOpen={isCourseCatalogOpen}
+            onClose={() => setIsCourseCatalogOpen(false)}
+            courses={courses}
+            enrolledCourseIds={studentEnrollment?.course?.title ? new Set([studentEnrollment.course.title, studentEnrollment.course.id]) : new Set()}
+            onEnrollCourse={(course) => startCustomizing(course)}
+            actionButtonLabel={(course) => {
+              const isActive = studentEnrollment && studentEnrollment.course?.title === course.title;
+              if (isActive) {
+                return (
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] px-3.5 py-2 rounded-xl font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" strokeWidth={3} /> Assigned
+                  </span>
+                );
+              }
+              return (
+                <Button 
+                  onClick={() => startCustomizing(course)}
+                  disabled={isAssigning}
+                  className="bg-white hover:bg-slate-100 text-slate-900 text-[11px] font-bold px-5 py-2.5 h-auto rounded-xl uppercase tracking-wider active:scale-95 transition-all shadow-sm"
+                >
+                  + Enroll
+                </Button>
+              );
+            }}
+          />
 
           {/* Video Call Link Sharing Dialog Modal */}
           {isVideoModalOpen && (
