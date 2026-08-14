@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase";
@@ -815,24 +815,8 @@ export default function OnboardingFlow() {
           setState("ROLE");
         }
 
-        // Fetch enrollments, notes, custom_todos safely with try/catch blocks
-        try {
-          const { data: enrolls } = await supabase
-            .from('enrollments')
-            .select('*, course:courses(*)')
-            .eq('student_id', session.user.id);
-          
-          if (enrolls) {
-            setStudentEnrollments(enrolls);
-            if (enrolls.length > 0 && !enrolledCourse) {
-              setEnrollmentId(enrolls[0].id);
-              setEnrolledCourse(enrolls[0].course);
-              setCourseProgress((enrolls[0].progress as string[]) || []);
-            }
-          }
-        } catch (e) {
-          console.warn("Enrollments sync warning:", e);
-        }
+        // Fetch enrollments from database as source of truth
+        await fetchUserEnrollments(session.user.id);
 
         try {
           const { data: dbNotes } = await supabase
@@ -1138,6 +1122,117 @@ export default function OnboardingFlow() {
   const [availableCourses, setAvailableCourses] = useState<any[]>(mentorCoursesCatalog);
   const [studentEnrollments, setStudentEnrollments] = useState<any[]>([]);
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+
+  // Fetch user enrollments from Supabase DB (Database is source of truth)
+  const fetchUserEnrollments = useCallback(async (userId?: string) => {
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const { data: { session } } = await supabase.auth.getSession();
+      targetUserId = session?.user?.id;
+    }
+
+    if (!targetUserId || targetUserId === "guest-student-id") {
+      const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+      if (localEnrollmentsStr) {
+        try {
+          const localEnrs = JSON.parse(localEnrollmentsStr);
+          setStudentEnrollments(localEnrs);
+          if (localEnrs.length > 0) {
+            const latest = localEnrs[0];
+            setEnrollmentId(latest.id);
+            setEnrolledCourse(latest.course);
+            setCourseProgress(latest.progress || []);
+          }
+        } catch (e) {
+          console.error("Failed to parse local enrollments in guest mode", e);
+        }
+      }
+      return;
+    }
+
+    try {
+      const { data: enrollments, error } = await supabase
+        .from('enrollments')
+        .select('*, course:courses(*)')
+        .eq('student_id', targetUserId)
+        .eq('status', 'Active')
+        .order('enrolled_at', { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch enrollments from database:", error.message, error);
+        return;
+      }
+
+      const parsedEnrollments = (enrollments || []).map((enr: any) => {
+        let c = enr.course;
+        if (c) {
+          try {
+            if (c.description && typeof c.description === 'string' && c.description.trim().startsWith('{')) {
+              const parsed = JSON.parse(c.description);
+              if (parsed && typeof parsed === 'object') {
+                c = {
+                  ...c,
+                  description: parsed.description || "",
+                  difficulty: parsed.difficulty || "Beginner",
+                  duration: parsed.duration || "10 hours",
+                  category: parsed.category || "General",
+                  modules: parsed.modules || parsed.content || [],
+                  content: parsed.modules || parsed.content || []
+                } as any;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to parse course description JSON", e);
+          }
+        }
+        return {
+          ...enr,
+          course: c
+        };
+      });
+
+      setStudentEnrollments(parsedEnrollments);
+
+      if (parsedEnrollments && parsedEnrollments.length > 0) {
+        const latest = parsedEnrollments[0];
+        setEnrollmentId(latest.id);
+        setEnrolledCourse(latest.course);
+        setCourseProgress((latest.progress as string[]) || []);
+      } else {
+        setEnrollmentId(null);
+        setEnrolledCourse(null);
+        setCourseProgress([]);
+      }
+    } catch (e) {
+      console.error("Database enrollments sync error:", e);
+    }
+  }, []);
+
+  const enrolledIdsSet = useMemo(() => {
+    const set = new Set<string>();
+    (studentEnrollments || []).forEach((e: any) => {
+      if (e.status && e.status !== 'Active') return;
+      if (e.id) set.add(e.id);
+      if (e.course_id) set.add(e.course_id);
+      if (e.course?.id) set.add(e.course.id);
+      if (e.course?.title) {
+        set.add(e.course.title);
+        set.add(e.course.title.toLowerCase());
+      }
+      if (e.course?.index_code) set.add(e.course.index_code);
+
+      const title = e.course?.title;
+      if (title && availableCourses) {
+        availableCourses.forEach((catCourse: any) => {
+          if (catCourse.title && catCourse.title.toLowerCase() === title.toLowerCase()) {
+            if (catCourse.id) set.add(catCourse.id);
+            if (catCourse.title) set.add(catCourse.title);
+          }
+        });
+      }
+    });
+    return set;
+  }, [studentEnrollments, availableCourses]);
 
   // Student Custom Todos State
   const [customTodos, setCustomTodos] = useState<any[]>(() => {
@@ -2270,118 +2365,117 @@ export default function OnboardingFlow() {
     let actualCourseId = courseObj.id;
     const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(actualCourseId);
 
-    if (!isUUID && userId !== "guest-student-id") {
-      // Create course record in DB first if catalog mock course is being enrolled
-      const serializedDescription = JSON.stringify({
-        description: courseObj.description || "",
-        difficulty: courseObj.difficulty || "Beginner",
-        duration: courseObj.duration || "10 hours",
-        category: courseObj.category || "General",
-        modules: (courseObj.modules || []).map((m: any) => ({
-          id: m.id,
-          title: m.title,
-          description: m.description || "",
-          enabled: m.enabled !== false,
-          lessons: (m.lessons || []).map((l: any) => ({
-            id: l.id,
-            title: l.title,
-            duration: l.duration || "15 mins",
-            type: l.type || "video",
-            enabled: l.enabled !== false
-          }))
-        }))
-      });
+    if (userId !== "guest-student-id") {
+      // 1. Check if a course record for this course title or ID already exists in DB
+      let existingCourseId: string | null = isUUID ? actualCourseId : null;
+      if (!existingCourseId) {
+        const { data: existingCourse } = await supabase
+          .from('courses')
+          .select('id')
+          .eq('title', courseObj.title)
+          .maybeSingle();
 
-      const payload = {
-        title: courseObj.title,
-        description: serializedDescription,
-        status: 'Published'
+        if (existingCourse) {
+          existingCourseId = existingCourse.id;
+        }
+      }
+
+      if (existingCourseId) {
+        actualCourseId = existingCourseId;
+      } else {
+        // Create new course record in DB first if catalog mock course is being enrolled
+        const serializedDescription = JSON.stringify({
+          description: courseObj.description || "",
+          difficulty: courseObj.difficulty || "Beginner",
+          duration: courseObj.duration || "10 hours",
+          category: courseObj.category || "General",
+          modules: (courseObj.modules || []).map((m: any) => ({
+            id: m.id,
+            title: m.title,
+            description: m.description || "",
+            enabled: m.enabled !== false,
+            lessons: (m.lessons || []).map((l: any) => ({
+              id: l.id,
+              title: l.title,
+              duration: l.duration || "15 mins",
+              type: l.type || "video",
+              enabled: l.enabled !== false
+            }))
+          }))
+        });
+
+        const payload = {
+          title: courseObj.title,
+          description: serializedDescription,
+          status: 'Published'
+        };
+
+        const { data: newCourse, error } = await supabase.from('courses').insert(payload).select('id').single();
+        if (error) {
+          console.warn("DB Course creation failed:", error.message);
+        } else if (newCourse) {
+          actualCourseId = newCourse.id;
+        }
+      }
+
+      // 2. Check if user is already enrolled in this course in DB (by course_id or course title)
+      const { data: existingEnrollments } = await supabase
+        .from('enrollments')
+        .select('*, course:courses(*)')
+        .eq('student_id', userId)
+        .eq('status', 'Active');
+
+      const existingEnr = (existingEnrollments || []).find((e: any) =>
+        e.course_id === actualCourseId ||
+        e.course?.id === actualCourseId ||
+        (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
+      );
+
+      if (existingEnr) {
+        if (!isOverride) {
+          setEnrollingCourseId(null);
+          alert("You are already enrolled in " + courseObj.title + "!");
+          return;
+        } else {
+          // If override, delete previous enrollment first
+          await supabase.from('enrollments').delete().eq('id', existingEnr.id);
+        }
+      }
+
+      // Handle Override cleanup for local storage
+      if (isOverride) {
+        localStorage.removeItem(`course_progress_${courseObj.title}`);
+        const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+        if (localEnrollmentsStr) {
+          const localEnrollments = JSON.parse(localEnrollmentsStr);
+          const filtered = localEnrollments.filter((le: any) => le.course.title !== courseObj.title);
+          localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(filtered));
+        }
+      }
+
+      // 3. Insert enrollment payload into DB
+      const enrollmentPayload = {
+        student_id: userId,
+        course_id: actualCourseId,
+        status: 'Active'
       };
 
-      const { data: newCourse, error } = await supabase.from('courses').insert(payload).select().single();
-      if (error) {
-        console.warn("DB Course creation failed, falling back to local mode:", error.message);
-        actualCourseId = `local-course-${Date.now()}`;
-      } else {
-        actualCourseId = newCourse.id;
-      }
-    } else if (!isUUID) {
-      actualCourseId = `local-course-${Date.now()}`;
-    }
+      const { error: enrollErr } = await supabase
+        .from('enrollments')
+        .insert(enrollmentPayload);
 
-    // Handle Override cleanup
-    if (isOverride) {
-      // Clear local progress
-      localStorage.removeItem(`course_progress_${courseObj.title}`);
-      
-      // Remove from local enrollments
-      const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
-      if (localEnrollmentsStr) {
-        const localEnrollments = JSON.parse(localEnrollmentsStr);
-        const filtered = localEnrollments.filter((le: any) => le.course.title !== courseObj.title);
-        localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(filtered));
-      }
-
-      // Delete from DB
-      if (userId !== "guest-student-id") {
-        await supabase.from('enrollments')
-          .delete()
-          .eq('student_id', userId)
-          .eq('course_id', actualCourseId);
-      }
-    } else {
-      // Standard check if already enrolled
-      const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
-      const localEnrollments = localEnrollmentsStr ? JSON.parse(localEnrollmentsStr) : [];
-      
-      const isAlreadyLocal = localEnrollments.some((le: any) => le.course.title === courseObj.title);
-      if (isAlreadyLocal) {
+      if (enrollErr) {
+        console.error("DB Enrollment insert error:", enrollErr.message, enrollErr);
+        alert("Failed to save enrollment to database: " + enrollErr.message);
         setEnrollingCourseId(null);
-        alert("You are already enrolled in this course! Use the override option if you want to restart.");
         return;
       }
 
-      if (userId !== "guest-student-id") {
-        const { data: existing } = await supabase.from('enrollments')
-          .select('*')
-          .eq('student_id', userId)
-          .eq('course_id', actualCourseId)
-          .eq('status', 'Active');
-
-        if (existing && existing.length > 0) {
-          setEnrollingCourseId(null);
-          alert("You are already enrolled in this course! Use the override option if you want to restart.");
-          return;
-        }
-      }
-    }
-
-    const enrollmentPayload = {
-      student_id: userId,
-      course_id: actualCourseId,
-      status: 'Active',
-      progress: []
-    };
-
-    let enrollData: any = null;
-    let enrollErr: any = true;
-    let dbEnrollData: any = null;
-
-    if (userId !== "guest-student-id") {
-      const res = await supabase.from('enrollments')
-        .insert(enrollmentPayload)
-        .select('*, course:courses(*)')
-        .single();
-      dbEnrollData = res.data;
-      enrollErr = res.error;
-    }
-
-    if (enrollErr) {
-      if (enrollErr !== true) {
-        console.warn("DB Enrollment failed, completing locally:", enrollErr.message);
-      }
-      // Fallback: Create mock enrollment object
-      enrollData = {
+      // 4. Re-fetch all enrollments directly from DB so database is single source of truth
+      await fetchUserEnrollments(userId);
+    } else {
+      // Guest mode fallback
+      const mockEnr = {
         id: `local-enr-${Date.now()}`,
         student_id: userId,
         course_id: actualCourseId,
@@ -2394,30 +2488,21 @@ export default function OnboardingFlow() {
           modules: courseObj.modules || []
         }
       };
-      
-      // Save to localStorage
+
       const existingLocalStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
       const existingLocal = existingLocalStr ? JSON.parse(existingLocalStr) : [];
-      const updatedLocal = [enrollData, ...existingLocal];
+      const updatedLocal = [mockEnr, ...existingLocal];
       localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(updatedLocal));
-    } else {
-      enrollData = dbEnrollData;
+
+      setStudentEnrollments(updatedLocal);
+      setEnrollmentId(mockEnr.id);
+      setEnrolledCourse(mockEnr.course);
     }
 
     setEnrollingCourseId(null);
     alert("Successfully enrolled in " + courseObj.title + "!");
     setIsCourseCatalogOpen(false);
-    
-    if (enrollData) {
-      setStudentEnrollments(prev => {
-        const exists = prev.some(e => e.id === enrollData.id);
-        return exists ? prev : [enrollData, ...prev];
-      });
-      setEnrollmentId(enrollData.id);
-      setEnrolledCourse(enrollData.course);
-      setCourseProgress(enrollData.progress || []);
-      setState("COURSE_DETAILS"); // Redirect to details immediately
-    }
+    setState("COURSE_DETAILS");
   };
 
   const handleSignIn = async () => {
@@ -5270,7 +5355,7 @@ export default function OnboardingFlow() {
                   isOpen={isCourseCatalogOpen}
                   onClose={() => setIsCourseCatalogOpen(false)}
                   courses={availableCourses}
-                  enrolledCourseIds={new Set(studentEnrollments.map(e => e.course?.id || e.course_id || e.course?.title))}
+                  enrolledCourseIds={enrolledIdsSet}
                   onEnrollCourse={(course) => handleStudentEnrollCourse(course)}
                   enrollingCourseId={enrollingCourseId}
                 />

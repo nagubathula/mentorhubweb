@@ -356,7 +356,10 @@ export function ExploreLearningPathsModal({
                   {/* Course Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {displayCourses.map((course: any) => {
-                      const isEnrolled = enrolledSet.has(course.id) || enrolledSet.has(course.title);
+                      const isEnrolled = enrolledSet.has(course.id) ||
+                                         enrolledSet.has(course.title) ||
+                                         (course.title && enrolledSet.has(course.title.toLowerCase())) ||
+                                         (course.index_code && enrolledSet.has(course.index_code));
                       const modulesCount = course.modules?.length || course.content?.length || 0;
                       const lessonsCount =
                         course.modules?.reduce((acc: number, m: any) => {
