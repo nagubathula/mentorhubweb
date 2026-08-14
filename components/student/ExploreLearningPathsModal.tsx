@@ -371,8 +371,8 @@ export function ExploreLearningPathsModal({
                           return acc + (m.lessons?.length || m.topics?.length || 0);
                         }, 0) || 0;
 
-                      const isEnrollingThis = enrollingCourseId === course.id;
-                      const isUnenrollingThis = unenrollingCourseId === course.id;
+                      const isEnrollingThis = enrollingCourseId === course.id || enrollingCourseId === course.title;
+                      const isUnenrollingThis = unenrollingCourseId === course.id || unenrollingCourseId === course.title;
 
                       return (
                         <div

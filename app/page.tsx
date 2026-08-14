@@ -2381,178 +2381,185 @@ export default function OnboardingFlow() {
       if (!confirm) return;
     }
 
-    setEnrollingCourseId(courseObj.id);
+    setEnrollingCourseId(courseObj.id || courseObj.title);
 
     try {
       const { data: { session } } = await withTimeout(
         supabase.auth.getSession(),
-        7000,
+        5000,
         "Authentication check timed out. Please try again."
       );
 
       const userId = session?.user?.id;
-      if (!userId) {
-        alert("You must be signed in to enroll in courses.");
-        return;
-      }
 
       let actualCourseId = courseObj.id;
       const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(actualCourseId);
 
-      // 1. Ensure course record exists in DB
-      let existingCourseId: string | null = isUUID ? actualCourseId : null;
-      if (!existingCourseId) {
-        const { data: existingCourse } = await withTimeout(
-          supabase.from('courses').select('id').eq('title', courseObj.title).maybeSingle(),
-          7000,
-          "Course lookup timed out."
-        );
+      if (userId) {
+        // Authenticated Supabase User Flow
+        let existingCourseId: string | null = isUUID ? actualCourseId : null;
+        if (!existingCourseId) {
+          const { data: existingCourse } = await withTimeout(
+            supabase.from('courses').select('id').ilike('title', courseObj.title).maybeSingle(),
+            5000,
+            "Course lookup timed out."
+          );
 
-        if (existingCourse) {
-          existingCourseId = existingCourse.id;
+          if (existingCourse) {
+            existingCourseId = existingCourse.id;
+          }
         }
-      }
 
-      if (existingCourseId) {
-        actualCourseId = existingCourseId;
-      } else {
-        // Create new course record in DB if catalog course is being enrolled
-        const serializedDescription = JSON.stringify({
-          description: courseObj.description || "",
-          difficulty: courseObj.difficulty || "Beginner",
-          duration: courseObj.duration || "10 hours",
-          category: courseObj.category || "General",
-          modules: (courseObj.modules || []).map((m: any) => ({
-            id: m.id,
-            title: m.title,
-            description: m.description || "",
-            enabled: m.enabled !== false,
-            lessons: (m.lessons || []).map((l: any) => ({
-              id: l.id,
-              title: l.title,
-              duration: l.duration || "15 mins",
-              type: l.type || "video",
-              enabled: l.enabled !== false
+        if (existingCourseId) {
+          actualCourseId = existingCourseId;
+        } else {
+          // Create new course record in DB if catalog course is being enrolled
+          const serializedDescription = JSON.stringify({
+            description: courseObj.description || "",
+            difficulty: courseObj.difficulty || "Beginner",
+            duration: courseObj.duration || "10 hours",
+            category: courseObj.category || "General",
+            modules: (courseObj.modules || []).map((m: any) => ({
+              id: m.id,
+              title: m.title,
+              description: m.description || "",
+              enabled: m.enabled !== false,
+              lessons: (m.lessons || []).map((l: any) => ({
+                id: l.id,
+                title: l.title,
+                duration: l.duration || "15 mins",
+                type: l.type || "video",
+                enabled: l.enabled !== false
+              }))
             }))
-          }))
-        });
+          });
 
-        const payload = {
-          title: courseObj.title,
-          description: serializedDescription,
-          status: 'Published'
-        };
+          const payload = {
+            title: courseObj.title,
+            description: serializedDescription,
+            status: 'Published'
+          };
 
-        const { data: newCourse, error: createCourseErr } = await withTimeout(
-          supabase.from('courses').insert(payload).select('id').single(),
-          7000,
-          "Creating course record timed out."
+          const { data: newCourse, error: createCourseErr } = await withTimeout(
+            supabase.from('courses').insert(payload).select('id').single(),
+            6000,
+            "Creating course record timed out."
+          );
+
+          if (createCourseErr) {
+            console.warn("DB Course creation warning:", createCourseErr.message);
+          } else if (newCourse) {
+            actualCourseId = newCourse.id;
+          }
+        }
+
+        // Check if user is already enrolled in DB
+        const { data: existingEnrollments } = await withTimeout(
+          supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId).eq('status', 'Active'),
+          5000,
+          "Checking existing enrollments timed out."
         );
 
-        if (createCourseErr) {
-          console.warn("DB Course creation warning:", createCourseErr.message);
-        } else if (newCourse) {
-          actualCourseId = newCourse.id;
-        }
-      }
+        const existingEnr = (existingEnrollments || []).find((e: any) =>
+          e.course_id === actualCourseId ||
+          e.course?.id === actualCourseId ||
+          (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
+        );
 
-      // 2. Check if user is already enrolled in this course in DB (prevent duplicates)
-      const { data: existingEnrollments } = await withTimeout(
-        supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId).eq('status', 'Active'),
-        7000,
-        "Checking existing enrollments timed out."
-      );
-
-      const existingEnr = (existingEnrollments || []).find((e: any) =>
-        e.course_id === actualCourseId ||
-        e.course?.id === actualCourseId ||
-        (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
-      );
-
-      if (existingEnr) {
-        if (!isOverride) {
+        if (existingEnr && !isOverride) {
           alert("You are already enrolled in " + courseObj.title + "!");
           return;
-        } else {
-          // Override: delete existing enrollment record
+        } else if (existingEnr && isOverride) {
           await withTimeout(
             supabase.from('enrollments').delete().eq('id', existingEnr.id),
-            7000,
+            6000,
             "Resetting previous enrollment timed out."
           );
         }
-      }
 
-      // Cleanup local storage override
-      if (isOverride) {
-        localStorage.removeItem(`course_progress_${courseObj.title}`);
-        const localEnrollmentsStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
-        if (localEnrollmentsStr) {
-          const localEnrollments = JSON.parse(localEnrollmentsStr);
-          const filtered = localEnrollments.filter((le: any) => le.course.title !== courseObj.title);
-          localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(filtered));
+        // Insert enrollment record into DB
+        const enrollmentPayload = {
+          student_id: userId,
+          course_id: actualCourseId,
+          status: 'Active'
+        };
+
+        const { data: insertedEnr, error: enrollErr } = await withTimeout(
+          supabase.from('enrollments').insert(enrollmentPayload).select('*, course:courses(*)').single(),
+          8000,
+          "Enrollment is taking longer than expected. Please try again."
+        );
+
+        if (enrollErr && enrollErr.code !== '23505') {
+          console.error("DB Enrollment insert error:", enrollErr.message, enrollErr);
+          alert("Enrollment failed: " + enrollErr.message);
+          return;
         }
-      }
 
-      // 3. Insert enrollment record into DB
-      const enrollmentPayload = {
-        student_id: userId,
-        course_id: actualCourseId,
-        status: 'Active'
-      };
-
-      const { data: insertedEnr, error: enrollErr } = await withTimeout(
-        supabase.from('enrollments').insert(enrollmentPayload).select('*, course:courses(*)').single(),
-        9000,
-        "Enrollment is taking longer than expected. Please try again."
-      );
-
-      if (enrollErr) {
-        console.error("DB Enrollment insert error:", enrollErr.message, enrollErr);
-        alert("Enrollment failed: " + enrollErr.message);
-        return;
-      }
-
-      // Parse full course object
-      let fullCourse = insertedEnr?.course || { ...courseObj, id: actualCourseId };
-      if (fullCourse.description && typeof fullCourse.description === 'string' && fullCourse.description.trim().startsWith('{')) {
-        try {
-          const parsed = JSON.parse(fullCourse.description);
-          if (parsed && typeof parsed === 'object') {
-            fullCourse = {
-              ...fullCourse,
-              description: parsed.description || "",
-              difficulty: parsed.difficulty || "Beginner",
-              duration: parsed.duration || "10 hours",
-              category: parsed.category || "General",
-              modules: parsed.modules || parsed.content || []
-            };
+        let fullCourse = insertedEnr?.course || { ...courseObj, id: actualCourseId };
+        if (fullCourse.description && typeof fullCourse.description === 'string' && fullCourse.description.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(fullCourse.description);
+            if (parsed && typeof parsed === 'object') {
+              fullCourse = {
+                ...fullCourse,
+                description: parsed.description || "",
+                difficulty: parsed.difficulty || "Beginner",
+                duration: parsed.duration || "10 hours",
+                category: parsed.category || "General",
+                modules: parsed.modules || parsed.content || []
+              };
+            }
+          } catch (e) {
+            console.warn("Failed to parse course description JSON", e);
           }
-        } catch (e) {
-          console.warn("Failed to parse course description JSON", e);
         }
+
+        const newEnrObj = {
+          id: insertedEnr?.id || `enr-${Date.now()}`,
+          student_id: userId,
+          course_id: actualCourseId,
+          status: 'Active',
+          enrolled_at: insertedEnr?.enrolled_at || new Date().toISOString(),
+          course: fullCourse
+        };
+
+        setStudentEnrollments(prev => {
+          const exists = prev.some(e => e.course_id === actualCourseId || e.course?.id === actualCourseId || (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase()));
+          return exists ? prev : [newEnrObj, ...prev];
+        });
+
+        setEnrollmentId(newEnrObj.id);
+        setEnrolledCourse(newEnrObj.course);
+
+        // Async sync in background
+        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
+      } else {
+        // Guest Mode Fallback
+        const guestUserId = "guest-student-id";
+        const mockEnr = {
+          id: `local-enr-${Date.now()}`,
+          student_id: guestUserId,
+          course_id: actualCourseId,
+          status: 'Active',
+          progress: [],
+          enrolled_at: new Date().toISOString(),
+          course: {
+            ...courseObj,
+            id: actualCourseId,
+            modules: courseObj.modules || []
+          }
+        };
+
+        const existingLocalStr = localStorage.getItem(LOCAL_ENROLLMENTS_KEY);
+        const existingLocal = existingLocalStr ? JSON.parse(existingLocalStr) : [];
+        const updatedLocal = [mockEnr, ...existingLocal.filter((e: any) => e.course?.title !== courseObj.title)];
+        localStorage.setItem(LOCAL_ENROLLMENTS_KEY, JSON.stringify(updatedLocal));
+
+        setStudentEnrollments(updatedLocal);
+        setEnrollmentId(mockEnr.id);
+        setEnrolledCourse(mockEnr.course);
       }
-
-      const newEnrObj = {
-        id: insertedEnr?.id || `enr-${Date.now()}`,
-        student_id: userId,
-        course_id: actualCourseId,
-        status: 'Active',
-        enrolled_at: insertedEnr?.enrolled_at || new Date().toISOString(),
-        course: fullCourse
-      };
-
-      // Immediately update React state so UI turns to ENROLLED
-      setStudentEnrollments(prev => {
-        const exists = prev.some(e => e.course_id === actualCourseId || e.course?.id === actualCourseId || (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase()));
-        return exists ? prev : [newEnrObj, ...prev];
-      });
-
-      setEnrollmentId(newEnrObj.id);
-      setEnrolledCourse(newEnrObj.course);
-
-      // Async sync in background
-      fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
 
       alert("Successfully enrolled in " + courseObj.title + "!");
       setIsCourseCatalogOpen(false);
@@ -2562,7 +2569,6 @@ export default function OnboardingFlow() {
       const msg = err?.message || "Enrollment is taking longer than expected. Please try again.";
       alert(msg);
     } finally {
-      // Loading state reset guarantee
       setEnrollingCourseId(null);
     }
   };
@@ -2575,44 +2581,42 @@ export default function OnboardingFlow() {
       return;
     }
 
-    setUnenrollingCourseId(courseObj.id);
+    setUnenrollingCourseId(courseObj.id || courseObj.title);
 
     try {
       const { data: { session } } = await withTimeout(
         supabase.auth.getSession(),
-        7000,
+        5000,
         "Authentication check timed out. Please try again."
       );
 
       const userId = session?.user?.id;
-      if (!userId) {
-        alert("You must be signed in to perform this action.");
-        return;
-      }
 
-      const { data: existingEnrollments } = await withTimeout(
-        supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId),
-        7000,
-        "Unenrollment check timed out."
-      );
-
-      const targetEnr = (existingEnrollments || []).find((e: any) =>
-        e.course_id === courseObj.id ||
-        e.course?.id === courseObj.id ||
-        (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
-      );
-
-      if (targetEnr) {
-        const { error: deleteErr } = await withTimeout(
-          supabase.from('enrollments').delete().eq('id', targetEnr.id),
-          9000,
-          "Unenrollment request timed out. Please try again."
+      if (userId) {
+        const { data: existingEnrollments } = await withTimeout(
+          supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId),
+          5000,
+          "Unenrollment check timed out."
         );
 
-        if (deleteErr) {
-          console.error("Failed to delete enrollment from database:", deleteErr.message);
-          alert("Failed to unenroll: " + deleteErr.message);
-          return;
+        const targetEnr = (existingEnrollments || []).find((e: any) =>
+          e.course_id === courseObj.id ||
+          e.course?.id === courseObj.id ||
+          (e.course?.title && e.course.title.toLowerCase() === courseObj.title.toLowerCase())
+        );
+
+        if (targetEnr) {
+          const { error: deleteErr } = await withTimeout(
+            supabase.from('enrollments').delete().eq('id', targetEnr.id),
+            7000,
+            "Unenrollment request timed out. Please try again."
+          );
+
+          if (deleteErr) {
+            console.error("Failed to delete enrollment from database:", deleteErr.message);
+            alert("Failed to unenroll: " + deleteErr.message);
+            return;
+          }
         }
       }
 
@@ -2645,14 +2649,14 @@ export default function OnboardingFlow() {
         setCourseProgress([]);
       }
 
-      // Async sync in background
-      fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
+      if (userId) {
+        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
+      }
     } catch (e: any) {
       console.error("Unenroll exception:", e);
       const msg = e?.message || "Unenrollment request timed out. Please try again.";
       alert("Failed to unenroll: " + msg);
     } finally {
-      // Loading state reset guarantee
       setUnenrollingCourseId(null);
     }
   };
