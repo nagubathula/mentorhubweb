@@ -353,6 +353,7 @@ export default function OnboardingFlow() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isRemoveAvatarModalOpen, setIsRemoveAvatarModalOpen] = useState(false);
+  const [isPreviewAvatarOpen, setIsPreviewAvatarOpen] = useState(false);
   const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -5115,14 +5116,26 @@ export default function OnboardingFlow() {
                     <div className="flex flex-col items-center gap-3">
                       <div className="relative group">
                         {avatarUrl ? (
-                          <div 
-                            className="w-[92px] h-[92px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg transition-transform duration-300"
+                          <button 
+                            type="button"
+                            onClick={() => setIsPreviewAvatarOpen(true)}
+                            className="w-[92px] h-[92px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95 cursor-pointer block relative group overflow-hidden"
                             style={{ backgroundImage: `url(${avatarUrl})` }}
-                          ></div>
+                            title="Tap to view full profile picture"
+                          >
+                            <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold tracking-wider uppercase backdrop-blur-[1px]">
+                              <Eye className="w-4 h-4 mr-1" /> View
+                            </div>
+                          </button>
                         ) : (
-                          <div className="w-[92px] h-[92px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
+                          <button 
+                            type="button"
+                            onClick={() => avatarInputRef.current?.click()}
+                            className="w-[92px] h-[92px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg hover:scale-105 active:scale-95 cursor-pointer transition-transform"
+                            title="Upload profile picture"
+                          >
                             <User className="w-11 h-11 stroke-[1.5]" />
-                          </div>
+                          </button>
                         )}
                         <input
                           type="file"
@@ -6558,6 +6571,71 @@ export default function OnboardingFlow() {
               </div>
             )}
           </AnimatePresence>
+
+      {/* Enlarged Profile Picture Preview Lightbox Modal */}
+      {isPreviewAvatarOpen && avatarUrl && (
+        <div 
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+          onClick={() => setIsPreviewAvatarOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 rounded-[2.5rem] p-6 max-w-sm w-full border border-slate-800 shadow-2xl flex flex-col items-center gap-5 text-center relative animate-in zoom-in-95 duration-200 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={() => setIsPreviewAvatarOpen(false)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Close Preview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Large Image Preview */}
+            <div className="relative mt-2">
+              <div 
+                className="w-64 h-64 md:w-72 md:h-72 rounded-full border-4 border-white/20 bg-cover bg-center shadow-2xl"
+                style={{ backgroundImage: `url(${avatarUrl})` }}
+              />
+            </div>
+
+            {/* User Info */}
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white tracking-tight">{name || "Student"}</h3>
+              <p className="text-xs text-slate-400 font-medium">{email || "student@kindmentor.org"}</p>
+            </div>
+
+            {/* Action Controls */}
+            <div className="flex items-center gap-2.5 w-full pt-2 border-t border-slate-800/80">
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  avatarInputRef.current?.click();
+                }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="flex-1 h-11 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                <Camera className="w-4 h-4 mr-1.5" />
+                Change Photo
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  setIsRemoveAvatarModalOpen(true);
+                }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="flex-1 h-11 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Remove Profile Picture Confirmation Dialog */}
       {isRemoveAvatarModalOpen && (

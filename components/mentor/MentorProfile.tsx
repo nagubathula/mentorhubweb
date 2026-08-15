@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight } from "lucide-react";
+import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight, X, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
@@ -12,6 +12,7 @@ const supabase = createClient();
 
 export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => void; onSwitchRole?: () => void }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPreviewAvatarOpen, setIsPreviewAvatarOpen] = useState(false);
   const [profile, setProfile] = useState<any>({
     name: "Vikram Patel",
     email: "vikram.p@kindmentor.com",
@@ -115,15 +116,23 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl -translate-y-20 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-28 h-28 bg-emerald-500/5 rounded-full blur-2xl translate-y-14 -translate-x-14"></div>
 
-        <div className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
-          {profile.avatar ? (
+        {profile.avatar ? (
+          <button
+            type="button"
+            onClick={() => setIsPreviewAvatarOpen(true)}
+            className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 hover:scale-105 transition-transform duration-500 flex items-center justify-center cursor-pointer group/avatar"
+            title="Tap to view full profile picture"
+          >
             <img src={profile.avatar} className="w-full h-full object-cover" alt={profile.name}/>
-          ) : (
-            <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
-              <User className="w-12 h-12 stroke-[1.5]" />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold tracking-wider uppercase backdrop-blur-[1px]">
+              <Eye className="w-4 h-4 mr-1" /> View
             </div>
-          )}
-        </div>
+          </button>
+        ) : (
+          <div className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 flex items-center justify-center text-slate-300">
+            <User className="w-12 h-12 stroke-[1.5]" />
+          </div>
+        )}
         <h3 className="text-xl font-medium tracking-tight text-slate-900 mt-6 relative z-10">{profile.name}</h3>
         <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2 relative z-10">{profile.role}</p>
 
@@ -232,6 +241,58 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
         onProfileUpdate={fetchMentorProfile}
         onSignOut={onSignOut}
       />
+
+      {/* Enlarged Photo Preview Lightbox Modal */}
+      {isPreviewAvatarOpen && profile.avatar && (
+        <div 
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+          onClick={() => setIsPreviewAvatarOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 rounded-[2.5rem] p-6 max-w-sm w-full border border-slate-800 shadow-2xl flex flex-col items-center gap-5 text-center relative animate-in zoom-in-95 duration-200 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={() => setIsPreviewAvatarOpen(false)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Close Preview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Large Image Preview */}
+            <div className="relative mt-2">
+              <img 
+                src={profile.avatar}
+                alt={profile.name}
+                className="w-64 h-64 md:w-72 md:h-72 rounded-[2.5rem] border-4 border-white/20 shadow-2xl object-cover"
+              />
+            </div>
+
+            {/* User Info */}
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white tracking-tight">{profile.name}</h3>
+              <p className="text-xs text-slate-400 font-medium">{profile.role}</p>
+            </div>
+
+            {/* Action Controls */}
+            <div className="flex items-center gap-2.5 w-full pt-2 border-t border-slate-800/80">
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+                className="flex-1 h-11 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                Edit Profile Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
