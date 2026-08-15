@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, AlertCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { getSupabaseCredentials } from "@/lib/supabase/env";
 const supabase = createClient();
@@ -113,16 +113,6 @@ const getCookie = (name: string): string | null => {
 };
 
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
-
-const withTimeout = <T = any,>(promise: any, ms: number = 9000, errorMessage = "Request timed out"): Promise<T> => {
-  let timer: any;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(errorMessage)), ms);
-  });
-  return Promise.race([Promise.resolve(promise as Promise<T>), timeoutPromise]).finally(() => {
-    if (timer) clearTimeout(timer);
-  });
-};
 
 const AESTHETIC_GRADIENTS = [
   "from-slate-900 to-slate-800",
@@ -259,6 +249,33 @@ const DEFAULT_MENTOR_QUIZ_STEPS: QuizStepData[] = [
 
 export default function OnboardingFlow() {
   const [authInitializing, setAuthInitializing] = useState(true);
+  const authInitializingRef = useRef(authInitializing);
+  useEffect(() => {
+    authInitializingRef.current = authInitializing;
+  }, [authInitializing]);
+
+  const [toastNotice, setToastNotice] = useState<{ message: string; type: 'success' | 'error' | 'info'; id: number } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    const id = Date.now();
+    setToastNotice({ message, type, id });
+    setTimeout(() => {
+      setToastNotice(prev => (prev?.id === id ? null : prev));
+    }, 4000);
+  }, []);
+
+  const getOrWaitAuthSession = useCallback(async (maxWaitMs = 10000) => {
+    const startTime = Date.now();
+    while (authInitializingRef.current && (Date.now() - startTime < maxWaitMs)) {
+      await new Promise(res => setTimeout(res, 100));
+    }
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("Supabase getSession error:", error);
+    }
+    return session;
+  }, []);
+
   const [state, setState] = useState<FlowState>("WELCOME");
   const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS", "AI_ASSISTANT"].includes(state);
   const [authEmail, setAuthEmail] = useState("");
@@ -1163,16 +1180,12 @@ export default function OnboardingFlow() {
     }
 
     try {
-      const { data: enrollments, error } = await withTimeout(
-        supabase
-          .from('enrollments')
-          .select('*, course:courses(*)')
-          .eq('student_id', targetUserId)
-          .eq('status', 'Active')
-          .order('enrolled_at', { ascending: false }),
-        8000,
-        "Fetching enrollments timed out."
-      );
+      const { data: enrollments, error } = await supabase
+        .from('enrollments')
+        .select('*, course:courses(*)')
+        .eq('student_id', targetUserId)
+        .eq('status', 'Active')
+        .order('enrolled_at', { ascending: false });
 
       if (error) {
         console.error("Failed to fetch enrollments from database:", error.message, error);
@@ -2371,24 +2384,23 @@ export default function OnboardingFlow() {
   const handleStudentEnrollCourse = async (courseObj: any, isOverride: boolean = false) => {
     if (!courseObj) return;
 
-    if (authInitializing) {
-      alert("Restoring session... Please wait a moment and try again.");
-      return;
-    }
-
     if (isOverride) {
       const confirm = window.confirm(`Are you sure you want to override "${courseObj.title}"? This will reset all your progress for this course.`);
       if (!confirm) return;
     }
 
-    setEnrollingCourseId(courseObj.id || courseObj.title);
+    const enrollKey = courseObj.id || courseObj.title;
+    setEnrollingCourseId(enrollKey);
 
     try {
-      const { data: { session } } = await withTimeout(
-        supabase.auth.getSession(),
-        5000,
-        "Authentication check timed out. Please try again."
-      );
+      // State-driven auth resolution: wait if auth is currently initializing on mount
+      let session = null;
+      if (authInitializingRef.current) {
+        session = await getOrWaitAuthSession();
+      } else {
+        const { data } = await supabase.auth.getSession();
+        session = data.session;
+      }
 
       const userId = session?.user?.id;
 
@@ -2399,12 +2411,15 @@ export default function OnboardingFlow() {
         // Authenticated Supabase User Flow
         let existingCourseId: string | null = isUUID ? actualCourseId : null;
         if (!existingCourseId) {
-          const { data: existingCourse } = await withTimeout(
-            supabase.from('courses').select('id').ilike('title', courseObj.title).maybeSingle(),
-            5000,
-            "Course lookup timed out."
-          );
+          const { data: existingCourse, error: courseFetchErr } = await supabase
+            .from('courses')
+            .select('id')
+            .ilike('title', courseObj.title)
+            .maybeSingle();
 
+          if (courseFetchErr) {
+            console.warn("Error looking up course by title:", courseFetchErr);
+          }
           if (existingCourse) {
             existingCourseId = existingCourse.id;
           }
@@ -2440,11 +2455,11 @@ export default function OnboardingFlow() {
             status: 'Published'
           };
 
-          const { data: newCourse, error: createCourseErr } = await withTimeout(
-            supabase.from('courses').insert(payload).select('id').single(),
-            6000,
-            "Creating course record timed out."
-          );
+          const { data: newCourse, error: createCourseErr } = await supabase
+            .from('courses')
+            .insert(payload)
+            .select('id')
+            .single();
 
           if (createCourseErr) {
             console.warn("DB Course creation warning:", createCourseErr.message);
@@ -2454,11 +2469,15 @@ export default function OnboardingFlow() {
         }
 
         // Check if user is already enrolled in DB
-        const { data: existingEnrollments } = await withTimeout(
-          supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId).eq('status', 'Active'),
-          5000,
-          "Checking existing enrollments timed out."
-        );
+        const { data: existingEnrollments, error: existingEnrErr } = await supabase
+          .from('enrollments')
+          .select('*, course:courses(*)')
+          .eq('student_id', userId)
+          .eq('status', 'Active');
+
+        if (existingEnrErr) {
+          console.warn("Error checking existing enrollments:", existingEnrErr);
+        }
 
         const existingEnr = (existingEnrollments || []).find((e: any) =>
           e.course_id === actualCourseId ||
@@ -2467,14 +2486,10 @@ export default function OnboardingFlow() {
         );
 
         if (existingEnr && !isOverride) {
-          alert("You are already enrolled in " + courseObj.title + "!");
+          showToast("You are already enrolled in " + courseObj.title + "!", "info");
           return;
         } else if (existingEnr && isOverride) {
-          await withTimeout(
-            supabase.from('enrollments').delete().eq('id', existingEnr.id),
-            6000,
-            "Resetting previous enrollment timed out."
-          );
+          await supabase.from('enrollments').delete().eq('id', existingEnr.id);
         }
 
         // Insert enrollment record into DB
@@ -2484,15 +2499,15 @@ export default function OnboardingFlow() {
           status: 'Active'
         };
 
-        const { data: insertedEnr, error: enrollErr } = await withTimeout(
-          supabase.from('enrollments').insert(enrollmentPayload).select('*, course:courses(*)').single(),
-          8000,
-          "Enrollment is taking longer than expected. Please try again."
-        );
+        const { data: insertedEnr, error: enrollErr } = await supabase
+          .from('enrollments')
+          .insert(enrollmentPayload)
+          .select('*, course:courses(*)')
+          .single();
 
         if (enrollErr && enrollErr.code !== '23505') {
-          console.error("DB Enrollment insert error:", enrollErr.message, enrollErr);
-          alert("Enrollment failed: " + enrollErr.message);
+          console.error("Enrollment error:", enrollErr);
+          showToast("Enrollment failed: " + enrollErr.message, "error");
           return;
         }
 
@@ -2533,7 +2548,11 @@ export default function OnboardingFlow() {
         setEnrolledCourse(newEnrObj.course);
 
         // Async sync in background
-        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
+        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments warning:", e));
+
+        showToast("Successfully enrolled in " + courseObj.title + "!", "success");
+        setIsCourseCatalogOpen(false);
+        setState("COURSE_DETAILS");
       } else {
         // Guest Mode Fallback
         const guestUserId = "guest-student-id";
@@ -2559,16 +2578,16 @@ export default function OnboardingFlow() {
         setStudentEnrollments(updatedLocal);
         setEnrollmentId(mockEnr.id);
         setEnrolledCourse(mockEnr.course);
-      }
 
-      alert("Successfully enrolled in " + courseObj.title + "!");
-      setIsCourseCatalogOpen(false);
-      setState("COURSE_DETAILS");
+        showToast("Successfully enrolled in " + courseObj.title + "!", "success");
+        setIsCourseCatalogOpen(false);
+        setState("COURSE_DETAILS");
+      }
     } catch (err: any) {
-      console.error("Enrollment exception:", err);
-      const msg = err?.message || "Enrollment is taking longer than expected. Please try again.";
-      alert(msg);
+      console.error("Enrollment error:", err);
+      showToast("Enrollment failed: " + (err?.message || "Unexpected error occurred"), "error");
     } finally {
+      // ALWAYS reset loading state
       setEnrollingCourseId(null);
     }
   };
@@ -2576,28 +2595,29 @@ export default function OnboardingFlow() {
   const handleStudentUnenrollCourse = async (courseObj: any) => {
     if (!courseObj) return;
 
-    if (authInitializing) {
-      alert("Restoring session... Please wait a moment and try again.");
-      return;
-    }
-
-    setUnenrollingCourseId(courseObj.id || courseObj.title);
+    const unenrollKey = courseObj.id || courseObj.title;
+    setUnenrollingCourseId(unenrollKey);
 
     try {
-      const { data: { session } } = await withTimeout(
-        supabase.auth.getSession(),
-        5000,
-        "Authentication check timed out. Please try again."
-      );
+      let session = null;
+      if (authInitializingRef.current) {
+        session = await getOrWaitAuthSession();
+      } else {
+        const { data } = await supabase.auth.getSession();
+        session = data.session;
+      }
 
       const userId = session?.user?.id;
 
       if (userId) {
-        const { data: existingEnrollments } = await withTimeout(
-          supabase.from('enrollments').select('*, course:courses(*)').eq('student_id', userId),
-          5000,
-          "Unenrollment check timed out."
-        );
+        const { data: existingEnrollments, error: fetchErr } = await supabase
+          .from('enrollments')
+          .select('*, course:courses(*)')
+          .eq('student_id', userId);
+
+        if (fetchErr) {
+          console.error("Unenroll fetch error:", fetchErr);
+        }
 
         const targetEnr = (existingEnrollments || []).find((e: any) =>
           e.course_id === courseObj.id ||
@@ -2606,15 +2626,14 @@ export default function OnboardingFlow() {
         );
 
         if (targetEnr) {
-          const { error: deleteErr } = await withTimeout(
-            supabase.from('enrollments').delete().eq('id', targetEnr.id),
-            7000,
-            "Unenrollment request timed out. Please try again."
-          );
+          const { error: deleteErr } = await supabase
+            .from('enrollments')
+            .delete()
+            .eq('id', targetEnr.id);
 
           if (deleteErr) {
-            console.error("Failed to delete enrollment from database:", deleteErr.message);
-            alert("Failed to unenroll: " + deleteErr.message);
+            console.error("Unenroll error:", deleteErr);
+            showToast("Failed to unenroll: " + deleteErr.message, "error");
             return;
           }
         }
@@ -2650,13 +2669,15 @@ export default function OnboardingFlow() {
       }
 
       if (userId) {
-        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments error:", e));
+        fetchUserEnrollments(userId).catch(e => console.warn("Background fetchUserEnrollments warning:", e));
       }
+
+      showToast("Unenrolled from " + courseObj.title, "info");
     } catch (e: any) {
-      console.error("Unenroll exception:", e);
-      const msg = e?.message || "Unenrollment request timed out. Please try again.";
-      alert("Failed to unenroll: " + msg);
+      console.error("Unenroll error:", e);
+      showToast("Failed to unenroll: " + (e.message || "Unknown error"), "error");
     } finally {
+      // ALWAYS reset loading state
       setUnenrollingCourseId(null);
     }
   };
@@ -6366,6 +6387,24 @@ export default function OnboardingFlow() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Professional Toast Notification Overlay */}
+      {toastNotice && (
+        <div className="fixed top-5 right-5 z-[99999] pointer-events-none animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className={`px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md pointer-events-auto ${
+            toastNotice.type === 'success' 
+              ? 'bg-emerald-900/90 text-white border-emerald-700/50 shadow-emerald-900/20' 
+              : toastNotice.type === 'error' 
+              ? 'bg-red-900/90 text-white border-red-700/50 shadow-red-900/20' 
+              : 'bg-slate-900/90 text-white border-slate-700/50 shadow-slate-900/20'
+          }`}>
+            {toastNotice.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
+            {toastNotice.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
+            {toastNotice.type === 'info' && <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />}
+            <span>{toastNotice.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
