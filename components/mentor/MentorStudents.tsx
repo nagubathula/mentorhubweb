@@ -31,9 +31,9 @@ const getGradientClass = (id: string) => {
 };
 
 const STUDENT_AESTHETIC_GRADIENTS = [
-  "from-blue-50 to-slate-100 text-teal-800 border-teal-200/60",
+  "from-blue-50 to-slate-100 text-indigo-700 border-indigo-200/60",
   "from-slate-50 to-blue-50 text-slate-700 border-slate-200",
-  "from-blue-50/80 to-slate-100 text-teal-700 border-teal-200/50",
+  "from-blue-50/80 to-slate-100 text-indigo-600 border-indigo-200/50",
   "from-slate-100 to-blue-50 text-slate-800 border-slate-200/80",
 ];
 
@@ -266,7 +266,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
   const getLessonIcon = (type: string) => {
     switch (type) {
       case "video":
-        return <Play className="w-3.5 h-3.5 text-teal-600" />;
+        return <Play className="w-3.5 h-3.5 text-indigo-500" />;
       case "exercise":
         return <Code2 className="w-3.5 h-3.5 text-emerald-500" />;
       case "quiz":
@@ -967,7 +967,7 @@ export function MentorStudents({ activeStudentId, onSelectStudent, mentorEmail, 
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <span className="text-slate-400 text-[10px] font-black uppercase tracking-tighter">{lesson.duration}</span>
                                   <span className="w-0.5 h-0.5 bg-slate-200 rounded-full" />
-                                  <span className={cn("text-[10px] font-black uppercase tracking-tighter", lesson.type === "video" ? "text-teal-600" : "text-amber-500")}>{lesson.type}</span>
+                                  <span className={cn("text-[10px] font-black uppercase tracking-tighter", lesson.type === "video" ? "text-indigo-500" : "text-amber-500")}>{lesson.type}</span>
                                 </div>
                               </div>
 

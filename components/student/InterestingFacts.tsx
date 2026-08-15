@@ -40,22 +40,22 @@ const factsData = [
 
 // Categories definition matching g0 in unminified_index.js
 const categories = [
-  { key: "all", label: "All", icon: Sparkles, color: "text-[#0F766E]", bg: "bg-[#EFF6FF]" },
-  { key: "tech", label: "Tech", icon: Code, color: "text-[#0F766E]", bg: "bg-[#EFF6FF]" },
+  { key: "all", label: "All", icon: Sparkles, color: "text-[#4F46E5]", bg: "bg-[#EFF6FF]" },
+  { key: "tech", label: "Tech", icon: Code, color: "text-[#4F46E5]", bg: "bg-[#EFF6FF]" },
   { key: "career", label: "Career", icon: Briefcase, color: "text-[#0F172A]", bg: "bg-slate-100" },
-  { key: "brain", label: "Brain", icon: Brain, color: "text-[#0F766E]", bg: "bg-[#EFF6FF]" },
+  { key: "brain", label: "Brain", icon: Brain, color: "text-[#4F46E5]", bg: "bg-[#EFF6FF]" },
   { key: "science", label: "Science", icon: FlaskConical, color: "text-[#10B981]", bg: "bg-emerald-50" },
-  { key: "code", label: "Code", icon: Lightbulb, color: "text-[#0F766E]", bg: "bg-[#EFF6FF]" },
+  { key: "code", label: "Code", icon: Lightbulb, color: "text-[#4F46E5]", bg: "bg-[#EFF6FF]" },
   { key: "motivation", label: "Inspire", icon: Award, color: "text-[#F59E0B]", bg: "bg-amber-50" }
 ];
 
 // Aesthetic tokens matching Ld in unminified_index.js
 const aestheticStyles: Record<string, any> = {
-  tech: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#0F766E]", glow: "from-[#0F766E]/10 to-transparent" },
+  tech: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#4F46E5]", glow: "from-[#4F46E5]/10 to-transparent" },
   career: { border: "border-[#E2E8F0]", badge: "bg-slate-100", badgeText: "text-[#0F172A]", glow: "from-slate-900/10 to-transparent" },
-  brain: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#0F766E]", glow: "from-[#0F766E]/10 to-transparent" },
+  brain: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#4F46E5]", glow: "from-[#4F46E5]/10 to-transparent" },
   science: { border: "border-[#E2E8F0]", badge: "bg-emerald-50", badgeText: "text-[#10B981]", glow: "from-emerald-500/10 to-transparent" },
-  code: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#0F766E]", glow: "from-[#0F766E]/10 to-transparent" },
+  code: { border: "border-[#E2E8F0]", badge: "bg-[#EFF6FF]", badgeText: "text-[#4F46E5]", glow: "from-[#4F46E5]/10 to-transparent" },
   motivation: { border: "border-[#E2E8F0]", badge: "bg-amber-50", badgeText: "text-[#F59E0B]", glow: "from-amber-500/10 to-transparent" }
 };
 

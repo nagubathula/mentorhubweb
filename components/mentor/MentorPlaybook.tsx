@@ -51,8 +51,8 @@ const PLAYBOOK_PRACTICES: PlaybookItem[] = [
     id: "bp2",
     title: "Set Clear Weekly Goals",
     emoji: "🎯",
-    color: "text-teal-600",
-    bgColor: "bg-teal-50",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-50",
     description: "Students stay motivated when they know what to do next. Define small, achievable weekly goals.",
     practices: [
       "Define small weekly learning goals",
@@ -171,8 +171,8 @@ const PLAYBOOK_PRACTICES: PlaybookItem[] = [
     id: "bp9",
     title: "Encourage Reflection",
     emoji: "🌱",
-    color: "text-teal-500",
-    bgColor: "bg-teal-50",
+    color: "text-indigo-400",
+    bgColor: "bg-indigo-50",
     description: "Reflection improves understanding. Ask students to think about what they learned.",
     practices: [
       "Ask students to reflect on their learning",
@@ -249,8 +249,8 @@ const CONVERSATION_GUIDELINES: ConversationItem[] = [
     id: "cl3",
     title: "Encourage Personal Sharing",
     emoji: "💬",
-    color: "text-teal-600",
-    bgColor: "bg-teal-50",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-50",
     description: "Encourage the student to open up about their motivations and preferences.",
     items: [
       "Ask about what motivates them",
@@ -333,8 +333,8 @@ const CONVERSATION_GUIDELINES: ConversationItem[] = [
     id: "cl9",
     title: "End with Encouragement",
     emoji: "🌱",
-    color: "text-teal-500",
-    bgColor: "bg-teal-50",
+    color: "text-indigo-400",
+    bgColor: "bg-indigo-50",
     description: "Finish every conversation on a positive, motivating note.",
     items: [
       "Appreciate the student's effort today",
@@ -644,7 +644,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-teal-500 rounded-full"
+                    className="h-full bg-indigo-500 rounded-full"
                     animate={{ width: `${checklistProgress}%` }}
                     transition={{ type: "spring", damping: 20 }}
                   />
@@ -830,7 +830,7 @@ export function MentorPlaybook({ onBack }: MentorPlaybookProps) {
                 {/* Footer Insight */}
                 <div className="bg-white rounded-2xl p-5 border border-slate-100 text-center shadow-xs">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-50 to-sky-50 flex items-center justify-center mx-auto mb-3 shadow-inner">
-                    <Sparkles className="w-6 h-6 text-teal-500" />
+                    <Sparkles className="w-6 h-6 text-indigo-400" />
                   </div>
                   <p className="text-slate-800 text-xs font-medium mb-1">Conversations Build Trust</p>
                   <p className="text-slate-400 text-[11px] leading-relaxed font-semibold px-2">

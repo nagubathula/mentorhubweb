@@ -89,9 +89,9 @@ const getGradientClass = (id: string) => {
 };
 
 const STUDENT_AESTHETIC_GRADIENTS = [
-  "from-blue-50 to-slate-100 text-teal-800 border-teal-200/60",
+  "from-blue-50 to-slate-100 text-indigo-700 border-indigo-200/60",
   "from-slate-50 to-blue-50 text-slate-700 border-slate-200",
-  "from-blue-50/80 to-slate-100 text-teal-700 border-teal-200/50",
+  "from-blue-50/80 to-slate-100 text-indigo-600 border-indigo-200/50",
   "from-slate-100 to-blue-50 text-slate-800 border-slate-200/80",
 ];
 
@@ -1038,7 +1038,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
             <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
           </div>
           <div className="flex gap-2">
-            <span className="bg-teal-50 text-teal-600 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
+            <span className="bg-indigo-50 text-indigo-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
             <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
@@ -1500,10 +1500,10 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
           {/* Mentor Circle Card */}
           <div 
             onClick={() => setShowCircle(true)}
-            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-teal-200 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
+            className="p-4.5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:border-indigo-200 transition-all cursor-pointer group active:scale-[0.98] flex items-center gap-3.5"
           >
-            <div className="w-11 h-11 rounded-2xl bg-teal-50/70 flex items-center justify-center text-teal-600 shrink-0 group-hover:scale-105 transition-transform">
-              <Users className="w-5.5 h-5.5 text-teal-600 fill-teal-50" />
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50/70 flex items-center justify-center text-indigo-500 shrink-0 group-hover:scale-105 transition-transform">
+              <Users className="w-5.5 h-5.5 text-indigo-500 fill-indigo-50" />
             </div>
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-slate-900 leading-tight">Mentor Circle</p>

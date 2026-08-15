@@ -22,14 +22,14 @@ interface StudentPortfolioProps {
 // 1. Module Definition matching Course Modules
 const syllabusModules = [
   { id: "m1", title: "Getting Started", color: "bg-emerald-500", icon: <Rocket className="w-4 h-4 text-white" /> },
-  { id: "m2", title: "Data Types & Variables", color: "bg-teal-600", icon: <Binary className="w-4 h-4 text-white" /> },
+  { id: "m2", title: "Data Types & Variables", color: "bg-indigo-500", icon: <Binary className="w-4 h-4 text-white" /> },
   { id: "m3", title: "Control Flow", color: "bg-violet-500", icon: <GitFork className="w-4 h-4 text-white" /> },
   { id: "m4", title: "Loops & Iterations", color: "bg-amber-500", icon: <RotateCcw className="w-4 h-4 text-white" /> },
   { id: "m5", title: "Functions & Scope", color: "bg-pink-500", icon: <Box className="w-4 h-4 text-white" /> },
   { id: "m6", title: "Lists & Tuples", color: "bg-indigo-500", icon: <Library className="w-4 h-4 text-white" /> },
   { id: "m7", title: "Dictionaries & Sets", color: "bg-rose-500", icon: <Map className="w-4 h-4 text-white" /> },
   { id: "m8", title: "File Input & Output", color: "bg-cyan-500", icon: <HardDrive className="w-4 h-4 text-white" /> },
-  { id: "m9", title: "OOP: Classes & Objects", color: "bg-teal-500", icon: <Layout className="w-4 h-4 text-white" /> },
+  { id: "m9", title: "OOP: Classes & Objects", color: "bg-indigo-500", icon: <Layout className="w-4 h-4 text-white" /> },
   { id: "m10", title: "Error & Exception Handling", color: "bg-emerald-600", icon: <ShieldAlert className="w-4 h-4 text-white" /> },
   { id: "m11", title: "Libraries & Modules", color: "bg-sky-500", icon: <Cpu className="w-4 h-4 text-white" /> },
   { id: "m12", title: "Final Capstone Project", color: "bg-orange-500", icon: <Trophy className="w-4 h-4 text-white" /> }

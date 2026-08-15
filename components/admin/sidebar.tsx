@@ -62,7 +62,7 @@ export function Sidebar() {
     <div className="w-64 bg-[#111827] text-[#CBD5E1] border-r border-slate-800 h-full flex flex-col justify-between hidden md:flex shrink-0">
       <div className="overflow-y-auto w-full pt-6">
         <div className="px-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0F766E] flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-[#4F46E5] flex items-center justify-center shadow-md">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <span className="font-bold text-xl flex-1 tracking-tight text-white">MentorHub</span>
@@ -78,7 +78,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all group font-semibold",
                   isActive
-                    ? "bg-[#0F766E] text-white shadow-sm font-bold"
+                    ? "bg-[#4F46E5] text-white shadow-sm font-bold"
                     : "text-[#CBD5E1] hover:bg-[#1E293B] hover:text-white font-medium"
                 )}
               >
@@ -101,7 +101,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all group font-semibold",
                   isActive
-                    ? "bg-[#0F766E] text-white shadow-sm font-bold"
+                    ? "bg-[#4F46E5] text-white shadow-sm font-bold"
                     : "text-[#CBD5E1] hover:bg-[#1E293B] hover:text-white font-medium"
                 )}
               >

@@ -98,7 +98,7 @@ export function MentorShareMaterials({ mentorId, assignedStudents, defaultStuden
       url: "https://supabase.com/docs/guides/database/joins-and-nesting",
       description: "A comprehensive developer primer on database indices, joins, and nested relations.",
       category: "Backend",
-      icon: <Compass className="w-4.5 h-4.5 text-teal-500" />
+      icon: <Compass className="w-4.5 h-4.5 text-indigo-400" />
     },
     {
       id: "res-v3",

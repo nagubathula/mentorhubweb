@@ -3062,7 +3062,7 @@ export default function OnboardingFlow() {
           </div>
           <h1 className="text-xl font-medium text-slate-900 tracking-tight">KindMentor</h1>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-2 h-2 rounded-full bg-teal-700 animate-ping" />
+            <div className="w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
             <span className="text-xs font-medium text-slate-500">Restoring session...</span>
           </div>
         </div>
@@ -3071,7 +3071,7 @@ export default function OnboardingFlow() {
   }
 
   return (
-    <div className="min-h-[100dvh] md:min-h-screen mesh-bg flex items-stretch md:items-center justify-center p-0 md:p-6 selection:bg-teal-100 font-inter">
+    <div className="min-h-[100dvh] md:min-h-screen mesh-bg flex items-stretch md:items-center justify-center p-0 md:p-6 selection:bg-indigo-100 font-inter">
       <div className={`w-full ${isDashboard ? 'max-w-[1600px] h-[100dvh] md:h-[calc(100vh-3rem)] rounded-none md:rounded-3xl bg-white border-[#E2E8F0]' : 'w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[16px] bg-white border-[#E2E8F0] shadow-sm'} overflow-hidden relative flex flex-col md:border transition-all duration-500 ease-out`}>
 
         <div className={`flex-1 relative ${isDashboard ? 'px-0 pt-0 pb-0 overflow-hidden' : state === 'WELCOME' ? 'p-0 flex flex-col bg-white overflow-hidden' : (state === 'MENTOR_WELCOME' || state === 'STUDENT_WELCOME') ? 'p-0 flex flex-col bg-[#F8FAFC] overflow-y-auto hidden-scrollbar' : 'px-5 sm:px-8 py-6 sm:py-8 flex flex-col justify-start md:justify-center overflow-y-auto hidden-scrollbar pb-[calc(4rem+env(safe-area-inset-bottom))]'}`}>
@@ -3087,7 +3087,7 @@ export default function OnboardingFlow() {
                   <h1 className="text-xl font-medium text-slate-900 mb-5 font-inter tracking-tight">KindMentor</h1>
                   
                   <div className="bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer text-white px-4 py-2 rounded-full flex items-center gap-2 text-[13px] font-medium mb-10 shadow-sm">
-                    <Sparkles className="w-4 h-4 text-teal-500" /> 60-Day Mentorship Journey
+                    <Sparkles className="w-4 h-4 text-indigo-400" /> 60-Day Mentorship Journey
                   </div>
 
                   <div className="space-y-4 text-[15px] text-slate-700 font-medium w-full max-w-xs mx-auto pl-2">
@@ -3422,13 +3422,13 @@ export default function OnboardingFlow() {
                       <div className="flex items-center justify-between gap-4 mb-10">
                         <div className="flex items-center gap-4">
                           <div 
-                            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-teal-100"
+                            className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100"
                             style={{ backgroundColor: currentData.color || '#3b82f6' }}
                           >
                             <Icon className="w-7 h-7" />
                           </div>
                           <div>
-                            <p className="text-teal-700 text-[11px] font-medium uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
+                            <p className="text-indigo-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {currentData.step} of {studentQuizSteps.length}</p>
                             <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
                           </div>
                         </div>
@@ -3455,7 +3455,7 @@ export default function OnboardingFlow() {
                                 placeholder={q.placeholder}
                                 value={(selections[q.id] as string) || ""}
                                 onChange={(e) => setSelections({ ...selections, [q.id]: e.target.value })}
-                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-100 transition-all"
+                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all"
                               />
                             ) : (
                               <div className="space-y-1.5 pt-1">
@@ -3486,7 +3486,7 @@ export default function OnboardingFlow() {
                                   <button 
                                     type="button"
                                     onClick={() => setExpandedQuestions(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
-                                    className="text-[12px] text-teal-700 font-semibold hover:text-teal-800 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                    className="text-[12px] text-indigo-600 font-semibold hover:text-indigo-700 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
                                   >
                                     {expandedQuestions[q.id] ? "Show Less" : `+ ${q.options.length - (q.options.slice(0, 4).includes(q.options.find((opt: string) => opt.toLowerCase() === 'other') || '') ? 4 : 5)} More`}
                                   </button>
@@ -3531,7 +3531,7 @@ export default function OnboardingFlow() {
                             <Icon className="w-7 h-7" />
                           </div>
                           <div>
-                            <p className="text-teal-700 text-[11px] font-medium uppercase tracking-widest mb-1">Step {screeningIndex + 1} of {studentScreeningSteps.length}</p>
+                            <p className="text-indigo-600 text-[11px] font-medium uppercase tracking-widest mb-1">Step {screeningIndex + 1} of {studentScreeningSteps.length}</p>
                             <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentPhase.title}</h2>
                           </div>
                         </div>
@@ -4306,14 +4306,14 @@ export default function OnboardingFlow() {
                            <div>
                              <div className="flex items-center gap-2">
                                <p className="text-[14.5px] font-medium text-teal-900">Mental Wellness</p>
-                               <span className="bg-teal-100 text-teal-700 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
+                               <span className="bg-indigo-100 text-indigo-600 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-widest">New</span>
                              </div>
-                             <p className="text-[12px] text-teal-700/70 font-semibold leading-relaxed mt-0.5">Calm Reset · Gratitude Game · Memes</p>
+                             <p className="text-[12px] text-indigo-600/70 font-semibold leading-relaxed mt-0.5">Calm Reset · Gratitude Game · Memes</p>
                            </div>
                          </div>
-                         <ChevronRight className="w-4 h-4 text-teal-500/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                         <ChevronRight className="w-4 h-4 text-indigo-400/50 group-hover:translate-x-0.5 transition-transform shrink-0" />
                        </div>
-                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-teal-800/60 relative z-10 px-1">
+                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-indigo-700/60 relative z-10 px-1">
                          <span className="flex items-center gap-1">🧘 Brain Recharge</span>
                          <span className="flex items-center gap-1">🙏 Gratitude Points</span>
                          <span className="flex items-center gap-1">😂 Daily Memes</span>
@@ -4447,7 +4447,7 @@ export default function OnboardingFlow() {
                     </div>
                     <Button 
                       onClick={() => setIsCourseCatalogOpen(true)}
-                      className="bg-[#0F766E] hover:bg-[#115E59] text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                      className="bg-[#4F46E5] hover:bg-[#3730A3] text-white font-semibold text-xs h-10 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5" /> Browse Catalog
                     </Button>
@@ -4456,7 +4456,7 @@ export default function OnboardingFlow() {
                   {/* Courses Listing */}
                   {studentEnrollments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-white rounded-3xl border border-dashed border-slate-200 shadow-2xs">
-                      <div className="w-16 h-16 rounded-3xl bg-teal-50 flex items-center justify-center mb-4 border border-teal-100 shadow-sm text-[#0F766E]">
+                      <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center mb-4 border border-indigo-100 shadow-sm text-[#4F46E5]">
                         <GraduationCap className="w-8 h-8 stroke-[1.5]" />
                       </div>
                       <p className="text-[16px] font-bold text-slate-800">No Courses Enrolled Yet</p>
@@ -4465,7 +4465,7 @@ export default function OnboardingFlow() {
                       </p>
                       <Button 
                         onClick={() => setIsCourseCatalogOpen(true)} 
-                        className="mt-5 bg-[#0F766E] hover:bg-[#115E59] text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
+                        className="mt-5 bg-[#4F46E5] hover:bg-[#3730A3] text-white font-semibold text-xs h-11 px-6 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2"
                       >
                         <BookOpen className="w-4 h-4" /> View Course Catalog
                       </Button>
@@ -4569,7 +4569,7 @@ export default function OnboardingFlow() {
                                     setCourseProgress(completedLessonsList);
                                     setState("COURSE_DETAILS");
                                   }}
-                                  className="flex-1 bg-[#0F766E] hover:bg-[#115E59] text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+                                  className="flex-1 bg-[#4F46E5] hover:bg-[#3730A3] text-white font-semibold text-xs h-11 rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                                 >
                                   <PlayCircle className="w-4 h-4" /> Continue Learning
                                 </Button>
@@ -4793,10 +4793,10 @@ export default function OnboardingFlow() {
                         initial={{ opacity: 0, y: -15, height: 0 }}
                         animate={{ opacity: 1, y: 0, height: 'auto' }}
                         exit={{ opacity: 0, y: -15, height: 0 }}
-                        className="bg-white rounded-3xl p-5 border border-teal-100 shadow-sm overflow-hidden mb-4 relative"
+                        className="bg-white rounded-3xl p-5 border border-indigo-100 shadow-sm overflow-hidden mb-4 relative"
                       >
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600">
+                          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
                             <NotebookPen className="w-4 h-4" />
                           </div>
                           <p className="text-[14px] font-medium text-slate-800">New Running Note</p>
@@ -4808,7 +4808,7 @@ export default function OnboardingFlow() {
                             placeholder="Note title (optional)" 
                             value={noteTitleInput}
                             onChange={(e) => setNoteTitleInput(e.target.value)}
-                            className="w-full text-sm text-slate-800 placeholder-slate-300 bg-slate-50/50 rounded-xl px-4 py-2.5 outline-none focus:ring-1 focus:ring-teal-100 focus:bg-white border border-slate-150 transition-all"
+                            className="w-full text-sm text-slate-800 placeholder-slate-300 bg-slate-50/50 rounded-xl px-4 py-2.5 outline-none focus:ring-1 focus:ring-indigo-100 focus:bg-white border border-slate-150 transition-all"
                           />
                           <textarea 
                             placeholder="Write your note contents here..." 
@@ -4816,7 +4816,7 @@ export default function OnboardingFlow() {
                             onChange={(e) => setNoteContentInput(e.target.value)}
                             rows={4}
                             autoFocus
-                            className="w-full text-sm text-slate-700 placeholder-slate-300 bg-slate-50/50 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-teal-100 focus:bg-white resize-none border border-slate-150 transition-all"
+                            className="w-full text-sm text-slate-700 placeholder-slate-300 bg-slate-50/50 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-indigo-100 focus:bg-white resize-none border border-slate-150 transition-all"
                           />
                           <div className="flex gap-2.5 pt-1">
                             <button 
@@ -4911,7 +4911,7 @@ export default function OnboardingFlow() {
                             <CardContent className="p-5">
                               <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
                                  <span className="flex items-center gap-2 text-[14px] font-extrabold text-slate-800">
-                                   <FileText className="w-4 h-4 text-teal-500 shrink-0" strokeWidth={2.5}/> 
+                                   <FileText className="w-4 h-4 text-indigo-400 shrink-0" strokeWidth={2.5}/> 
                                    <span className="truncate max-w-[180px]">{note.title}</span>
                                  </span>
                                  <div className="flex items-center gap-3 shrink-0 ml-4">
@@ -5031,7 +5031,7 @@ export default function OnboardingFlow() {
                   description: "Enrolled in 1+ courses on Kind Mentor",
                   icon: "📚",
                   earned: studentEnrollments.length >= 1,
-                  color: "bg-teal-50 text-teal-700 border-teal-200"
+                  color: "bg-indigo-50 text-indigo-600 border-indigo-200"
                 },
                 {
                   id: "b5",
@@ -5047,7 +5047,7 @@ export default function OnboardingFlow() {
                   description: "Added projects to your student portfolio",
                   icon: "💼",
                   earned: portfolioCount >= 1,
-                  color: "bg-teal-50 text-teal-600 border-teal-200"
+                  color: "bg-indigo-50 text-indigo-500 border-indigo-200"
                 }
               ];
 
@@ -5287,7 +5287,7 @@ export default function OnboardingFlow() {
 
                               {/* Stat 4: Courses */}
                               <button onClick={() => setState("STUDENT_COURSES")} className="flex flex-col items-center justify-center text-center border-r border-slate-100/60 p-1 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                                <BookOpen className="w-5 h-5 text-teal-600 fill-blue-500/5 mb-1" />
+                                <BookOpen className="w-5 h-5 text-indigo-500 fill-blue-500/5 mb-1" />
                                 <span className="text-[15.5px] font-bold text-slate-800 leading-none">{studentEnrollments.length}</span>
                                 <span className="text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider">Courses</span>
                               </button>
@@ -5480,31 +5480,31 @@ export default function OnboardingFlow() {
                 <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                   <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))]">
                     {featureFlags.student_dashboard !== false && (
-                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "DASHBOARD_MAIN" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "DASHBOARD_MAIN" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/>
                         <span className="text-[10px]">Home</span>
                       </button>
                     )}
                     {featureFlags.student_courses !== false && (
-                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <BookOpen className="w-5 h-5" strokeWidth={["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? 2.5 : 2}/>
                         <span className="text-[10px]">Courses</span>
                       </button>
                     )}
                     {featureFlags.student_games !== false && (
-                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer relative ${state === "GAMES" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer relative ${state === "GAMES" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>
                         {state !== "GAMES" && <div className="absolute top-1 right-2.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-white"></div>}
                         <span className="text-[10px]">Games</span>
                       </button>
                     )}
                     {featureFlags.student_notes !== false && (
-                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "NOTES" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "NOTES" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/>
                         <span className="text-[10px]">Notes</span>
                       </button>
                     )}
-                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "PROFILE" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "PROFILE" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                       <User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/>
                       <span className="text-[10px]">Profile</span>
                     </button>
@@ -5792,7 +5792,7 @@ export default function OnboardingFlow() {
                     <>
                       <div className="flex items-center justify-between gap-4 mb-8">
                         <div>
-                          <p className="text-teal-700 text-[11px] font-medium uppercase tracking-widest mb-1">Mentor Application ({currentData.step} of {mentorQuizSteps.length})</p>
+                          <p className="text-indigo-600 text-[11px] font-medium uppercase tracking-widest mb-1">Mentor Application ({currentData.step} of {mentorQuizSteps.length})</p>
                           <h2 className="text-xl font-medium tracking-tight text-slate-900 tracking-tight">{currentData.title}</h2>
                         </div>
                         <button 
@@ -5818,7 +5818,7 @@ export default function OnboardingFlow() {
                                 placeholder={q.placeholder}
                                 value={(selections[q.id] as string) || ""}
                                 onChange={(e) => setSelections({ ...selections, [q.id]: e.target.value })}
-                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-teal-100 transition-all"
+                                className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all"
                               />
                             ) : (
                               <div className="space-y-1.5 pt-1">
@@ -5849,7 +5849,7 @@ export default function OnboardingFlow() {
                                   <button 
                                     type="button"
                                     onClick={() => setExpandedQuestions(prev => ({ ...prev, [q.id]: !prev[q.id] }))}
-                                    className="text-[12px] text-teal-700 font-semibold hover:text-teal-800 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                    className="text-[12px] text-indigo-600 font-semibold hover:text-indigo-700 transition-colors ml-1 mt-1 hover:underline cursor-pointer inline-flex items-center gap-1"
                                   >
                                     {expandedQuestions[q.id] ? "Show Less" : `+ ${q.options.length - (q.options.slice(0, 4).includes(q.options.find((opt: string) => opt.toLowerCase() === 'other') || '') ? 4 : 5)} More`}
                                   </button>
@@ -6105,23 +6105,23 @@ export default function OnboardingFlow() {
                   {/* Bottom Navigation - Premium Mentor Style */}
                   <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                     <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))]">
-                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_DASHBOARD" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_DASHBOARD" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-bold" : "font-medium"}`}>Home</span>
                       </button>}
-                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_STUDENTS" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_STUDENTS" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-bold" : "font-medium"}`}>Students</span>
                       </button>}
-                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_NOTES" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_NOTES" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-bold" : "font-medium"}`}>Notes</span>
                       </button>}
-                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_CIRCLE" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_CIRCLE" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-bold" : "font-medium"}`}>Circle</span>
                       </button>}
-                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_ACCOUNT" ? "bg-teal-50 text-teal-700 font-bold border border-teal-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
+                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_ACCOUNT" ? "bg-indigo-50 text-indigo-600 font-bold border border-indigo-100/80 shadow-2xs" : "text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-transparent"}`}>
                         <User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-bold" : "font-medium"}`}>Profile</span>
                       </button>}
@@ -6687,7 +6687,7 @@ export default function OnboardingFlow() {
           }`}>
             {toastNotice.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
             {toastNotice.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
-            {toastNotice.type === 'info' && <Sparkles className="w-4 h-4 text-teal-500 shrink-0" />}
+            {toastNotice.type === 'info' && <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />}
           </div>
         </div>
       )}

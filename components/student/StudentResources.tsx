@@ -48,7 +48,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://nextjs.org/docs",
       description: "Official guide on Server Components, layouts, nested routing, and caching behavior.",
       category: "Frontend",
-      icon: <Code className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Code className="w-4.5 h-4.5 text-indigo-600" />
     },
     {
       id: "res-2",
@@ -64,7 +64,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.youtube.com/watch?v=wm5gMKuwSYk",
       description: "A comprehensive video crash course on Next.js App Router, routing, layouts, and server actions.",
       category: "Videos",
-      icon: <Video className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Video className="w-4.5 h-4.5 text-indigo-600" />
     },
     {
       id: "res-v2",
@@ -72,7 +72,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.youtube.com/watch?v=LlvBzyy-558",
       description: "Master React useState, useEffect, useContext, and custom hooks in one crash course.",
       category: "Videos",
-      icon: <Video className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Video className="w-4.5 h-4.5 text-indigo-600" />
     },
     {
       id: "res-3",
@@ -88,7 +88,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://supabase.com/docs/guides/database/joins-and-nesting",
       description: "A comprehensive developer primer on database indices, joins, and nested relations.",
       category: "Backend",
-      icon: <Compass className="w-4.5 h-4.5 text-teal-500" />
+      icon: <Compass className="w-4.5 h-4.5 text-indigo-400" />
     },
     {
       id: "res-v3",
@@ -104,7 +104,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://lawsofux.com/",
       description: "A highly visual guide covering design heuristics and psychological principles for premium UIs.",
       category: "Design",
-      icon: <Sparkles className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Sparkles className="w-4.5 h-4.5 text-indigo-600" />
     },
     {
       id: "res-v4",
@@ -112,7 +112,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.youtube.com/watch?v=FTFaQWZBqA8",
       description: "Step-by-step video tutorial on creating stunning UI components and prototypes in Figma.",
       category: "Videos",
-      icon: <Video className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Video className="w-4.5 h-4.5 text-indigo-600" />
     },
     {
       id: "res-6",
@@ -128,7 +128,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
       url: "https://www.headspace.com/mindfulness",
       description: "Curated mindfulness and focused deep-learning tips to avoid mental burnout.",
       category: "Wellness",
-      icon: <Smile className="w-4.5 h-4.5 text-teal-700" />
+      icon: <Smile className="w-4.5 h-4.5 text-indigo-600" />
     }
   ];
 
@@ -217,7 +217,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
               <p className="text-slate-400 text-[11px] font-semibold tracking-wide uppercase mt-0.5">My Learning Materials</p>
             </div>
           </div>
-          <div className="bg-teal-50 text-teal-700 rounded-full px-3 py-1 text-[11px] font-bold border border-teal-100 flex items-center gap-1 shadow-3xs">
+          <div className="bg-indigo-50 text-indigo-600 rounded-full px-3 py-1 text-[11px] font-bold border border-indigo-100 flex items-center gap-1 shadow-3xs">
             <Bookmark className="w-3.5 h-3.5 fill-current" />
             <span>{sharedResources.length} shared</span>
           </div>
@@ -229,14 +229,14 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
             onClick={() => setActiveTab("shared")}
             className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-2 transition-all font-bold ${
               activeTab === "shared"
-                ? "bg-white text-teal-700 shadow-3xs"
+                ? "bg-white text-indigo-600 shadow-3xs"
                 : "text-slate-400 hover:text-slate-600"
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
             Shared by Mentor
             {sharedResources.length > 0 && (
-              <span className="w-4 h-4 rounded-full bg-teal-100 text-teal-700 text-[9px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full bg-indigo-100 text-indigo-600 text-[9px] flex items-center justify-center font-bold">
                 {sharedResources.length}
               </span>
             )}
@@ -245,7 +245,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
             onClick={() => setActiveTab("curated")}
             className={`flex-1 py-2 rounded-lg text-xs flex items-center justify-center gap-2 transition-all font-bold ${
               activeTab === "curated"
-                ? "bg-white text-teal-700 shadow-3xs"
+                ? "bg-white text-indigo-600 shadow-3xs"
                 : "text-slate-400 hover:text-slate-600"
             }`}
           >
@@ -265,7 +265,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={activeTab === "shared" ? "Search materials shared with you..." : "Search guides, docs, cheat sheets..."}
-            className="pl-10 bg-white border-slate-200 text-xs h-10 rounded-xl transition-all shadow-3xs hover:border-slate-300 focus:ring-2 focus:ring-teal-100 focus:border-teal-500"
+            className="pl-10 bg-white border-slate-200 text-xs h-10 rounded-xl transition-all shadow-3xs hover:border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
           />
         </div>
 
@@ -293,13 +293,13 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
                   {filteredShared.map((res, index) => (
                     <motion.div
                       key={res.id}
-                      className="bg-white p-4.5 rounded-[1.5rem] border border-slate-100 hover:border-teal-100 transition-all shadow-3xs flex flex-col justify-between gap-4"
+                      className="bg-white p-4.5 rounded-[1.5rem] border border-slate-100 hover:border-indigo-100 transition-all shadow-3xs flex flex-col justify-between gap-4"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
                       <div className="flex gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 shadow-3xs">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-3xs">
                           <LinkIcon className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -376,7 +376,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
                   {filteredCurated.map((res, index) => (
                     <motion.div
                       key={res.id}
-                      className="bg-white p-4.5 rounded-[1.5rem] border border-slate-100 hover:border-teal-100 transition-all shadow-3xs flex flex-col justify-between gap-4 group"
+                      className="bg-white p-4.5 rounded-[1.5rem] border border-slate-100 hover:border-indigo-100 transition-all shadow-3xs flex flex-col justify-between gap-4 group"
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -387,7 +387,7 @@ export function StudentResources({ mappedMentor, messages, onBack }: StudentReso
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <h4 className="font-bold text-slate-800 text-[13.5px] leading-tight truncate group-hover:text-teal-700 transition-colors">
+                            <h4 className="font-bold text-slate-800 text-[13.5px] leading-tight truncate group-hover:text-indigo-600 transition-colors">
                               {res.title}
                             </h4>
                             <span className="bg-slate-100 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">

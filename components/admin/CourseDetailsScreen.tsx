@@ -50,7 +50,7 @@ export interface ExtendedCourse {
 function RenderLessonIcon({ type }: { type: string }) {
   switch (type) {
     case "video":
-      return <Play className="w-3.5 h-3.5 text-teal-600" />;
+      return <Play className="w-3.5 h-3.5 text-indigo-500" />;
     case "exercise":
       return <Code2 className="w-3.5 h-3.5 text-emerald-500" />;
     case "quiz":
@@ -474,10 +474,10 @@ export function CourseDetailsScreen({
           <div className="px-6 py-6 md:px-8 bg-white border-b border-slate-100 flex flex-col gap-6 shrink-0">
             <div className="flex items-center justify-between">
               <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                <Award className="w-4 h-4 text-teal-600" /> Admin Intelligence
+                <Award className="w-4 h-4 text-indigo-500" /> Admin Intelligence
               </h3>
               <div className="flex gap-2">
-                 <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-[10px] font-medium uppercase tracking-wider border border-teal-100">
+                 <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-medium uppercase tracking-wider border border-indigo-100">
                    {adminData.enrollments?.filter((e: any) => e.course_id === course.id).length || 0} Students
                  </span>
                  <span className="px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-[10px] font-medium uppercase tracking-wider border border-violet-100">
@@ -505,7 +505,7 @@ export function CourseDetailsScreen({
                        const mentor = mapping ? adminData.mentors?.find((mn: any) => mn.id === mapping.mentor_id) : null;
 
                        return (
-                         <div key={enrollment.id} className="flex flex-col gap-2 p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-teal-200 transition-all">
+                         <div key={enrollment.id} className="flex flex-col gap-2 p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2.5">
                                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 overflow-hidden border border-white">
@@ -821,8 +821,8 @@ export function CourseDetailsScreen({
                           bgClass = "bg-rose-50 border-rose-500";
                           textClass = "text-rose-700 font-bold";
                         } else {
-                          bgClass = "bg-teal-50 border-teal-500";
-                          textClass = "text-teal-800 font-bold";
+                          bgClass = "bg-indigo-50 border-indigo-500";
+                          textClass = "text-indigo-700 font-bold";
                         }
                       }
 

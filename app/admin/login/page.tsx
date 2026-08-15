@@ -154,7 +154,7 @@ export default function AdminLoginPage() {
             </Button>
             <div className="text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/admin/signup" className="text-teal-700 font-medium hover:underline">
+              <Link href="/admin/signup" className="text-indigo-600 font-medium hover:underline">
                 Sign up
               </Link>
             </div>

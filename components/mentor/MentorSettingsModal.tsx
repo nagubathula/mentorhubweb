@@ -338,7 +338,7 @@ export function MentorSettingsModal({
                 <ArrowLeft className="w-5 h-5" />
               </button>
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-[#0F766E]/20 border border-[#0F766E]/40 flex items-center justify-center text-[#0F766E]">
+              <div className="w-10 h-10 rounded-2xl bg-[#4F46E5]/20 border border-[#4F46E5]/40 flex items-center justify-center text-[#4F46E5]">
                 <Settings className="w-5 h-5" />
               </div>
             )}
@@ -425,18 +425,18 @@ export function MentorSettingsModal({
               <button 
                 type="button"
                 onClick={() => setCurrentView("NOTIFICATIONS")}
-                className="w-full p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-teal-50/50 hover:border-teal-100 flex items-center justify-between group transition-all cursor-pointer text-left"
+                className="w-full p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-indigo-50/50 hover:border-indigo-100 flex items-center justify-between group transition-all cursor-pointer text-left"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-teal-600/10 text-teal-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Bell className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-[14px] font-semibold text-slate-900 group-hover:text-teal-700 transition-colors">Notification Settings</h4>
+                    <h4 className="text-[14px] font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">Notification Settings</h4>
                     <p className="text-[11.5px] text-slate-400 font-medium">Manage email alerts & session reminders</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
               </button>
 
               <button 

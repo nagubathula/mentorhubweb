@@ -81,14 +81,14 @@ function timeAgo(d: string): string {
 
 function progressColor(pct: number) {
   if (pct >= 75) return "bg-emerald-500";
-  if (pct >= 50) return "bg-teal-600";
+  if (pct >= 50) return "bg-indigo-500";
   if (pct >= 25) return "bg-amber-400";
   return "bg-red-400";
 }
 
 function initialsColor(name = ""): string {
   const cols = [
-    "bg-emerald-500","bg-teal-600","bg-violet-500","bg-amber-500",
+    "bg-emerald-500","bg-indigo-500","bg-violet-500","bg-amber-500",
     "bg-rose-500","bg-cyan-500","bg-fuchsia-500","bg-orange-500",
   ];
   let h = 0;
@@ -102,9 +102,9 @@ function initials(name = "") {
 
 function courseColor(title = "") {
   const t = title.toLowerCase();
-  if (t.includes("data") || t.includes("analytic")) return { bg: "bg-teal-600",    text: "text-teal-700",    light: "bg-teal-50",    ring: "ring-blue-100" };
+  if (t.includes("data") || t.includes("analytic")) return { bg: "bg-indigo-500",    text: "text-indigo-600",    light: "bg-indigo-50",    ring: "ring-blue-100" };
   if (t.includes("vlsi") || t.includes("hardware")) return { bg: "bg-red-500",     text: "text-red-600",     light: "bg-red-50",     ring: "ring-red-100" };
-  if (t.includes("embed") || t.includes("iot"))     return { bg: "bg-teal-500",    text: "text-teal-600",    light: "bg-teal-50",    ring: "ring-teal-100" };
+  if (t.includes("embed") || t.includes("iot"))     return { bg: "bg-indigo-500",    text: "text-indigo-500",    light: "bg-indigo-50",    ring: "ring-indigo-100" };
   if (t.includes("ux") || t.includes("design"))     return { bg: "bg-violet-500",  text: "text-violet-600",  light: "bg-violet-50",  ring: "ring-violet-100" };
   if (t.includes("python") || t.includes("ml"))     return { bg: "bg-amber-500",   text: "text-amber-600",   light: "bg-amber-50",   ring: "ring-amber-100" };
   if (t.includes("cloud") || t.includes("devops"))  return { bg: "bg-cyan-500",    text: "text-cyan-600",    light: "bg-cyan-50",    ring: "ring-cyan-100" };
@@ -160,7 +160,7 @@ function Pill({ children, color = "slate" }: { children: React.ReactNode; color?
     green:  "bg-emerald-50 text-emerald-700",
     red:    "bg-red-50 text-red-600",
     amber:  "bg-amber-50 text-amber-700",
-    blue:   "bg-teal-50 text-teal-800",
+    blue:   "bg-indigo-50 text-indigo-700",
     violet: "bg-violet-50 text-violet-700",
     pink:   "bg-pink-50 text-pink-700",
   };
@@ -519,7 +519,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
 
   const gameItems = games.slice(0, 5).map((g: any, i: number) => ({
     title: g.title, plays: seedNum(g.id || String(i), 5, 1),
-    color: ["bg-emerald-500","bg-teal-600","bg-amber-400","bg-violet-500","bg-rose-500"][i % 5],
+    color: ["bg-emerald-500","bg-indigo-500","bg-amber-400","bg-violet-500","bg-rose-500"][i % 5],
   }));
   const totalCoins = gameItems.reduce((s: number, g: any) => s + g.plays * 20, 0);
 
@@ -533,7 +533,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
   const topXP = [...topStudents].sort((a: any, b: any) => b.xp - a.xp);
 
   const quickActions = [
-    { label: "+ Student",  bg: "bg-teal-600 hover:bg-teal-700",    modal: "add-student" as ModalKey },
+    { label: "+ Student",  bg: "bg-indigo-500 hover:bg-indigo-600",    modal: "add-student" as ModalKey },
     { label: "+ Mentor",   bg: "bg-primary hover:bg-indigo-700",    modal: "add-mentor" as ModalKey },
     { label: "+ Session",  bg: "bg-violet-500 hover:bg-violet-600",modal: "schedule-session" as ModalKey },
     { label: "+ Inspire",  bg: "bg-sky-500 hover:bg-sky-600",    modal: "send-inspiration" as ModalKey },
@@ -541,7 +541,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
   ];
 
   const stats = [
-    { label:"Total Students",   value: students.length,   delta:"+2 this month",  deltaColor:"text-emerald-600", icon: Users,        iconBg:"bg-teal-100",   iconColor:"text-teal-700",    page:"mentees" as AdminPage },
+    { label:"Total Students",   value: students.length,   delta:"+2 this month",  deltaColor:"text-emerald-600", icon: Users,        iconBg:"bg-indigo-100",   iconColor:"text-indigo-600",    page:"mentees" as AdminPage },
     { label:"Active Mentors",   value: mentors.length,    delta:"+1 new",         deltaColor:"text-emerald-600", icon: UserCheck,    iconBg:"bg-indigo-50",   iconColor:"text-indigo-600",    page:"mentors" as AdminPage },
     { label:"Enrollments",      value: enrollments.length,delta:`${courses.length} courses`, deltaColor:"text-slate-500", icon: BookOpen, iconBg:"bg-violet-100",iconColor:"text-violet-600", page:"enrollments" as AdminPage },
     { label:"Pending Reviews",  value: reviews.length,    delta:`${games.length} games`,    deltaColor:"text-slate-500", icon: Star,  iconBg:"bg-amber-100",  iconColor:"text-amber-600",   page:"reviews" as AdminPage },
@@ -643,7 +643,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[14px] font-medium text-slate-800">Game Breakdown</h3>
-            <button onClick={() => onNavigate("games")} className="text-[12px] text-teal-600 hover:text-teal-800">View all</button>
+            <button onClick={() => onNavigate("games")} className="text-[12px] text-indigo-500 hover:text-indigo-700">View all</button>
           </div>
           {gameItems.length > 0 ? (
             <div className="flex flex-col gap-3">
@@ -685,7 +685,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
             <h3 className="text-[14px] font-medium text-slate-800 flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400" /> Streak Leaders
             </h3>
-            <button onClick={() => onNavigate("mentees")} className="text-[12px] text-teal-600 hover:text-teal-800">View all</button>
+            <button onClick={() => onNavigate("mentees")} className="text-[12px] text-indigo-500 hover:text-indigo-700">View all</button>
           </div>
           <div className="flex flex-col gap-3">
             {topStudents.map((s: any, i: number) => (
@@ -714,7 +714,7 @@ function DashboardPage({ data, onNavigate, openModal }: {
             <h3 className="text-[14px] font-medium text-slate-800 flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-400" /> XP Leaders
             </h3>
-            <button onClick={() => onNavigate("mentees")} className="text-[12px] text-teal-600 hover:text-teal-800">View all</button>
+            <button onClick={() => onNavigate("mentees")} className="text-[12px] text-indigo-500 hover:text-indigo-700">View all</button>
           </div>
           <div className="flex flex-col gap-3">
             {topXP.map((s: any, i: number) => (
@@ -759,14 +759,14 @@ function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: 
       onClick={() => onView(course)}
     >
       <div className="flex items-start gap-6">
-        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105", course.bgColor || "bg-teal-700")}>
+        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105", course.bgColor || "bg-indigo-600")}>
            <Icon className="w-8 h-8 text-white" />
         </div>
         
         <div className="flex-1 min-w-0 pt-1">
           <div className="flex items-center gap-3 mb-1.5">
-            <h3 className="text-[17px] font-medium text-slate-900 group-hover:text-teal-700 transition-colors tracking-tight">{course.title}</h3>
-            <span className="px-3 py-0.5 rounded-lg bg-teal-50 text-teal-700 text-[11px] font-medium uppercase tracking-wider">{course.difficulty}</span>
+            <h3 className="text-[17px] font-medium text-slate-900 group-hover:text-indigo-600 transition-colors tracking-tight">{course.title}</h3>
+            <span className="px-3 py-0.5 rounded-lg bg-indigo-50 text-indigo-600 text-[11px] font-medium uppercase tracking-wider">{course.difficulty}</span>
             {course.enrolled && <span className="px-3 py-0.5 rounded-lg bg-violet-50 text-violet-600 text-[11px] font-medium uppercase tracking-wider">Enrolled</span>}
           </div>
           
@@ -790,7 +790,7 @@ function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: 
               e.stopPropagation();
               onEdit(course);
             }}
-            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity px-4 py-2 bg-slate-900 text-white hover:bg-teal-700 text-[11px] font-semibold rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity px-4 py-2 bg-slate-900 text-white hover:bg-indigo-600 text-[11px] font-semibold rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
           >
             <Edit3 className="w-3.5 h-3.5" /> Edit Course
           </button>
@@ -800,7 +800,7 @@ function CourseItem({ course, onView, onEdit }: { course: MentorCourse; onView: 
       {/* Progress Bar at the bottom */}
       <div className="mt-6 flex items-center gap-4">
          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div className={cn("h-full rounded-full transition-all duration-1000", course.bgColor || "bg-teal-700")} style={{ width: `${course.progress || 0}%` }} />
+            <div className={cn("h-full rounded-full transition-all duration-1000", course.bgColor || "bg-indigo-600")} style={{ width: `${course.progress || 0}%` }} />
          </div>
          <span className="text-[12px] font-medium text-slate-400">{course.progress || 0}%</span>
       </div>
@@ -939,7 +939,7 @@ function MentorsPage({ data, openModal, onDelete }: { data: any; openModal: (m: 
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={cn("h-full rounded-full", m.activeMentees > 8 ? "bg-emerald-500" : "bg-teal-600")} style={{ width: `${Math.min(100,(m.activeMentees/15)*100)}%` }} />
+                      <div className={cn("h-full rounded-full", m.activeMentees > 8 ? "bg-emerald-500" : "bg-indigo-500")} style={{ width: `${Math.min(100,(m.activeMentees/15)*100)}%` }} />
                     </div>
                     <span className="text-[13px] text-slate-600">{m.activeMentees}</span>
                   </div>
@@ -955,7 +955,7 @@ function MentorsPage({ data, openModal, onDelete }: { data: any; openModal: (m: 
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-3">
-                    <button className="text-[13px] text-teal-600 hover:text-teal-800 font-medium">View</button>
+                    <button className="text-[13px] text-indigo-500 hover:text-indigo-700 font-medium">View</button>
                     <button 
                       onClick={() => onDelete(m.id, m.name || m.email)}
                       className="text-[13px] text-red-500 hover:text-red-700 font-medium"
@@ -1046,7 +1046,7 @@ function MenteesPage({ data, openModal, onDelete }: { data: any; openModal: (m: 
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-3">
-                    <button className="text-[13px] text-teal-600 hover:text-teal-800 font-medium">View</button>
+                    <button className="text-[13px] text-indigo-500 hover:text-indigo-700 font-medium">View</button>
                     <button 
                       onClick={() => onDelete(s.id, s.name || s.email)}
                       className="text-[13px] text-red-500 hover:text-red-700 font-medium"
@@ -1121,7 +1121,7 @@ function RegistrationsPage({ data, fetchAll, onDelete }: { data: any; fetchAll: 
         {[
           { label: "Total Registrations", value: allProfiles.length, color: "text-slate-900", icon: null },
           { label: "Students",            value: studentCount,       color: "text-emerald-600", icon: GraduationCap },
-          { label: "Mentors",             value: mentorCount,        color: "text-teal-700",    icon: Users },
+          { label: "Mentors",             value: mentorCount,        color: "text-indigo-600",    icon: Users },
           { label: "Pending Onboarding",  value: unassignedCount,    color: "text-amber-600",   icon: HelpCircle },
         ].map((s) => (
           <Card key={s.label} className="p-4 text-center">
@@ -1198,7 +1198,7 @@ function RegistrationsPage({ data, fetchAll, onDelete }: { data: any; fetchAll: 
                     <span>{p.created_at ? timeAgo(p.created_at) : "—"}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="text-teal-600 hover:text-teal-800 flex items-center gap-1">
+                    <button className="text-indigo-500 hover:text-indigo-700 flex items-center gap-1">
                       <CheckCircle className="w-3 h-3" />View All
                     </button>
                      <button onClick={() => onDelete(p.id, p.name || p.email)} className="text-slate-400 hover:text-red-500">
@@ -1240,7 +1240,7 @@ function RegistrationsPage({ data, fetchAll, onDelete }: { data: any; fetchAll: 
                       } else {
                         fetchAll();
                       }
-                    }} className="text-[11px] font-semibold text-teal-700 hover:text-teal-800 bg-teal-50 px-2.5 py-1 rounded-md transition-colors">
+                    }} className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md transition-colors">
                       Make Mentor
                     </button>
                   </div>
@@ -1282,7 +1282,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
   const stats = [
     { label: "Active Mappings",      value: mapping.filter((m: any) => m.status !== "Inactive").length, color: "text-emerald-600", icon: ArrowRightLeft, iconBg: "bg-emerald-100" },
     { label: "Awaiting Students",    value: awaitingStudents.length, color: "text-amber-600", icon: Clock, iconBg: "bg-amber-100" },
-    { label: "Mentors with Capacity",value: availableMentors.length, color: "text-teal-700",  icon: Users, iconBg: "bg-teal-100" },
+    { label: "Mentors with Capacity",value: availableMentors.length, color: "text-indigo-600",  icon: Users, iconBg: "bg-indigo-100" },
     { label: "Total Mentors",        value: mentors.length,          color: "text-violet-600",icon: UserCheck, iconBg: "bg-violet-100" },
   ];
 
@@ -1338,7 +1338,7 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
                     <Clock className="w-4 h-4 text-amber-500" /> Awaiting Students
                     <span className="text-amber-500 font-medium">{awaitingStudents.length}</span>
                   </h3>
-                  <button className="text-[12px] text-teal-600">View all</button>
+                  <button className="text-[12px] text-indigo-500">View all</button>
                 </div>
                 <div className="flex flex-col gap-2">
                   {awaitingStudents.slice(0, 6).map((s: any) => (
@@ -1362,10 +1362,10 @@ function MappingPage({ data, openModal }: { data: any; openModal: (m: ModalKey) 
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-[13px] font-medium text-slate-700 flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-teal-600" /> Mentor Availability
-                    <span className="text-teal-600 font-medium">{availableMentors.length} available</span>
+                    <UserCheck className="w-4 h-4 text-indigo-500" /> Mentor Availability
+                    <span className="text-indigo-500 font-medium">{availableMentors.length} available</span>
                   </h3>
-                  <button className="text-[12px] text-teal-600">View all</button>
+                  <button className="text-[12px] text-indigo-500">View all</button>
                 </div>
                 <div className="flex flex-col gap-2">
                   {availableMentors.slice(0, 6).map((m: any) => (
@@ -1451,7 +1451,7 @@ function EnrollmentsPage({ data, openModal }: { data: any; openModal: (m: ModalK
           { label:"Total Enrollments", value: enrollments.length, color:"text-slate-900" },
           { label:"Near Completion",   value: nearCompletion,    color:"text-emerald-600" },
           { label:"Just Started",      value: justStarted,       color:"text-amber-600" },
-          { label:"Avg Progress",      value: `${avgProgress}%`, color:"text-teal-700" },
+          { label:"Avg Progress",      value: `${avgProgress}%`, color:"text-indigo-600" },
         ].map((s) => (
           <Card key={s.label} className="p-5 text-center">
             <p className={cn("text-[28px] font-medium", s.color)}>{s.value}</p>
@@ -1634,7 +1634,7 @@ function GamesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
                                    newQ[idx].correctIndex = oIdx;
                                    setEditQuestions(newQ);
                                  }}
-                                 className="w-4 h-4 text-teal-700"
+                                 className="w-4 h-4 text-indigo-600"
                                />
                                <input 
                                  value={opt}
@@ -1643,7 +1643,7 @@ function GamesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
                                    newQ[idx].options[oIdx] = e.target.value;
                                    setEditQuestions(newQ);
                                  }}
-                                 className="flex-1 h-9 px-3 bg-white border border-slate-100 rounded-lg text-[13px] font-medium outline-none focus:border-teal-200"
+                                 className="flex-1 h-9 px-3 bg-white border border-slate-100 rounded-lg text-[13px] font-medium outline-none focus:border-indigo-200"
                                />
                              </div>
                            ))}
@@ -1784,13 +1784,13 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
     <div className="space-y-6 pb-32 max-w-5xl mx-auto">
       {/* Premium Header */}
       <Card className="p-8 bg-slate-900 border-none shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-teal-600/20 rounded-full -mr-40 -mt-40 blur-3xl" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/20 rounded-full -mr-40 -mt-40 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-32 -mb-32 blur-2xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="flex-1 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-teal-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg shadow-teal-500/30">
+              <div className="px-3 py-1 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-lg shadow-lg shadow-indigo-500/30">
                 LIVE EDITOR
               </div>
               <div className="h-1 w-1 rounded-full bg-white/20" />
@@ -1823,7 +1823,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
             <button 
               onClick={saveChanges}
               disabled={isSaving}
-              className="h-12 px-8 bg-teal-700 hover:bg-teal-600 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-teal-700/20 active:scale-95"
+              className="h-12 px-8 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-2 transition-all shadow-xl shadow-indigo-600/20 active:scale-95"
             >
               {isSaving ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
               SAVE CHANGES
@@ -1863,12 +1863,12 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
 
             <div className="grid grid-cols-1 gap-8">
               {step.questions.map((q: any, qIdx: number) => (
-                <Card key={qIdx} className="p-8 border-slate-100 hover:border-teal-200 hover:shadow-2xl hover:shadow-teal-500/5 transition-all duration-500 group/q bg-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-2 h-full bg-slate-50 group-hover/q:bg-teal-700 transition-colors" />
+                <Card key={qIdx} className="p-8 border-slate-100 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all duration-500 group/q bg-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-2 h-full bg-slate-50 group-hover/q:bg-indigo-600 transition-colors" />
                   
                   <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex flex-row lg:flex-col items-center justify-between lg:justify-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 group-hover/q:text-teal-700 group-hover/q:bg-teal-50 flex items-center justify-center font-black text-[15px] transition-all border border-slate-100 group-hover/q:border-teal-100">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 group-hover/q:text-indigo-600 group-hover/q:bg-indigo-50 flex items-center justify-center font-black text-[15px] transition-all border border-slate-100 group-hover/q:border-indigo-100">
                         {String(qIdx + 1).padStart(2, '0')}
                       </div>
                       <button 
@@ -1886,7 +1886,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                           <select 
                             value={q.type} 
                             onChange={(e) => updateQuestion(sIdx, qIdx, "type", e.target.value)}
-                            className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-700 outline-none focus:border-teal-500 transition-all cursor-pointer"
+                            className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-700 outline-none focus:border-indigo-500 transition-all cursor-pointer"
                           >
                             <option value="input">Standard Text Input</option>
                             <option value="chips">Multiple Choice Chips</option>
@@ -1897,7 +1897,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                           <input 
                             value={q.number || `Q${qIdx + 1}.`} 
                             onChange={(e) => updateQuestion(sIdx, qIdx, "number", e.target.value)}
-                            className="w-full h-11 text-[13px] font-black text-teal-700 uppercase tracking-widest bg-teal-50 border border-teal-100 rounded-xl px-4 outline-none focus:ring-2 focus:ring-blue-200 transition-all text-center"
+                            className="w-full h-11 text-[13px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 border border-indigo-100 rounded-xl px-4 outline-none focus:ring-2 focus:ring-blue-200 transition-all text-center"
                           />
                         </div>
                         <div className="flex-1" />
@@ -1910,7 +1910,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                           onChange={(e) => updateQuestion(sIdx, qIdx, q.text ? "text" : "question", e.target.value)}
                           placeholder="What would you like to ask students?"
                           rows={2}
-                          className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-6 py-4 text-[17px] font-medium text-slate-900 focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-blue-50 transition-all outline-none placeholder:text-slate-200 leading-relaxed"
+                          className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-6 py-4 text-[17px] font-medium text-slate-900 focus:bg-white focus:border-indigo-300 focus:ring-4 focus:ring-blue-50 transition-all outline-none placeholder:text-slate-200 leading-relaxed"
                         />
                       </div>
 
@@ -1924,11 +1924,11 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                             value={Array.isArray(q.options) ? q.options.join(", ") : ""} 
                             onChange={(e) => updateQuestion(sIdx, qIdx, "options", e.target.value.split(",").map(s => s.trim()))}
                             placeholder="e.g. Option A, Option B, Option C..."
-                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-teal-400 transition-all outline-none shadow-sm"
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-indigo-400 transition-all outline-none shadow-sm"
                           />
                           <div className="flex flex-wrap gap-2">
                             {Array.isArray(q.options) && q.options.filter(Boolean).map((opt: string, oi: number) => (
-                              <div key={oi} className="px-4 py-1.5 bg-teal-50/50 border border-teal-100 rounded-xl text-[12px] text-teal-700 font-medium flex items-center gap-2">
+                              <div key={oi} className="px-4 py-1.5 bg-indigo-50/50 border border-indigo-100 rounded-xl text-[12px] text-indigo-600 font-medium flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                 {opt}
                               </div>
@@ -1944,7 +1944,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
                             value={q.placeholder || ""} 
                             onChange={(e) => updateQuestion(sIdx, qIdx, "placeholder", e.target.value)}
                             placeholder="e.g. Type your college name here..."
-                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-teal-400 transition-all outline-none shadow-sm"
+                            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-5 text-[14px] text-slate-600 focus:border-indigo-400 transition-all outline-none shadow-sm"
                           />
                         </div>
                       )}
@@ -1955,9 +1955,9 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
 
               <button 
                 onClick={() => addQuestion(sIdx)}
-                className="w-full py-6 bg-white border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50/30 transition-all duration-300 flex items-center justify-center gap-3 font-black text-[15px] uppercase tracking-widest"
+                className="w-full py-6 bg-white border-2 border-dashed border-slate-100 rounded-3xl text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all duration-300 flex items-center justify-center gap-3 font-black text-[15px] uppercase tracking-widest"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
+                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all">
                   <Plus className="w-5 h-5" />
                 </div>
                 Add New Question to this phase
@@ -1989,7 +1989,7 @@ function QuestionnaireManager({ questionnaire, onBack, onSave }: { questionnaire
           <button 
             onClick={saveChanges}
             disabled={isSaving}
-            className="px-8 py-3 bg-teal-700 hover:bg-teal-600 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-3 shadow-xl shadow-blue-900/40 transition-all active:scale-95"
+            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black rounded-2xl flex items-center gap-3 shadow-xl shadow-blue-900/40 transition-all active:scale-95"
           >
             {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             FINALIZE & PUBLISH
@@ -2016,7 +2016,7 @@ function QuestionnairesPage({ data, onView, onEdit }: { data: any, onView: (q: a
   const renderTable = (list: any[], title: string) => (
     <div className="space-y-4">
       <div className="flex items-center gap-3 px-2">
-        <div className="h-6 w-1 bg-teal-700 rounded-full" />
+        <div className="h-6 w-1 bg-indigo-600 rounded-full" />
         <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-slate-400">{title}</h3>
       </div>
       <Card className="overflow-hidden">
@@ -2050,7 +2050,7 @@ function QuestionnairesPage({ data, onView, onEdit }: { data: any, onView: (q: a
                   <td className="px-6 py-4 text-right flex justify-end gap-2">
                     <button 
                       onClick={() => onView(q)}
-                      className="text-[11px] font-extrabold text-teal-700 hover:text-teal-800 bg-teal-50 px-3 py-1.5 rounded-full transition-colors"
+                      className="text-[11px] font-extrabold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full transition-colors"
                     >
                       View
                     </button>
@@ -4040,15 +4040,15 @@ function FeaturesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Feature Key (Unique)</label>
-                <input value={newFeature.key} onChange={(e) => setNewFeature({...newFeature, key: e.target.value})} placeholder="e.g. student_portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-teal-500" />
+                <input value={newFeature.key} onChange={(e) => setNewFeature({...newFeature, key: e.target.value})} placeholder="e.g. student_portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-indigo-500" />
               </div>
               <div>
                 <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Display Title</label>
-                <input value={newFeature.title} onChange={(e) => setNewFeature({...newFeature, title: e.target.value})} placeholder="e.g. My Portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-teal-500" />
+                <input value={newFeature.title} onChange={(e) => setNewFeature({...newFeature, title: e.target.value})} placeholder="e.g. My Portfolio" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-indigo-500" />
               </div>
               <div>
                 <label className="text-[12px] font-medium text-slate-500 mb-1.5 block">Portal Category</label>
-                <select value={newFeature.category} onChange={(e) => setNewFeature({...newFeature, category: e.target.value})} className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-teal-500 cursor-pointer">
+                <select value={newFeature.category} onChange={(e) => setNewFeature({...newFeature, category: e.target.value})} className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-medium text-slate-900 outline-none focus:border-indigo-500 cursor-pointer">
                   <option value="student">Student Portal</option>
                   <option value="mentor">Mentor Portal</option>
                   <option value="global">Global Settings</option>
@@ -4064,7 +4064,7 @@ function FeaturesPage({ data, fetchAll }: { data: any, fetchAll: () => void }) {
       )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="p-6">
-          <h3 className="text-[15px] font-semibold text-slate-900 mb-5 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-teal-600" /> Student Portal Features</h3>
+          <h3 className="text-[15px] font-semibold text-slate-900 mb-5 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-indigo-500" /> Student Portal Features</h3>
           <div className="space-y-1">
             {studentFeatures.map((f: any) => (
               <div key={f.id} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
@@ -4219,7 +4219,7 @@ function SettingsPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="text-[13px] font-semibold text-teal-700 mb-3 border-b border-blue-50 pb-2">Student Portal Features</h4>
+              <h4 className="text-[13px] font-semibold text-indigo-600 mb-3 border-b border-blue-50 pb-2">Student Portal Features</h4>
               <div className="space-y-1">
                 {flags.filter(f => f.category === 'student').map((f) => (
                   <div key={f.key} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
@@ -4553,8 +4553,8 @@ export function AdminPanel({ initialPage = "dashboard" }: { initialPage?: AdminP
               title: "New Course",
               shortTitle: "New Path",
               description: "Course description here",
-              color: "text-teal-700",
-              bgColor: "bg-teal-600",
+              color: "text-indigo-600",
+              bgColor: "bg-indigo-500",
               icon: <BookOpen className="w-5 h-5" />,
               category: "Engineering",
               difficulty: "Beginner",
