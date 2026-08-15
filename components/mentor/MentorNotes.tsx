@@ -135,7 +135,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
          </div>
 
          <div className={`p-6 rounded-[2rem] border shadow-xs min-h-[55vh] flex flex-col gap-4 relative overflow-hidden transition-all duration-300 ${
-           editColor === "blue" ? "bg-blue-50 border-blue-200/50" :
+           editColor === "blue" ? "bg-indigo-50 border-indigo-200/50" :
            editColor === "teal" ? "bg-emerald-50 border-emerald-200/50" :
            editColor === "yellow" ? "bg-amber-50 border-amber-200/50" :
            editColor === "pink" ? "bg-rose-50 border-rose-200/50" :
@@ -168,7 +168,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
               <div className="flex gap-2.5">
                 {[
                   { key: "white", label: "White", class: "bg-white border-slate-200" },
-                  { key: "blue", label: "Blue", class: "bg-blue-50 border-blue-200/60" },
+                  { key: "blue", label: "Blue", class: "bg-indigo-50 border-indigo-200/60" },
                   { key: "teal", label: "Teal", class: "bg-emerald-50 border-emerald-200/60" },
                   { key: "yellow", label: "Yellow", class: "bg-amber-50 border-amber-200/60" },
                   { key: "pink", label: "Pink", class: "bg-rose-50 border-rose-200/60" },
@@ -207,7 +207,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
           )}
           <h2 className="text-xl font-medium tracking-tight text-slate-900 leading-tight">Session Notes</h2>
         </div>
-        <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full border border-blue-100 shadow-3xs">
+        <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 shadow-3xs">
           <FileText className="w-4 h-4" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">{notes.length} Total</span>
         </div>
@@ -220,7 +220,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
            placeholder="Search through your mentorship archive..." 
            value={searchQuery}
            onChange={(e) => setSearchQuery(e.target.value)}
-           className="w-full h-14 bg-white pl-12 text-[14px] font-medium rounded-2xl outline-none transition-all border border-slate-100 shadow-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-200" 
+           className="w-full h-14 bg-white pl-12 text-[14px] font-medium rounded-2xl outline-none transition-all border border-slate-100 shadow-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-200" 
          />
       </div>
 
@@ -237,7 +237,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
           </div>
         ) : filteredNotes.map(n => {
           const cardBg = 
-            n.color === "blue" ? "bg-blue-50 border-blue-200/50 hover:border-blue-300" :
+            n.color === "blue" ? "bg-indigo-50 border-indigo-200/50 hover:border-indigo-300" :
             n.color === "teal" ? "bg-emerald-50 border-emerald-200/50 hover:border-emerald-300" :
             n.color === "yellow" ? "bg-amber-50 border-amber-200/50 hover:border-amber-300" :
             n.color === "pink" ? "bg-rose-50 border-rose-200/50 hover:border-rose-300" :
@@ -245,7 +245,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
             "bg-white border-slate-100 hover:border-slate-200";
 
           const cardDot = 
-            n.color === "blue" ? "bg-blue-500" :
+            n.color === "blue" ? "bg-indigo-500" :
             n.color === "teal" ? "bg-emerald-400" :
             n.color === "yellow" ? "bg-amber-400" :
             n.color === "pink" ? "bg-rose-400" :
@@ -259,7 +259,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
               className={`p-6 rounded-[2rem] border shadow-sm relative group overflow-hidden transition-all duration-300 hover:shadow-md active:scale-[0.99] cursor-pointer ${cardBg}`}
             >
                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 bg-white/90 backdrop-blur px-2 py-1 rounded-xl shadow-sm border border-slate-100 z-20">
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setEditColor(n.color || "white"); setIsCreating(true); }} className="w-9 h-9 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"><Edit2 className="w-4 h-4"/></Button>
+                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setActiveNote(n); setEditTitle(n.title); setEditContent(n.content); setEditColor(n.color || "white"); setIsCreating(true); }} className="w-9 h-9 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"><Edit2 className="w-4 h-4"/></Button>
                   <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }} className="w-9 h-9 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4"/></Button>
                </div>
                
@@ -271,7 +271,7 @@ export function MentorNotes({ onClose }: { onClose?: () => void } = {}) {
                  <p className="text-[14px] text-slate-600 font-medium leading-relaxed line-clamp-2">{n.content}</p>
                  <div className="flex items-center gap-2 mt-2">
                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-widest bg-white/60 px-2.5 py-1.5 rounded-lg border border-slate-150 shadow-3xs">
-                     <Clock className="w-3.5 h-3.5 text-blue-500"/> {n.time}
+                     <Clock className="w-3.5 h-3.5 text-indigo-500"/> {n.time}
                    </div>
                  </div>
                </div>

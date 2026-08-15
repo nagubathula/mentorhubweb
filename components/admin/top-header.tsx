@@ -111,11 +111,11 @@ export function TopHeader() {
     <header className="h-16 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 bg-[#0F172A] text-white shrink-0 shadow-sm">
       <div className="flex-1 flex max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#2563EB]" />
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#4F46E5]" />
           <Input
             type="search"
             placeholder="Search..."
-            className="w-full pl-10 bg-white/10 border border-slate-700 shadow-none text-[13px] font-medium text-white placeholder-[#94A3B8] h-10 rounded-xl focus-visible:border-[#2563EB] focus-visible:ring-2 focus-visible:ring-[#2563EB]/20"
+            className="w-full pl-10 bg-white/10 border border-slate-700 shadow-none text-[13px] font-medium text-white placeholder-[#94A3B8] h-10 rounded-xl focus-visible:border-[#4F46E5] focus-visible:ring-2 focus-visible:ring-[#4F46E5]/20"
           />
         </div>
       </div>
@@ -160,7 +160,7 @@ export function TopHeader() {
                   notifications.map((n) => (
                     <div key={n.id} className="px-4 py-3 hover:bg-[#EFF6FF] transition-colors flex items-start gap-3 border-b border-slate-100 last:border-0">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                        n.type === 'unassigned' ? 'bg-amber-50 text-[#F59E0B]' : 'bg-blue-50 text-[#2563EB]'
+                        n.type === 'unassigned' ? 'bg-amber-50 text-[#F59E0B]' : 'bg-indigo-50 text-[#4F46E5]'
                       }`}>
                         {n.type === 'unassigned' ? <UserPlus className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                       </div>
@@ -180,7 +180,7 @@ export function TopHeader() {
           )}
         </div>
 
-        <div className="w-10 h-10 rounded-full bg-[#2563EB] flex items-center justify-center text-sm font-bold text-white cursor-pointer shadow-md border-2 border-white ring-1 ring-slate-700 overflow-hidden">
+        <div className="w-10 h-10 rounded-full bg-[#4F46E5] flex items-center justify-center text-sm font-bold text-white cursor-pointer shadow-md border-2 border-white ring-1 ring-slate-700 overflow-hidden">
            M
         </div>
       </div>

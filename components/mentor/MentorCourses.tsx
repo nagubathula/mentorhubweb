@@ -29,7 +29,7 @@ const getAestheticColor = (id: string, category?: string) => {
     return "bg-[#8b5cf6] shadow-md shadow-purple-500/10";
   }
   if (cat.includes("data") || cat.includes("analytics") || cat.includes("science")) {
-    return "bg-[#3b82f6] shadow-md shadow-blue-500/10";
+    return "bg-[#3b82f6] shadow-md shadow-indigo-500/10";
   }
   if (cat.includes("vlsi") || cat.includes("semiconductor") || cat.includes("hardware") || cat.includes("engineering") || cat.includes("embedded")) {
     if (cat.includes("vlsi")) {
@@ -39,7 +39,7 @@ const getAestheticColor = (id: string, category?: string) => {
   }
   
   const colors = [
-    "bg-[#3b82f6] shadow-md shadow-blue-500/10",
+    "bg-[#3b82f6] shadow-md shadow-indigo-500/10",
     "bg-[#ff2d55] shadow-md shadow-rose-500/10",
     "bg-[#10b981] shadow-md shadow-emerald-500/10",
     "bg-[#8b5cf6] shadow-md shadow-purple-500/10",
@@ -179,7 +179,7 @@ function l5(c: any): ExtendedCourse {
 function RenderLessonIcon({ type }: { type: string }) {
   switch (type) {
     case "video":
-      return <Play className="w-3.5 h-3.5 text-blue-500" />;
+      return <Play className="w-3.5 h-3.5 text-indigo-500" />;
     case "exercise":
       return <Code2 className="w-3.5 h-3.5 text-emerald-500" />;
     case "quiz":

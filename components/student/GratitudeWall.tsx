@@ -47,8 +47,8 @@ const initialChecklist: ChecklistItem[] = [
     description: "Post on social media or in your community about how your mentor has influenced your journey. Tag them!",
     category: "express",
     completed: false,
-    color: "text-blue-500",
-    bgColor: "bg-blue-50",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-50",
     icon: "🌐"
   },
   {
@@ -117,8 +117,8 @@ const initialChecklist: ChecklistItem[] = [
     description: "If someone asks for a mentor or guidance, recommend yours. This helps expand their impact and shows deep trust.",
     category: "action",
     completed: false,
-    color: "text-teal-500",
-    bgColor: "bg-teal-50",
+    color: "text-indigo-400",
+    bgColor: "bg-indigo-50",
     icon: "📢"
   },
   {
@@ -325,7 +325,7 @@ export function GratitudeWall({ onBack, coins }: GratitudeWallProps) {
               className="space-y-4"
             >
               {/* Support Banner Info Card */}
-              <div className="bg-gradient-to-br from-[#4F46E5] to-[#3B82F6] rounded-2xl p-5 text-white relative overflow-hidden shadow-md">
+              <div className="bg-gradient-to-br from-[#4F46E5] to-[#4F46E5] rounded-2xl p-5 text-white relative overflow-hidden shadow-md">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
                 <div className="relative space-y-2.5">
                   <div className="flex items-center gap-2">

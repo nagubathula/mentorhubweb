@@ -53,7 +53,7 @@ const memesData = [
     bottom: "but you don't know why",
     emoji: "😅",
     bg: "from-blue-100 to-cyan-100",
-    border: "border-blue-200/60",
+    border: "border-indigo-200/60",
     reactions: { laugh: 42, relate: 28, fire: 15 }
   },
   {
@@ -278,13 +278,13 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
       transition={{ duration: 0.2 }}
     >
       {/* Intro block */}
-      <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border border-teal-100 p-4 text-center">
+      <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border border-indigo-100 p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-1.5">
-          <Sparkles className="w-4 h-4 text-teal-500" />
+          <Sparkles className="w-4 h-4 text-indigo-400" />
           <p className="text-teal-900 text-xs font-semibold">5-Minute Brain Recharge Mode</p>
-          <span className="bg-teal-100 text-teal-600 text-[9px] px-1.5 py-0.5 rounded font-medium">RELAX</span>
+          <span className="bg-indigo-100 text-indigo-500 text-[9px] px-1.5 py-0.5 rounded font-medium">RELAX</span>
         </div>
-        <p className="text-teal-700 text-[11px] leading-relaxed">
+        <p className="text-indigo-600 text-[11px] leading-relaxed">
           Deep, deliberate breathing signals your brain to lower stress, increases oxygen, and resets your cognitive load for better learning.
         </p>
       </div>
@@ -293,7 +293,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm min-h-[300px] flex flex-col items-center justify-center relative overflow-hidden">
         {!isStarted && !isCompleted ? (
           <div className="text-center space-y-4 py-8">
-            <div className="w-20 h-20 rounded-full bg-teal-50 flex items-center justify-center mx-auto text-3xl animate-bounce">
+            <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto text-3xl animate-bounce">
               🧘
             </div>
             <div>
@@ -304,7 +304,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
             </div>
             <button
               onClick={startExercise}
-              className="px-6 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-semibold hover:bg-teal-700 active:scale-95 transition-transform flex items-center gap-2 mx-auto shadow-md shadow-teal-600/10"
+              className="px-6 py-2.5 bg-indigo-500 text-white rounded-xl text-xs font-semibold hover:bg-indigo-600 active:scale-95 transition-transform flex items-center gap-2 mx-auto shadow-md shadow-indigo-600/10"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               Start Reset
@@ -364,7 +364,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
                 transition={{ duration: currentExercise.duration, ease: "easeInOut" }}
               >
                 <span className="text-2xl mb-1">{currentExercise.icon}</span>
-                <span className="text-teal-800 text-[17px] font-medium tracking-tight">{timeLeft}s</span>
+                <span className="text-indigo-700 text-[17px] font-medium tracking-tight">{timeLeft}s</span>
               </motion.div>
             </div>
 
@@ -397,7 +397,7 @@ function CalmReset({ onCoinsEarned }: { onCoinsEarned: (amount: number) => void 
         <AnimatePresence mode="wait">
           <motion.p
             key={activeAffirmationIdx}
-            className="text-teal-600 text-xs font-semibold leading-relaxed"
+            className="text-indigo-500 text-xs font-semibold leading-relaxed"
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
@@ -691,7 +691,7 @@ function MemesCarousel() {
 
   const reactionButtons = [
     { key: "laugh", label: "😂", activeColor: "bg-amber-100 text-amber-600 border-amber-300" },
-    { key: "relate", label: "🤝", activeColor: "bg-blue-100 text-blue-600 border-blue-300" },
+    { key: "relate", label: "🤝", activeColor: "bg-indigo-100 text-indigo-600 border-indigo-300" },
     { key: "fire", label: "🔥", activeColor: "bg-orange-100 text-orange-600 border-orange-300" }
   ];
 
