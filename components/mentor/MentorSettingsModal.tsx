@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Settings, User, Key, Bell, Shield, LogOut, X, ChevronRight, 
-  ArrowLeft, Check, Lock, Eye, EyeOff, AlertCircle, Sparkles, Mail, MapPin, Briefcase 
+  ArrowLeft, Check, Lock, Eye, EyeOff, AlertCircle, Sparkles, Mail, MapPin, Briefcase,
+  Camera, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,13 @@ export function MentorSettingsModal({
   const [currentView, setCurrentView] = useState<ViewState>("MAIN");
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Profile Picture State & Ref
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isRemoveAvatarModalOpen, setIsRemoveAvatarModalOpen] = useState(false);
+  const [isPreviewAvatarOpen, setIsPreviewAvatarOpen] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
 
   // Edit Profile Form State
   const [nameInput, setNameInput] = useState(profile.name || "");
@@ -96,6 +104,111 @@ export function MentorSettingsModal({
     setTimeout(() => {
       setFeedbackMsg(null);
     }, 4000);
+  };
+
+  // Avatar Upload Handler
+  const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      let finalAvatarUrl = "";
+      if (userId) {
+        const fileExt = file.name.split('.').pop() || 'png';
+        const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+        if (!uploadErr) {
+          const { data: { publicUrl: url } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          finalAvatarUrl = url;
+        }
+      }
+
+      if (!finalAvatarUrl) {
+        finalAvatarUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => resolve(event.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      setAvatarInput(finalAvatarUrl);
+
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: finalAvatarUrl };
+
+        await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+      }
+
+      onProfileUpdate();
+      showToast("success", "Profile picture updated successfully!");
+    } catch (err: any) {
+      console.error("Failed to upload avatar:", err);
+      showToast("error", "Failed to upload profile picture.");
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Avatar Remove Handler
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      // 1. Storage Cleanup if Supabase Storage URL
+      if (avatarInput && avatarInput.includes('/storage/v1/object/public/avatars/')) {
+        try {
+          const parts = avatarInput.split('/storage/v1/object/public/avatars/');
+          if (parts.length > 1) {
+            const filePath = decodeURIComponent(parts[1]);
+            await supabase.storage.from('avatars').remove([filePath]);
+          }
+        } catch (storageErr) {
+          console.warn("Storage avatar removal warning:", storageErr);
+        }
+      }
+
+      // 2. Database Update
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: null };
+
+        const { error: dbErr } = await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+
+        if (dbErr) {
+          console.error("Database avatar removal error:", dbErr);
+          showToast("error", "Failed to remove profile picture: " + dbErr.message);
+          return;
+        }
+      }
+
+      setAvatarInput("");
+      onProfileUpdate();
+      showToast("success", "Profile picture removed successfully!");
+      setIsRemoveAvatarModalOpen(false);
+    } catch (err: any) {
+      console.error("Remove profile picture error:", err);
+      showToast("error", "Failed to remove profile picture.");
+    } finally {
+      setIsRemovingAvatar(false);
+    }
   };
 
   // 1. Edit Profile Handler
@@ -427,25 +540,92 @@ export function MentorSettingsModal({
                 <p className="text-[10px] text-slate-400 ml-1">Email cannot be modified directly.</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider ml-1">Avatar Image URL (Optional)</Label>
-                  {avatarInput && (
+                  <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Profile Picture</Label>
+                  <input
+                    type="file"
+                    ref={avatarInputRef}
+                    onChange={handleAvatarFileUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  {avatarInput ? (
                     <button
                       type="button"
-                      onClick={() => setAvatarInput("")}
-                      className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer"
+                      onClick={() => setIsPreviewAvatarOpen(true)}
+                      className="w-16 h-16 rounded-2xl bg-cover bg-center border-2 border-slate-200 shrink-0 relative group overflow-hidden shadow-sm hover:scale-105 transition-transform cursor-pointer"
+                      style={{ backgroundImage: `url(${avatarInput})` }}
+                      title="Tap to view full profile picture"
                     >
-                      Clear Photo URL
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold uppercase backdrop-blur-[1px]">
+                        <Eye className="w-3.5 h-3.5 mr-0.5" /> View
+                      </div>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="w-16 h-16 rounded-2xl bg-slate-200 flex items-center justify-center text-slate-500 shrink-0 border border-slate-300 hover:scale-105 transition-transform cursor-pointer"
+                      title="Upload profile picture"
+                    >
+                      <User className="w-7 h-7" />
                     </button>
                   )}
+
+                  <div className="flex flex-col gap-2 flex-1">
+                    {avatarInput ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => avatarInputRef.current?.click()}
+                          disabled={isUploadingAvatar || isRemovingAvatar}
+                          className="h-9 px-3.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-semibold text-xs transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                          {isUploadingAvatar ? "Uploading..." : "Change Photo"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsRemoveAvatarModalOpen(true)}
+                          disabled={isUploadingAvatar || isRemovingAvatar}
+                          className="h-9 px-3.5 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-semibold text-xs transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Remove Photo
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => avatarInputRef.current?.click()}
+                        disabled={isUploadingAvatar || isRemovingAvatar}
+                        className="h-9 px-4 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-semibold text-xs transition-all cursor-pointer flex items-center gap-1.5 w-fit"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        {isUploadingAvatar ? "Uploading..." : "+ Upload Profile Picture"}
+                      </Button>
+                    )}
+                    <p className="text-[11px] text-slate-500 font-medium">Supports JPG, PNG or WEBP.</p>
+                  </div>
                 </div>
-                <Input 
-                  value={avatarInput}
-                  onChange={(e) => setAvatarInput(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="h-12 rounded-xl border-slate-200 text-sm font-medium bg-slate-50 focus:bg-white"
-                />
+
+                <div className="pt-2 border-t border-slate-200/60 space-y-1">
+                  <Label className="text-[11px] font-semibold text-slate-500">Or Paste Image URL</Label>
+                  <Input 
+                    value={avatarInput}
+                    onChange={(e) => setAvatarInput(e.target.value)}
+                    placeholder="https://example.com/avatar.jpg"
+                    className="h-10 rounded-xl border-slate-200 text-xs font-medium bg-white"
+                  />
+                </div>
               </div>
 
               <div className="pt-2 flex gap-3">
@@ -694,6 +874,109 @@ export function MentorSettingsModal({
           </Button>
         </div>
       </div>
+
+      {/* Remove Profile Picture Confirmation Dialog */}
+      {isRemoveAvatarModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-slate-900 leading-tight">Remove profile picture?</h4>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Are you sure you want to remove your profile picture?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsRemoveAvatarModalOpen(false)}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isRemovingAvatar ? "Removing..." : "Remove"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enlarged Photo Preview Lightbox Modal */}
+      {isPreviewAvatarOpen && avatarInput && (
+        <div 
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+          onClick={() => setIsPreviewAvatarOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 rounded-[2.5rem] p-6 max-w-sm w-full border border-slate-800 shadow-2xl flex flex-col items-center gap-5 text-center relative animate-in zoom-in-95 duration-200 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={() => setIsPreviewAvatarOpen(false)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Close Preview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Large Image Preview */}
+            <div className="relative mt-2">
+              <div 
+                className="w-64 h-64 md:w-72 md:h-72 rounded-[2.5rem] border-4 border-white/20 bg-cover bg-center shadow-2xl"
+                style={{ backgroundImage: `url(${avatarInput})` }}
+              />
+            </div>
+
+            {/* User Info */}
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white tracking-tight">{nameInput || "Mentor"}</h3>
+              <p className="text-xs text-slate-400 font-medium">{roleInput || "Mentor Profile"}</p>
+            </div>
+
+            {/* Action Controls */}
+            <div className="flex items-center gap-2.5 w-full pt-2 border-t border-slate-800/80">
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  avatarInputRef.current?.click();
+                }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="flex-1 h-11 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+              >
+                <Camera className="w-4 h-4 mr-1.5" />
+                Change Photo
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  setIsRemoveAvatarModalOpen(true);
+                }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="flex-1 h-11 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
