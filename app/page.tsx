@@ -5477,34 +5477,34 @@ export default function OnboardingFlow() {
                 </div>
                 
                 {/* Bottom Navigation */}
-                <div className="absolute bottom-0 left-0 right-0 bg-[#0F172A] border-t border-slate-800 z-50 shadow-lg">
-                  <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                  <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))]">
                     {featureFlags.student_dashboard !== false && (
-                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "DASHBOARD_MAIN" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      <button onClick={() => setState("DASHBOARD_MAIN")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "DASHBOARD_MAIN" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <Home className="w-5 h-5" strokeWidth={state === "DASHBOARD_MAIN" ? 2.5 : 2}/>
                         <span className="text-[10px]">Home</span>
                       </button>
                     )}
                     {featureFlags.student_courses !== false && (
-                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      <button onClick={() => setState("STUDENT_COURSES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <BookOpen className="w-5 h-5" strokeWidth={["STUDENT_COURSES", "COURSE_DETAILS"].includes(state) ? 2.5 : 2}/>
                         <span className="text-[10px]">Courses</span>
                       </button>
                     )}
                     {featureFlags.student_games !== false && (
-                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 relative ${state === "GAMES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      <button onClick={() => setState("GAMES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer relative ${state === "GAMES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <Gamepad2 className="w-5 h-5" strokeWidth={state === "GAMES" ? 2.5 : 2}/>
-                        {state !== "GAMES" && <div className="absolute top-0 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-[#0F172A]"></div>}
+                        {state !== "GAMES" && <div className="absolute top-1 right-2.5 w-2 h-2 bg-[#EF4444] rounded-full border-2 border-white"></div>}
                         <span className="text-[10px]">Games</span>
                       </button>
                     )}
                     {featureFlags.student_notes !== false && (
-                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      <button onClick={() => setState("NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <NotebookPen className="w-5 h-5" strokeWidth={state === "NOTES" ? 2.5 : 2}/>
                         <span className="text-[10px]">Notes</span>
                       </button>
                     )}
-                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "PROFILE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                    <button onClick={() => setState("PROFILE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "PROFILE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                       <User className="w-5 h-5" strokeWidth={state === "PROFILE" ? 2.5 : 2}/>
                       <span className="text-[10px]">Profile</span>
                     </button>
@@ -6103,25 +6103,25 @@ export default function OnboardingFlow() {
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-[#0F172A] border-t border-slate-800 z-50 shadow-lg">
-                    <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_DASHBOARD" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                  <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                    <div className="w-full max-w-2xl mx-auto flex justify-around items-center px-3 sm:px-12 pt-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))]">
+                      {featureFlags.mentor_dashboard !== false && <button onClick={() => setState("MENTOR_DASHBOARD")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_DASHBOARD" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <Home className="w-5 h-5" strokeWidth={state === "MENTOR_DASHBOARD" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_DASHBOARD" ? "font-bold" : "font-medium"}`}>Home</span>
                       </button>}
-                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_STUDENTS" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      {featureFlags.mentor_students !== false && <button onClick={() => setState("MENTOR_STUDENTS")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_STUDENTS" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <Users className="w-5 h-5" strokeWidth={state === "MENTOR_STUDENTS" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_STUDENTS" ? "font-bold" : "font-medium"}`}>Students</span>
                       </button>}
-                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      {featureFlags.mentor_sessions !== false && <button onClick={() => setState("MENTOR_NOTES")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_NOTES" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <NotebookPen className="w-5 h-5" strokeWidth={state === "MENTOR_NOTES" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_NOTES" ? "font-bold" : "font-medium"}`}>Notes</span>
                       </button>}
-                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_CIRCLE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      {featureFlags.mentor_circle !== false && <button onClick={() => setState("MENTOR_CIRCLE")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_CIRCLE" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <Users className="w-5 h-5" strokeWidth={state === "MENTOR_CIRCLE" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_CIRCLE" ? "font-bold" : "font-medium"}`}>Circle</span>
                       </button>}
-                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl active:scale-95 ${state === "MENTOR_ACCOUNT" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-[#CBD5E1] hover:text-white hover:bg-[#1E293B]"}`}>
+                      {featureFlags.mentor_account !== false && <button onClick={() => setState("MENTOR_ACCOUNT")} className={`flex flex-col items-center gap-1 transition-all duration-200 px-3 py-1.5 rounded-xl active:scale-95 cursor-pointer ${state === "MENTOR_ACCOUNT" ? "bg-[#2563EB] text-white font-bold shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}>
                         <User className="w-5 h-5" strokeWidth={state === "MENTOR_ACCOUNT" ? 2.5 : 2}/>
                         <span className={`text-[10px] ${state === "MENTOR_ACCOUNT" ? "font-bold" : "font-medium"}`}>Profile</span>
                       </button>}
