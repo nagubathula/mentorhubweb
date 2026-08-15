@@ -352,6 +352,9 @@ export default function OnboardingFlow() {
   const [copiedInstagramToast, setCopiedInstagramToast] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isRemoveAvatarModalOpen, setIsRemoveAvatarModalOpen] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Student Settings state
   const [isStudentSettingsOpen, setIsStudentSettingsOpen] = useState(false);
@@ -425,6 +428,119 @@ export default function OnboardingFlow() {
       setSettingsFeedback("Failed to update password.");
     } finally {
       setIsSavingSettings(false);
+    }
+  };
+
+  const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || userProfile?.id;
+      
+      let finalAvatarUrl = "";
+      if (userId) {
+        const fileExt = file.name.split('.').pop() || 'png';
+        const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+        if (!uploadErr) {
+          const { data: { publicUrl: url } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          finalAvatarUrl = url;
+        }
+      }
+
+      if (!finalAvatarUrl) {
+        finalAvatarUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => resolve(event.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      setAvatarUrl(finalAvatarUrl);
+      setUserProfile((prev: any) => prev ? { ...prev, preferences: { ...((prev.preferences as any) || {}), avatar_url: finalAvatarUrl } } : null);
+      setCookie('mentorhub_avatarUrl', finalAvatarUrl);
+
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: finalAvatarUrl };
+
+        const { error: dbErr } = await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+
+        if (dbErr) {
+          console.error("Supabase avatar update error:", dbErr);
+        }
+      }
+
+      showToast("Profile picture updated successfully!", "success");
+    } catch (err: any) {
+      console.error("Failed to upload avatar:", err);
+      showToast("Failed to upload profile picture.", "error");
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || userProfile?.id;
+
+      // 1. Storage Cleanup if Supabase Storage file URL
+      if (avatarUrl && avatarUrl.includes('/storage/v1/object/public/avatars/')) {
+        try {
+          const parts = avatarUrl.split('/storage/v1/object/public/avatars/');
+          if (parts.length > 1) {
+            const filePath = decodeURIComponent(parts[1]);
+            await supabase.storage.from('avatars').remove([filePath]);
+          }
+        } catch (storageErr) {
+          console.warn("Storage avatar removal warning:", storageErr);
+        }
+      }
+
+      // 2. Database Update (Source of Truth)
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: null };
+
+        const { error: dbErr } = await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+
+        if (dbErr) {
+          console.error("Database avatar removal error:", dbErr);
+          showToast("Failed to remove profile picture: " + dbErr.message, "error");
+          return;
+        }
+      }
+
+      // 3. React State Update
+      setAvatarUrl(null);
+      setUserProfile((prev: any) => prev ? { ...prev, preferences: { ...((prev.preferences as any) || {}), avatar_url: null } } : null);
+
+      // 4. Remove Cookie
+      setCookie('mentorhub_avatarUrl', '', -1);
+
+      showToast("Profile picture removed successfully!", "info");
+      setIsRemoveAvatarModalOpen(false);
+    } catch (err: any) {
+      console.error("Remove profile picture error:", err);
+      showToast("Failed to remove profile picture.", "error");
+    } finally {
+      setIsRemovingAvatar(false);
     }
   };
 
@@ -4966,27 +5082,6 @@ export default function OnboardingFlow() {
                 setTimeout(() => setCopiedReferralLink(false), 2000);
               };
 
-              const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                  const dataUrl = event.target?.result as string;
-                  setAvatarUrl(dataUrl);
-                  if (userProfile?.id) {
-                    const updatedPrefs = {
-                      ...((userProfile.preferences as any) || {}),
-                      avatar_url: dataUrl
-                    };
-                    await supabase
-                      .from('profiles')
-                      .update({ avatar_url: dataUrl, preferences: updatedPrefs })
-                      .eq('id', userProfile.id);
-                  }
-                };
-                reader.readAsDataURL(file);
-              };
-
               return (
                 <div className="flex flex-col pt-0 bg-slate-50 pb-6 -mx-6 md:-mx-8 px-0 overflow-hidden">
                   
@@ -5018,15 +5113,15 @@ export default function OnboardingFlow() {
                     </div>
                     
                     <div className="flex flex-col items-center gap-3">
-                      <div className="relative">
+                      <div className="relative group">
                         {avatarUrl ? (
                           <div 
-                            className="w-[88px] h-[88px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg"
+                            className="w-[92px] h-[92px] rounded-full border-2 border-white/20 bg-cover bg-center shadow-lg transition-transform duration-300"
                             style={{ backgroundImage: `url(${avatarUrl})` }}
                           ></div>
                         ) : (
-                          <div className="w-[88px] h-[88px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
-                            <User className="w-10 h-10 stroke-[1.5]" />
+                          <div className="w-[92px] h-[92px] rounded-full border-2 border-white/20 flex items-center justify-center bg-slate-800 text-slate-400 shadow-lg">
+                            <User className="w-11 h-11 stroke-[1.5]" />
                           </div>
                         )}
                         <input
@@ -5037,12 +5132,50 @@ export default function OnboardingFlow() {
                           className="hidden"
                         />
                         <button 
+                          type="button"
                           onClick={() => avatarInputRef.current?.click()}
-                          className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-700 shadow-md border-2 border-transparent hover:scale-105 active:scale-95 transition-all"
-                          title="Change profile picture"
+                          disabled={isUploadingAvatar || isRemovingAvatar}
+                          className="absolute -bottom-1 -right-1 w-8 h-8 bg-white text-slate-700 hover:bg-slate-100 rounded-full flex items-center justify-center shadow-md border-2 border-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50"
+                          title={avatarUrl ? "Change profile picture" : "Upload profile picture"}
                         >
-                          <Camera className="w-[13px] h-[13px]" strokeWidth={3} />
+                          <Camera className="w-3.5 h-3.5" strokeWidth={2.5} />
                         </button>
+                      </div>
+
+                      {/* Photo Action Buttons */}
+                      <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+                        {avatarUrl ? (
+                          <>
+                            <button 
+                              type="button"
+                              onClick={() => avatarInputRef.current?.click()}
+                              disabled={isUploadingAvatar || isRemovingAvatar}
+                              className="bg-white/10 hover:bg-white/20 text-white text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+                            >
+                              <Camera className="w-3.5 h-3.5" />
+                              {isUploadingAvatar ? "Uploading..." : "Change Photo"}
+                            </button>
+                            <button 
+                              type="button"
+                              onClick={() => setIsRemoveAvatarModalOpen(true)}
+                              disabled={isUploadingAvatar || isRemovingAvatar}
+                              className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-rose-100 text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-rose-400/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              {isRemovingAvatar ? "Removing..." : "Remove Photo"}
+                            </button>
+                          </>
+                        ) : (
+                          <button 
+                            type="button"
+                            onClick={() => avatarInputRef.current?.click()}
+                            disabled={isUploadingAvatar}
+                            className="bg-white/10 hover:bg-white/20 text-white text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            {isUploadingAvatar ? "Uploading..." : "Add Profile Picture"}
+                          </button>
+                        )}
                       </div>
                       <div className="text-center text-white">
                         <h2 className="text-[20px] font-medium leading-tight">{name || "Student"}</h2>
@@ -6250,6 +6383,46 @@ export default function OnboardingFlow() {
                     {studentSettingsView === "EDIT_PROFILE" && (
                       <div className="space-y-4">
                         <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">Profile Picture</Label>
+                          <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                            {avatarUrl ? (
+                              <div className="w-12 h-12 rounded-full bg-cover bg-center border border-slate-200 shrink-0" style={{ backgroundImage: `url(${avatarUrl})` }}></div>
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                                <User className="w-6 h-6" />
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 flex-1 flex-wrap">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => avatarInputRef.current?.click()}
+                                disabled={isUploadingAvatar || isRemovingAvatar}
+                                className="h-9 px-3 text-xs font-semibold rounded-xl bg-white border-slate-200 hover:bg-slate-50 text-slate-700 cursor-pointer"
+                              >
+                                <Camera className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+                                {isUploadingAvatar ? "Uploading..." : avatarUrl ? "Change Photo" : "Add Photo"}
+                              </Button>
+                              {avatarUrl && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setIsStudentSettingsOpen(false);
+                                    setIsRemoveAvatarModalOpen(true);
+                                  }}
+                                  disabled={isUploadingAvatar || isRemovingAvatar}
+                                  className="h-9 px-3 text-xs font-semibold rounded-xl bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                  Remove Photo
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
                           <Label className="text-xs text-slate-500 font-medium uppercase tracking-wider">Full Name</Label>
                           <Input 
                             value={editStudentName} 
@@ -6385,8 +6558,44 @@ export default function OnboardingFlow() {
               </div>
             )}
           </AnimatePresence>
+
+      {/* Remove Profile Picture Confirmation Dialog */}
+      {isRemoveAvatarModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-slate-900 leading-tight">Remove profile picture?</h4>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Are you sure you want to remove your profile picture?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsRemoveAvatarModalOpen(false)}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isRemovingAvatar ? "Removing..." : "Remove"}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Professional Toast Notification Overlay */}
       {toastNotice && (
@@ -6401,10 +6610,11 @@ export default function OnboardingFlow() {
             {toastNotice.type === 'success' && <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />}
             {toastNotice.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
             {toastNotice.type === 'info' && <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />}
-            <span>{toastNotice.message}</span>
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

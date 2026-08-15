@@ -115,6 +115,8 @@ export function MentorSettingsModal({
       }
 
       const currentUserId = session.user.id;
+      const { data: prof } = await supabase.from("profiles").select("preferences").eq("id", currentUserId).maybeSingle();
+      const currentPrefs = (prof?.preferences as any) || {};
 
       // Update Supabase profiles table
       const { error } = await supabase
@@ -122,9 +124,10 @@ export function MentorSettingsModal({
         .update({
           name: nameInput,
           expertise: roleInput,
-          avatar_url: avatarInput || null,
           preferences: {
-            location: locationInput
+            ...currentPrefs,
+            location: locationInput,
+            avatar_url: avatarInput || null
           }
         })
         .eq("id", currentUserId);
@@ -425,7 +428,18 @@ export function MentorSettingsModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider ml-1">Avatar Image URL (Optional)</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wider ml-1">Avatar Image URL (Optional)</Label>
+                  {avatarInput && (
+                    <button
+                      type="button"
+                      onClick={() => setAvatarInput("")}
+                      className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer"
+                    >
+                      Clear Photo URL
+                    </button>
+                  )}
+                </div>
                 <Input 
                   value={avatarInput}
                   onChange={(e) => setAvatarInput(e.target.value)}
