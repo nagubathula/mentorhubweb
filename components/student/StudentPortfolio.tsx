@@ -22,7 +22,7 @@ interface StudentPortfolioProps {
 // 1. Module Definition matching Course Modules
 const syllabusModules = [
   { id: "m1", title: "Getting Started", color: "bg-emerald-500", icon: <Rocket className="w-4 h-4 text-white" /> },
-  { id: "m2", title: "Data Types & Variables", color: "bg-blue-500", icon: <Binary className="w-4 h-4 text-white" /> },
+  { id: "m2", title: "Data Types & Variables", color: "bg-teal-600", icon: <Binary className="w-4 h-4 text-white" /> },
   { id: "m3", title: "Control Flow", color: "bg-violet-500", icon: <GitFork className="w-4 h-4 text-white" /> },
   { id: "m4", title: "Loops & Iterations", color: "bg-amber-500", icon: <RotateCcw className="w-4 h-4 text-white" /> },
   { id: "m5", title: "Functions & Scope", color: "bg-pink-500", icon: <Box className="w-4 h-4 text-white" /> },

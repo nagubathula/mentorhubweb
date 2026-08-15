@@ -51,8 +51,8 @@ const PLAYBOOK_PRACTICES: PlaybookItem[] = [
     id: "bp2",
     title: "Set Clear Weekly Goals",
     emoji: "🎯",
-    color: "text-blue-500",
-    bgColor: "bg-blue-50",
+    color: "text-teal-600",
+    bgColor: "bg-teal-50",
     description: "Students stay motivated when they know what to do next. Define small, achievable weekly goals.",
     practices: [
       "Define small weekly learning goals",
@@ -249,8 +249,8 @@ const CONVERSATION_GUIDELINES: ConversationItem[] = [
     id: "cl3",
     title: "Encourage Personal Sharing",
     emoji: "💬",
-    color: "text-blue-500",
-    bgColor: "bg-blue-50",
+    color: "text-teal-600",
+    bgColor: "bg-teal-50",
     description: "Encourage the student to open up about their motivations and preferences.",
     items: [
       "Ask about what motivates them",

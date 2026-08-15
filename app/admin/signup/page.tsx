@@ -71,7 +71,7 @@ export default function AdminSignupPage() {
                   <span className="font-medium text-slate-700">{email}</span>.
                   Click it to activate your account.
                 </p>
-                <Link href="/admin/login" className="text-sm text-blue-600 font-medium hover:underline mt-2">
+                <Link href="/admin/login" className="text-sm text-teal-700 font-medium hover:underline mt-2">
                   Back to sign in
                 </Link>
               </div>
@@ -131,7 +131,7 @@ export default function AdminSignupPage() {
                 </Button>
                 <div className="text-center text-sm text-slate-500">
                   Already have an account?{" "}
-                  <Link href="/admin/login" className="text-blue-600 font-medium hover:underline">
+                  <Link href="/admin/login" className="text-teal-700 font-medium hover:underline">
                     Sign in
                   </Link>
                 </div>

@@ -357,7 +357,7 @@ export function StudentGames({ userName, userCoins, onCoinsEarned, onBack, onPla
               tab === "snakes" ? (
                 <Gamepad2 className={cn("w-3.5 h-3.5 transition-colors", isActive ? "text-emerald-500" : "text-slate-400")} />
               ) : tab === "ludo" ? (
-                <Dices className={cn("w-3.5 h-3.5 transition-colors", isActive ? "text-blue-500" : "text-slate-400")} />
+                <Dices className={cn("w-3.5 h-3.5 transition-colors", isActive ? "text-teal-600" : "text-slate-400")} />
               ) : tab === "kbc" ? (
                 <Trophy className={cn("w-3.5 h-3.5 transition-colors", isActive ? "text-amber-500" : "text-slate-400")} />
               ) : (
@@ -819,7 +819,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex flex-col items-center gap-1">
-                <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-medium text-sm shadow-md">
+                <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-medium text-sm shadow-md">
                   {firstLetter}
                 </div>
                 <p className="text-slate-600 text-[10px] font-medium">You</p>
@@ -853,7 +853,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
       <div className="flex items-center justify-between px-3 py-1.5 bg-transparent">
         {/* Player Info */}
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
+          <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
           <span className="text-[10px] font-semibold text-slate-600">You (Pos {playerPosition})</span>
         </div>
 
@@ -884,7 +884,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                 if (isFinish) cellBg = "bg-amber-50 border-amber-200 text-amber-600";
                 else if (hasSnake) cellBg = "bg-rose-50 border-rose-200 text-rose-500";
                 else if (hasLadder) cellBg = "bg-emerald-50 border-emerald-200 text-emerald-600";
-                else if (isStart) cellBg = "bg-blue-50 border-blue-200 text-blue-500";
+                else if (isStart) cellBg = "bg-teal-50 border-teal-200 text-teal-600";
 
                 return (
                   <div key={num} className={`relative aspect-square rounded-lg border flex flex-col items-center justify-center transition-all ${cellBg}`}>
@@ -905,7 +905,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                     {isBothHere ? (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="flex -space-x-2 scale-90">
-                          <motion.div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="player-token">
+                          <motion.div className="w-5 h-5 rounded-full bg-teal-600 flex items-center justify-center text-white text-[8px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="player-token">
                             {firstLetter}
                           </motion.div>
                           <motion.div className="w-5 h-5 rounded-full overflow-hidden ring-1 ring-white shadow-sm z-10" layoutId="opponent-token">
@@ -915,7 +915,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                       </div>
                     ) : isPlayerHere ? (
                       <motion.div className="absolute inset-0 flex items-center justify-center z-10" layoutId="player-token">
-                        <motion.div className="w-6.5 h-6.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-extrabold ring-1 ring-white shadow-sm">
+                        <motion.div className="w-6.5 h-6.5 rounded-full bg-teal-600 flex items-center justify-center text-white text-[10px] font-extrabold ring-1 ring-white shadow-sm">
                           {firstLetter}
                         </motion.div>
                       </motion.div>
@@ -994,7 +994,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
           ? "bg-emerald-50 text-emerald-600 border-emerald-100"
           : statusType === "wait"
           ? "bg-slate-50 text-slate-400 border-slate-100"
-          : "bg-blue-50 text-blue-600 border-blue-100"
+          : "bg-teal-50 text-teal-700 border-teal-100"
       }`}>
         <span className="shrink-0">
           {isGameOver ? (
@@ -1079,7 +1079,7 @@ function SnakesGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstL
                     <Dices className="w-4 h-4 text-slate-700 shrink-0" />
                     <p className="text-slate-800 text-[11px] font-black tracking-widest uppercase">Answer correctly to roll!</p>
                   </div>
-                  <div className="flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-blue-600 text-[9px] font-bold shrink-0">
+                  <div className="flex items-center gap-1 px-2.5 py-0.5 bg-teal-50 border border-teal-100 rounded-full text-teal-700 text-[9px] font-bold shrink-0">
                     <span>Pos {playerPosition}</span>
                   </div>
                 </div>
@@ -1492,7 +1492,7 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
       <div className="flex items-center justify-between px-3 py-1.5 bg-transparent">
         {/* Player Info */}
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
+          <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">{firstLetter}</div>
           <span className="text-[10px] font-semibold text-slate-600">You ({playerPosition === 0 ? "Base" : playerPosition >= LUDO_MAX_STEPS ? "Won" : `Pos ${playerPosition}`})</span>
         </div>
 
@@ -1538,14 +1538,14 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
               let cellBg = "bg-slate-50";
               let cellBorder = "";
 
-              if (cell === "B") cellBg = "bg-blue-100/70";
+              if (cell === "B") cellBg = "bg-teal-100/70";
               else if (cell === "R") cellBg = "bg-rose-100/70";
               else if (cell === "G") cellBg = "bg-emerald-100/70";
               else if (cell === "Y") cellBg = "bg-amber-100/70";
               else if (cell === "C") cellBg = "bg-slate-800";
               else if (cell === "BS") {
                 cellBg = "bg-blue-200";
-                cellBorder = "border border-blue-300";
+                cellBorder = "border border-teal-300";
               } else if (cell === "RS") {
                 cellBg = "bg-rose-200";
                 cellBorder = "border border-rose-300";
@@ -1577,11 +1577,11 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
                   {/* Token Overlay */}
                   {isBothHere ? (
                     <div className="flex gap-px absolute z-10 scale-90">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 border border-white" />
+                      <div className="w-2 h-2 rounded-full bg-teal-600 border border-white" />
                       <div className="w-2 h-2 rounded-full bg-rose-500 border border-white" />
                     </div>
                   ) : isPlayerHere ? (
-                    <motion.div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="ludo-p">
+                    <motion.div className="w-3.5 h-3.5 rounded-full bg-teal-600 flex items-center justify-center text-white text-[5px] font-extrabold ring-1 ring-white shadow-sm z-10" layoutId="ludo-p">
                       {firstLetter}
                     </motion.div>
                   ) : isAiHere ? (
@@ -1597,8 +1597,8 @@ function LudoGame({ userName, userCoins, onCoinsEarned, onPlayComplete, firstLet
 
         {/* Safe Bases Status Alerts */}
         {playerPosition === 0 && (
-          <div className="flex items-center gap-1 mt-1.5 px-0.5 text-[8px] text-blue-500 font-semibold leading-none">
-            <div className="w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center text-white text-[5.5px] font-extrabold">{firstLetter}</div>
+          <div className="flex items-center gap-1 mt-1.5 px-0.5 text-[8px] text-teal-600 font-semibold leading-none">
+            <div className="w-3 h-3 rounded-full bg-teal-600 flex items-center justify-center text-white text-[5.5px] font-extrabold">{firstLetter}</div>
             <span>Token at home — roll a 6 to open!</span>
           </div>
         )}
@@ -2547,7 +2547,7 @@ function LeaderboardView({ userName, userCoins }: { userName: string; userCoins:
                 {/* Avatar */}
                 <div className="relative shrink-0">
                   {std.isUser ? (
-                    <div className="w-8.5 h-8.5 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-xs shadow-md border-2 border-slate-700">
+                    <div className="w-8.5 h-8.5 rounded-full bg-teal-600 text-white font-extrabold flex items-center justify-center text-xs shadow-md border-2 border-slate-700">
                       {cleanName[0].toUpperCase()}
                     </div>
                   ) : (

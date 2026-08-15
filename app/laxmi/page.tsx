@@ -51,7 +51,7 @@ export default function LaxmiCatalogPage() {
               <Cpu className="w-8 h-8 text-cyan-400" />
             </div>
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 border border-slate-700/50 flex items-center justify-center backdrop-blur-md mt-6 shadow-xl shadow-blue-900/20">
-              <Monitor className="w-8 h-8 text-blue-400" />
+              <Monitor className="w-8 h-8 text-teal-500" />
             </div>
           </div>
         </header>

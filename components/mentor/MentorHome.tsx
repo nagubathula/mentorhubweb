@@ -89,9 +89,9 @@ const getGradientClass = (id: string) => {
 };
 
 const STUDENT_AESTHETIC_GRADIENTS = [
-  "from-blue-50 to-slate-100 text-blue-700 border-blue-200/60",
+  "from-blue-50 to-slate-100 text-teal-800 border-teal-200/60",
   "from-slate-50 to-blue-50 text-slate-700 border-slate-200",
-  "from-blue-50/80 to-slate-100 text-blue-600 border-blue-200/50",
+  "from-blue-50/80 to-slate-100 text-teal-700 border-teal-200/50",
   "from-slate-100 to-blue-50 text-slate-800 border-slate-200/80",
 ];
 
@@ -1038,7 +1038,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
             <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
           </div>
           <div className="flex gap-2">
-            <span className="bg-blue-50 text-blue-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
+            <span className="bg-teal-50 text-teal-600 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
             <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
           </div>
         </div>

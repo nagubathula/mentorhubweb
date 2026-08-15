@@ -53,7 +53,7 @@ const memesData = [
     bottom: "but you don't know why",
     emoji: "😅",
     bg: "from-blue-100 to-cyan-100",
-    border: "border-blue-200/60",
+    border: "border-teal-200/60",
     reactions: { laugh: 42, relate: 28, fire: 15 }
   },
   {
@@ -691,7 +691,7 @@ function MemesCarousel() {
 
   const reactionButtons = [
     { key: "laugh", label: "😂", activeColor: "bg-amber-100 text-amber-600 border-amber-300" },
-    { key: "relate", label: "🤝", activeColor: "bg-blue-100 text-blue-600 border-blue-300" },
+    { key: "relate", label: "🤝", activeColor: "bg-teal-100 text-teal-700 border-teal-300" },
     { key: "fire", label: "🔥", activeColor: "bg-orange-100 text-orange-600 border-orange-300" }
   ];
 
