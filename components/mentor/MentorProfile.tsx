@@ -1,9 +1,9 @@
 "use client";
 
-import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight, X, Eye } from "lucide-react";
+import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight, X, Eye, Camera, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { MentorSettingsModal } from "./MentorSettingsModal";
@@ -11,8 +11,12 @@ import { MentorSettingsModal } from "./MentorSettingsModal";
 const supabase = createClient();
 
 export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => void; onSwitchRole?: () => void }) {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRemoveAvatarModalOpen, setIsRemoveAvatarModalOpen] = useState(false);
   const [isPreviewAvatarOpen, setIsPreviewAvatarOpen] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [profile, setProfile] = useState<any>({
     name: "Vikram Patel",
     email: "vikram.p@kindmentor.com",
@@ -46,7 +50,7 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
         email: profData.email || "",
         role: profData.expertise || "Senior Software Developer",
         location: (profData.preferences as any)?.location || "Bangalore, India",
-        avatar: profData.avatar_url || null
+        avatar: profData.avatar_url || (profData.preferences as any)?.avatar_url || null
       });
     }
 
@@ -88,6 +92,101 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
     });
   }, []);
 
+  // Avatar Upload Handler
+  const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      let finalAvatarUrl = "";
+      if (userId) {
+        const fileExt = file.name.split('.').pop() || 'png';
+        const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+        if (!uploadErr) {
+          const { data: { publicUrl: url } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          finalAvatarUrl = url;
+        }
+      }
+
+      if (!finalAvatarUrl) {
+        finalAvatarUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (event) => resolve(event.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      setProfile((prev: any) => ({ ...prev, avatar: finalAvatarUrl }));
+
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: finalAvatarUrl };
+
+        await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+      }
+
+      fetchMentorProfile();
+    } catch (err: any) {
+      console.error("Failed to upload avatar:", err);
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Avatar Remove Handler
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      // 1. Storage Cleanup if Supabase Storage URL
+      if (profile.avatar && profile.avatar.includes('/storage/v1/object/public/avatars/')) {
+        try {
+          const parts = profile.avatar.split('/storage/v1/object/public/avatars/');
+          if (parts.length > 1) {
+            const filePath = decodeURIComponent(parts[1]);
+            await supabase.storage.from('avatars').remove([filePath]);
+          }
+        } catch (storageErr) {
+          console.warn("Storage avatar removal warning:", storageErr);
+        }
+      }
+
+      // 2. Database Update
+      if (userId) {
+        const { data: prof } = await supabase.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+        const currentPrefs = (prof?.preferences as any) || {};
+        const updatedPrefs = { ...currentPrefs, avatar_url: null };
+
+        await supabase
+          .from('profiles')
+          .update({ preferences: updatedPrefs })
+          .eq('id', userId);
+      }
+
+      setProfile((prev: any) => ({ ...prev, avatar: null }));
+      fetchMentorProfile();
+      setIsRemoveAvatarModalOpen(false);
+    } catch (err: any) {
+      console.error("Remove profile picture error:", err);
+    } finally {
+      setIsRemovingAvatar(false);
+    }
+  };
+
   useEffect(() => {
     fetchMentorProfile();
   }, [fetchMentorProfile]);
@@ -116,23 +215,84 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl -translate-y-20 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-28 h-28 bg-emerald-500/5 rounded-full blur-2xl translate-y-14 -translate-x-14"></div>
 
-        {profile.avatar ? (
-          <button
-            type="button"
-            onClick={() => setIsPreviewAvatarOpen(true)}
-            className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 hover:scale-105 transition-transform duration-500 flex items-center justify-center cursor-pointer group/avatar"
-            title="Tap to view full profile picture"
-          >
-            <img src={profile.avatar} className="w-full h-full object-cover" alt={profile.name}/>
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold tracking-wider uppercase backdrop-blur-[1px]">
-              <Eye className="w-4 h-4 mr-1" /> View
-            </div>
-          </button>
-        ) : (
-          <div className="w-28 h-28 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-xl relative z-10 bg-slate-50 flex items-center justify-center text-slate-300">
-            <User className="w-12 h-12 stroke-[1.5]" />
+        <div className="flex flex-col items-center gap-3 relative z-10">
+          <div className="relative group">
+            {profile.avatar ? (
+              <button 
+                type="button"
+                onClick={() => setIsPreviewAvatarOpen(true)}
+                className="w-[92px] h-[92px] rounded-full border-2 border-slate-200 bg-cover bg-center shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95 cursor-pointer block relative group overflow-hidden"
+                style={{ backgroundImage: `url(${profile.avatar})` }}
+                title="Tap to view full profile picture"
+              >
+                <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold tracking-wider uppercase backdrop-blur-[1px]">
+                  <Eye className="w-4 h-4 mr-1" /> View
+                </div>
+              </button>
+            ) : (
+              <button 
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                className="w-[92px] h-[92px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-slate-100 text-slate-400 shadow-md hover:scale-105 active:scale-95 cursor-pointer transition-transform"
+                title="Upload profile picture"
+              >
+                <User className="w-11 h-11 stroke-[1.5]" />
+              </button>
+            )}
+            <input
+              type="file"
+              ref={avatarInputRef}
+              onChange={handleAvatarFileUpload}
+              accept="image/*"
+              className="hidden"
+            />
+            <button 
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUploadingAvatar || isRemovingAvatar}
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-white text-slate-700 hover:bg-slate-100 rounded-full flex items-center justify-center shadow-md border-2 border-slate-900 transition-all hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50"
+              title={profile.avatar ? "Change profile picture" : "Upload profile picture"}
+            >
+              <Camera className="w-3.5 h-3.5" strokeWidth={2.5} />
+            </button>
           </div>
-        )}
+
+          {/* Photo Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+            {profile.avatar ? (
+              <>
+                <button 
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={isUploadingAvatar || isRemovingAvatar}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  {isUploadingAvatar ? "Uploading..." : "Change Photo"}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsRemoveAvatarModalOpen(true)}
+                  disabled={isUploadingAvatar || isRemovingAvatar}
+                  className="bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-rose-200/80 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Remove Photo
+                </button>
+              </>
+            ) : (
+              <button 
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="bg-slate-900 hover:bg-slate-800 text-white text-[11.5px] font-semibold px-3.5 py-1.5 rounded-xl border border-slate-900 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95 shadow-2xs"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                {isUploadingAvatar ? "Uploading..." : "+ Add Profile Picture"}
+              </button>
+            )}
+          </div>
+        </div>
         <h3 className="text-xl font-medium tracking-tight text-slate-900 mt-6 relative z-10">{profile.name}</h3>
         <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2 relative z-10">{profile.role}</p>
 
@@ -242,6 +402,44 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
         onSignOut={onSignOut}
       />
 
+      {/* Remove Profile Picture Confirmation Dialog */}
+      {isRemoveAvatarModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-100 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0 mt-0.5">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-base font-bold text-slate-900 leading-tight">Remove profile picture?</h4>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Are you sure you want to remove your profile picture?
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsRemoveAvatarModalOpen(false)}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={isRemovingAvatar}
+                className="h-9 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isRemovingAvatar ? "Removing..." : "Remove"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enlarged Photo Preview Lightbox Modal */}
       {isPreviewAvatarOpen && profile.avatar && (
         <div 
@@ -283,11 +481,25 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
                 type="button"
                 onClick={() => {
                   setIsPreviewAvatarOpen(false);
-                  setIsSettingsOpen(true);
+                  avatarInputRef.current?.click();
                 }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
                 className="flex-1 h-11 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
               >
-                Edit Profile Settings
+                <Camera className="w-4 h-4 mr-1.5" />
+                Change Photo
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsPreviewAvatarOpen(false);
+                  setIsRemoveAvatarModalOpen(true);
+                }}
+                disabled={isUploadingAvatar || isRemovingAvatar}
+                className="flex-1 h-11 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Remove
               </Button>
             </div>
           </div>
