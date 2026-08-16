@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, AlertCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye } from "lucide-react";
+import { Check, Sparkles, Phone, ShieldCheck, ArrowLeft, GraduationCap, Users, ArrowRight, Camera, Star, SkipForward, Trophy, Brain, Code, BookOpen, Zap, BrainCircuit, Lightbulb, BookOpenCheck, Bell, Search, User, Mail, CheckCircle2, Clock, Circle, Target, MessageSquare, BookText, Send, Play, PlayCircle, FileText, Video, Swords, NotebookPen, Heart, Briefcase, Sun, Flame, Coins, Activity, Home, Gamepad2, ChevronRight, Calendar, Quote, CheckCircle, AlertCircle, Layers, Lock, Award, ChevronUp, ChevronDown, Dices, X, TrendingUp, TrendingDown, Image as ImageIcon, Trash2, Plus, Pencil, BarChart2, ListChecks, Medal, Link, MessageCircle, AtSign, UserCircle, MapPin, LogOut, RotateCcw, Layout, HelpCircle, ExternalLink, Settings, Key, Sliders, Eye, Package } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { getSupabaseCredentials } from "@/lib/supabase/env";
 const supabase = createClient();
@@ -22,6 +22,7 @@ import { MentorNotes } from "@/components/mentor/MentorNotes";
 import { MentorCircle } from "@/components/mentor/MentorCircle";
 import { MentorProfile } from "@/components/mentor/MentorProfile";
 import { MentorCourses } from "@/components/mentor/MentorCourses";
+import { MentorLearningPack } from "@/components/mentor/MentorLearningPack";
 import { StudentGames } from "@/components/student/StudentGames";
 import { MentalWellness } from "@/components/student/MentalWellness";
 import { InterestingFacts } from "@/components/student/InterestingFacts";
@@ -33,7 +34,7 @@ import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 import { ExploreLearningPathsModal } from "@/components/student/ExploreLearningPathsModal";
 
-type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS" | "AI_ASSISTANT";
+type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "MENTOR_PACK" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS" | "AI_ASSISTANT";
 
 // Google SVG Icon component
 const GoogleIcon = () => (
@@ -277,7 +278,7 @@ export default function OnboardingFlow() {
   }, []);
 
   const [state, setState] = useState<FlowState>("WELCOME");
-  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS", "AI_ASSISTANT"].includes(state);
+  const isDashboard = ["DASHBOARD_MAIN", "DASHBOARD_AWAITING", "STUDENT_COURSES", "COURSE_DETAILS", "GAMES", "NOTES", "PROFILE", "MENTOR_MATCHING", "MENTOR_DASHBOARD", "MENTOR_STUDENTS", "MENTOR_COURSES", "MENTOR_NOTES", "MENTOR_CIRCLE", "MENTOR_ACCOUNT", "MENTOR_PACK", "PORTFOLIO", "WELLNESS", "FACTS", "GRATITUDE_WALL", "MESSAGES", "RESOURCES", "ALL_TASKS", "AI_ASSISTANT"].includes(state);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -311,6 +312,7 @@ export default function OnboardingFlow() {
     mentor_sessions: true,
     mentor_circle: true,
     mentor_account: true,
+    mentor_learning_pack: true,
     mentor_messages: true,
     mentor_gratitude: true,
     mentor_inspiration: true,
@@ -6055,7 +6057,7 @@ export default function OnboardingFlow() {
               </motion.div>
             )}
 
-             {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT") && (
+             {(state === "MENTOR_DASHBOARD" || state === "MENTOR_STUDENTS" || state === "MENTOR_COURSES" || state === "MENTOR_NOTES" || state === "MENTOR_CIRCLE" || state === "MENTOR_ACCOUNT" || state === "MENTOR_PACK") && (
                 <motion.div key="mentor_portal" variants={variants} initial="initial" animate="enter" exit="exit" className="h-full flex flex-col bg-slate-50/50 mesh-bg relative font-inter">
                   <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
                    
@@ -6084,6 +6086,7 @@ export default function OnboardingFlow() {
                         setActiveStudentId(studentId);
                         setState("MENTOR_STUDENTS");
                       }} 
+                      onNavigateToPack={() => setState("MENTOR_PACK")}
                       mentorEmail={email}
                       mentorName={name}
                     />
@@ -6099,6 +6102,7 @@ export default function OnboardingFlow() {
                   {state === "MENTOR_COURSES" && featureFlags.mentor_courses !== false && <MentorCourses />}
                   {state === "MENTOR_NOTES" && featureFlags.mentor_sessions !== false && <MentorNotes />}
                   {state === "MENTOR_CIRCLE" && featureFlags.mentor_circle !== false && <MentorCircle />}
+                  {state === "MENTOR_PACK" && featureFlags.mentor_learning_pack !== false && <MentorLearningPack onClose={() => setState("MENTOR_DASHBOARD")} />}
                   {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && <MentorProfile onSignOut={handleSignOut} onSwitchRole={() => handleRoleSelection("STUDENT")} />}
                 </div>
 

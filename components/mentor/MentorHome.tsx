@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil, Video, Link, Package, Layers, ExternalLink } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, ChevronRight, GraduationCap, FileText, Share2, Pencil, Video, Link, Package, Layers, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -121,11 +121,12 @@ const getProgressStyles = (pct: number) => {
 interface MentorHomeProps {
   featureFlags?: Record<string, boolean>;
   onSelectStudent?: (studentId: string) => void;
+  onNavigateToPack?: () => void;
   mentorEmail?: string;
   mentorName?: string;
 }
 
-export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, mentorName: mentorNameProp }: MentorHomeProps) {
+export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPack, mentorEmail, mentorName: mentorNameProp }: MentorHomeProps) {
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
@@ -427,7 +428,10 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
       setTaskTitle("");
       setTaskNotes("");
       setTaskDueDate("");
-      setTimeout(() => setShareHubSuccess(null), 3500);
+      setTimeout(() => {
+        setShareHubSuccess(null);
+        if (onNavigateToPack) onNavigateToPack();
+      }, 1000);
     } else {
       alert(`Shared with some errors. Failed for ${errorsCount} students.`);
     }
@@ -1119,7 +1123,42 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
   return (
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
 
-      {/* 1. Share Hub (First/Top-most) */}
+      {/* Subtle Learning Pack Entry Point */}
+      {onNavigateToPack && (
+        <div className="px-1 animate-in fade-in duration-300">
+          <div 
+            onClick={onNavigateToPack}
+            className="group bg-white border border-slate-200/80 hover:border-indigo-200 rounded-2xl p-3.5 px-4 shadow-3xs hover:shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8.5 h-8.5 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100/70 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <Package className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-[13px] font-bold text-slate-900 leading-none group-hover:text-indigo-600 transition-colors">
+                    Learning Packs
+                  </h4>
+                  <span className="text-[9.5px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100/60 leading-none">
+                    Broadcast
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-none">
+                  Share courses, tasks & content with mentees in chat
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 shrink-0">
+              <span className="hidden sm:inline">Open Pack</span>
+              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 1. Share Hub (Hidden as requested) */}
+      {false && (
       <div id="share-hub-card" className="px-1 animate-in fade-in slide-in-from-top-3 duration-500">
         <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-12 translate-x-12"></div>
@@ -1517,6 +1556,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
           </form>
         </Card>
       </div>
+      )}
 
       {/* 2. Mentees & Course Progress (Beneath Share Hub) */}
       {featureFlags.mentor_students !== false && (
