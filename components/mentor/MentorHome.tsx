@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil, Video } from "lucide-react";
+import { MessageSquare, Calendar, Circle, Check, Zap, Trophy, ShieldCheck, Heart, Sparkles, BookOpen, Clock, Activity, Medal, Star, Flame, Lightbulb, Bell, X, Send, Trash2, Users, ChevronDown, GraduationCap, FileText, Share2, Pencil, Video, Link, Package, Layers, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -160,6 +160,278 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
   const [selectedStudentForSharing, setSelectedStudentForSharing] = useState<string>("");
   const [activeFact, setActiveFact] = useState<any>(null);
   const [factCopied, setFactCopied] = useState(false);
+
+  // Share Hub States
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [shareMode, setShareMode] = useState<"bundle" | "course" | "resource" | "task">("bundle");
+  
+  // All-in-One Bundle state
+  const [bundleCourse, setBundleCourse] = useState("");
+  const [bundleTask, setBundleTask] = useState("");
+  const [bundleResource, setBundleResource] = useState("");
+  const [bundleNotes, setBundleNotes] = useState("");
+
+  // Course state
+  const [courseTitle, setCourseTitle] = useState("");
+  const [courseUrl, setCourseUrl] = useState("");
+  const [courseNotes, setCourseNotes] = useState("");
+
+  // Resource state
+  const [resourceTitle, setResourceTitle] = useState("");
+  const [resourceUrl, setResourceUrl] = useState("");
+  const [shareMessage, setShareMessage] = useState("");
+
+  // Task state
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskNotes, setTaskNotes] = useState("");
+  const [taskDueDate, setTaskDueDate] = useState("");
+
+  const [isSharingHub, setIsSharingHub] = useState(false);
+  const [shareHubSuccess, setShareHubSuccess] = useState<string | null>(null);
+
+  // Initialize selectedStudentIds with all assigned students once loaded
+  useEffect(() => {
+    if (assignedStudents.length > 0 && selectedStudentIds.length === 0) {
+      setSelectedStudentIds(assignedStudents.map(s => s.id));
+    }
+  }, [assignedStudents]);
+
+  const handleToggleStudentSelect = (studentId: string) => {
+    setSelectedStudentIds(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId) 
+        : [...prev, studentId]
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedStudentIds.length === assignedStudents.length) {
+      setSelectedStudentIds([]);
+    } else {
+      setSelectedStudentIds(assignedStudents.map(s => s.id));
+    }
+  };
+
+  const BUNDLE_PRESETS = [
+    {
+      label: "🚀 Next.js & React Pack",
+      course: "Next.js 16+ App Router Masterclass",
+      task: "Build responsive layout & integrate hooks in Week 3 project",
+      resource: "https://nextjs.org/docs",
+      notes: "Please focus on Server Components vs Client Components before starting the assignment!"
+    },
+    {
+      label: "🎨 UI/UX Design System",
+      course: "Figma UI/UX & Product Design Systems",
+      task: "Design 3 responsive screens in Figma & export assets",
+      resource: "https://lawsofux.com/",
+      notes: "Follow the psychological design heuristics when laying out primary call-to-actions."
+    },
+    {
+      label: "⚡ Full Stack Backend Pack",
+      course: "Node.js & Supabase Backend Architecture",
+      task: "Set up Postgres RLS policies and construct API endpoints",
+      resource: "https://supabase.com/docs",
+      notes: "Review the indexing primer before running DB migrations."
+    },
+    {
+      label: "📹 Live Sync & Review",
+      course: "8-Week Mentor-Led Career Journey",
+      task: "Prepare demo of your latest project for live review",
+      resource: "GENERATE_MEET_LINK",
+      notes: "Let's connect live for 30 minutes to review code and discuss resume updates!"
+    }
+  ];
+
+  const COURSE_PRESETS = [
+    { label: "Next.js 16+", title: "Next.js 16+ App Router Masterclass", url: "https://nextjs.org/docs", notes: "8-week structured roadmap covering Server Components, routing, and deployment." },
+    { label: "Full Stack", title: "Full Stack Web Development (React & Node)", url: "https://github.com/goldbergyoni/nodebestpractices", notes: "End-to-end full stack architecture guide with production best practices." },
+    { label: "UI/UX Design", title: "UI/UX & Product Design Systems", url: "https://lawsofux.com/", notes: "Design system masterclass from wireframing to Figma prototypes." },
+    { label: "System Design", title: "Data Structures & System Design Primer", url: "https://github.com/donnemartin/system-design-primer", notes: "Targeted coding patterns and scalable system design for interviews." }
+  ];
+
+  const RESOURCE_PRESETS = [
+    { label: "Next.js Docs", title: "Next.js 16+ Architecture Guide", url: "https://nextjs.org/docs", msg: "Official guide on Server Components, routing, and caching behavior." },
+    { label: "CSS Flexbox", title: "CSS Flexbox & Grid Masterclass", url: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/", msg: "Step-by-step masterclass covering responsive layouts and properties." },
+    { label: "Figma UI", title: "Figma UI/UX Design for Beginners", url: "https://www.youtube.com/watch?v=FTFaQWZBqA8", msg: "A great video tutorial on creating stunning components in Figma." },
+    { label: "Google Meet", title: "Google Meet Sync Room", url: "GENERATE_MEET_LINK", msg: "Let's connect live for our progress review and support session." }
+  ];
+
+  const TASK_PRESETS = [
+    { title: "Complete Week 2 challenges", notes: "Implement React hooks, handle state updates, and push to your portfolio repo." },
+    { title: "Update LinkedIn profile", notes: "Update your profile summary with current role objectives and add your portfolio link." },
+    { title: "Submit resume draft", notes: "Review the career templates, compile your experience draft, and share for feedback." },
+    { title: "Solve learning blocker", notes: "Identify the top 3 issues blocking your progress and list ideas to resolve them." }
+  ];
+
+  const applyBundlePreset = (preset: typeof BUNDLE_PRESETS[0]) => {
+    let url = preset.resource;
+    if (url === "GENERATE_MEET_LINK") {
+      const chars = "abcdefghijklmnopqrstuvwxyz";
+      const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      url = `https://meet.google.com/${part1}-${part2}-${part3}`;
+    }
+    setBundleCourse(preset.course);
+    setBundleTask(preset.task);
+    setBundleResource(url);
+    setBundleNotes(preset.notes);
+  };
+
+  const applyCoursePreset = (preset: typeof COURSE_PRESETS[0]) => {
+    setCourseTitle(preset.title);
+    setCourseUrl(preset.url);
+    setCourseNotes(preset.notes);
+  };
+
+  const applyResourcePreset = (preset: typeof RESOURCE_PRESETS[0]) => {
+    let url = preset.url;
+    if (url === "GENERATE_MEET_LINK") {
+      const chars = "abcdefghijklmnopqrstuvwxyz";
+      const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      url = `https://meet.google.com/${part1}-${part2}-${part3}`;
+    }
+    setResourceTitle(preset.title);
+    setResourceUrl(url);
+    setShareMessage(preset.msg);
+  };
+
+  const applyTaskPreset = (preset: typeof TASK_PRESETS[0]) => {
+    setTaskTitle(preset.title);
+    setTaskNotes(preset.notes);
+  };
+
+  const handleShareHubSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedStudentIds.length === 0) {
+      alert("Please select at least one student.");
+      return;
+    }
+
+    if (shareMode === "bundle" && (!bundleCourse.trim() && !bundleTask.trim() && !bundleResource.trim())) {
+      alert("Please fill in at least a course, task, or resource for the package.");
+      return;
+    }
+
+    if (shareMode === "course" && !courseTitle.trim()) {
+      alert("Please fill in the course title.");
+      return;
+    }
+
+    if (shareMode === "resource" && (!resourceTitle.trim() || !resourceUrl.trim())) {
+      alert("Please fill in the resource title and URL.");
+      return;
+    }
+
+    if (shareMode === "task" && !taskTitle.trim()) {
+      alert("Please fill in the task title.");
+      return;
+    }
+
+    setIsSharingHub(true);
+    let errorsCount = 0;
+    
+    let bodyText = "";
+    if (shareMode === "bundle") {
+      let url = bundleResource.trim();
+      if (url === "GENERATE_MEET_LINK") {
+        const chars = "abcdefghijklmnopqrstuvwxyz";
+        const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        url = `https://meet.google.com/${part1}-${part2}-${part3}`;
+      } else if (url && !/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+
+      bodyText = `📦 **MENTOR LEARNING PACKAGE**\n\n`;
+      if (bundleCourse.trim()) bodyText += `🎓 **Course / Roadmap**: ${bundleCourse.trim()}\n`;
+      if (bundleTask.trim()) bodyText += `📋 **Assigned Task**: ${bundleTask.trim()}\n`;
+      if (url) bodyText += `🔗 **Featured Link**: ${url}\n`;
+      if (bundleNotes.trim()) bodyText += `\n💬 **Mentor Note**: ${bundleNotes.trim()}`;
+    } else if (shareMode === "course") {
+      let url = courseUrl.trim();
+      if (url && !/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+      bodyText = `🎓 **COURSE ROADMAP**: ${courseTitle.trim()}\n${url ? `🔗 **Link**: ${url}\n` : ""}${courseNotes.trim() ? `\n📝 **Notes**: ${courseNotes.trim()}` : ""}`;
+    } else if (shareMode === "resource") {
+      let url = resourceUrl.trim();
+      if (url === "GENERATE_MEET_LINK") {
+        const chars = "abcdefghijklmnopqrstuvwxyz";
+        const part1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        const part2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        const part3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+        url = `https://meet.google.com/${part1}-${part2}-${part3}`;
+      } else if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+      bodyText = `📚 **${resourceTitle.trim()}**\n🔗 ${url}\n\n${shareMessage.trim()}`;
+    } else {
+      bodyText = `📋 **TASK**: ${taskTitle.trim()}\n📝 **Notes**: ${taskNotes.trim()}${taskDueDate ? `\n📅 **Due Date**: ${taskDueDate}` : ""}`;
+    }
+
+    // Send message to each selected student
+    for (const studentId of selectedStudentIds) {
+      if (studentId.startsWith("mock-student-")) {
+        const mockMsg = {
+          id: `mock-msg-${Date.now()}-${studentId}`,
+          from_user_id: mentorId || "guest-mentor-id",
+          to_user_id: studentId,
+          sender_name: "Mentor",
+          body: bodyText,
+          created_at: new Date().toISOString(),
+          is_read: true
+        };
+        setMessages(prev => [mockMsg, ...prev]);
+      } else {
+        const { error } = await supabase.from('messages').insert({
+          from_user_id: mentorId,
+          to_user_id: studentId,
+          body: bodyText,
+          sender_name: "Mentor",
+          is_read: false
+        } as any);
+        if (error) {
+          console.error("Error inserting message for student:", studentId, error);
+          errorsCount++;
+        }
+      }
+    }
+
+    setIsSharingHub(false);
+    if (errorsCount === 0) {
+      const successText = shareMode === "bundle"
+        ? `Learning Package shared with ${selectedStudentIds.length} mentee${selectedStudentIds.length > 1 ? 's' : ''}!`
+        : shareMode === "course"
+        ? `Course shared with ${selectedStudentIds.length} mentee${selectedStudentIds.length > 1 ? 's' : ''}!`
+        : shareMode === "resource"
+        ? `Resource shared with ${selectedStudentIds.length} mentee${selectedStudentIds.length > 1 ? 's' : ''}!`
+        : `Task assigned to ${selectedStudentIds.length} mentee${selectedStudentIds.length > 1 ? 's' : ''}!`;
+
+      setShareHubSuccess(successText);
+      // Reset inputs
+      setBundleCourse("");
+      setBundleTask("");
+      setBundleResource("");
+      setBundleNotes("");
+      setCourseTitle("");
+      setCourseUrl("");
+      setCourseNotes("");
+      setResourceTitle("");
+      setResourceUrl("");
+      setShareMessage("");
+      setTaskTitle("");
+      setTaskNotes("");
+      setTaskDueDate("");
+      setTimeout(() => setShareHubSuccess(null), 3500);
+    } else {
+      alert(`Shared with some errors. Failed for ${errorsCount} students.`);
+    }
+  };
 
   // Student joined date edit states
   const [isEditingJoinedDate, setIsEditingJoinedDate] = useState(false);
@@ -847,8 +1119,564 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
   return (
     <div className="space-y-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
 
-      {/* 8-Week Roadmap Relocated to the Top */}
-      <div className="px-1 animate-in fade-in slide-in-from-top-3 duration-500">
+      {/* 1. Share Hub (First/Top-most) */}
+      <div id="share-hub-card" className="px-1 animate-in fade-in slide-in-from-top-3 duration-500">
+        <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl relative">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-12 translate-x-12"></div>
+          
+          <div className="flex items-center gap-2.5 mb-5 relative z-10">
+            <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600">
+              <Share2 className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">Mentor Share Hub</p>
+              <h3 className="text-slate-900 font-bold text-[15px] mt-1.5 leading-none">Broadcast Courses, Tasks & Content in Chat 🚀</h3>
+            </div>
+          </div>
+
+          {/* Mentees Selector Grid/List with Progress Indicators */}
+          <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 mb-5 relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Select Recipients (with Live Progress):</span>
+              <button 
+                type="button"
+                onClick={handleToggleSelectAll}
+                className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold transition-colors bg-transparent border-0 p-0 cursor-pointer"
+              >
+                {selectedStudentIds.length === assignedStudents.length ? "Deselect All" : "Select All"}
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2.5">
+              {assignedStudents.length === 0 ? (
+                <p className="text-xs text-slate-400 py-1">No mentees available to select.</p>
+              ) : (
+                assignedStudents.map((stud) => {
+                  const isSelected = selectedStudentIds.includes(stud.id);
+                  const progress = stud.progress || 0;
+                  return (
+                    <button
+                      key={stud.id}
+                      type="button"
+                      onClick={() => handleToggleStudentSelect(stud.id)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-2xl border text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        isSelected 
+                          ? "bg-indigo-50/90 border-indigo-200 text-indigo-900 shadow-sm" 
+                          : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-100 flex items-center justify-center bg-slate-50 shrink-0">
+                        <img src={stud.avatar} alt={stud.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col text-left leading-none">
+                        <span className="truncate max-w-[85px] font-bold text-[11.5px]">{stud.name?.split(" ")[0]}</span>
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="w-8 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progress}%` }} />
+                          </div>
+                          <span className="text-[9px] text-slate-400 font-bold">{progress}%</span>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-1 ${
+                        isSelected ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-300 bg-white"
+                      }`}>
+                        {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            <p className="text-[10px] text-slate-400 mt-2.5 font-medium">
+              Sharing will send messages in chat to <strong className="text-slate-700">{selectedStudentIds.length}</strong> selected mentee{selectedStudentIds.length !== 1 ? 's' : ''}.
+            </p>
+          </div>
+
+          {/* Mode Selector Tabs (4 Modes) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 border border-slate-100 bg-slate-50/70 p-1 rounded-2xl mb-5 relative z-10">
+            <button
+              type="button"
+              onClick={() => setShareMode("bundle")}
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 ${
+                shareMode === "bundle"
+                  ? "bg-white text-indigo-650 shadow-xs font-bold"
+                  : "text-slate-500 hover:text-slate-800 bg-transparent"
+              }`}
+            >
+              <Package className="w-3.5 h-3.5 shrink-0 text-indigo-500" />
+              <span className="truncate">All-in-One Pack</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShareMode("course")}
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 ${
+                shareMode === "course"
+                  ? "bg-white text-indigo-650 shadow-xs font-bold"
+                  : "text-slate-500 hover:text-slate-800 bg-transparent"
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 shrink-0 text-purple-500" />
+              <span className="truncate">Course & Roadmap</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShareMode("resource")}
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 ${
+                shareMode === "resource"
+                  ? "bg-white text-indigo-650 shadow-xs font-bold"
+                  : "text-slate-500 hover:text-slate-800 bg-transparent"
+              }`}
+            >
+              <Link className="w-3.5 h-3.5 shrink-0 text-sky-500" />
+              <span className="truncate">Content & Links</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShareMode("task")}
+              className={`py-2 px-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border-0 ${
+                shareMode === "task"
+                  ? "bg-white text-indigo-650 shadow-xs font-bold"
+                  : "text-slate-500 hover:text-slate-800 bg-transparent"
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+              <span className="truncate">Assign Tasks</span>
+            </button>
+          </div>
+
+          {/* Form Content */}
+          <form onSubmit={handleShareHubSubmit} className="space-y-4 relative z-10">
+            {shareMode === "bundle" && (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="bg-indigo-50/40 p-3 rounded-2xl border border-indigo-100/50 mb-1">
+                  <p className="text-[11px] text-indigo-800 font-semibold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    Share tasks, resources, AND course materials together in ONE chat message!
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">1. Course / Curriculum</Label>
+                    <Input
+                      value={bundleCourse}
+                      onChange={(e) => setBundleCourse(e.target.value)}
+                      placeholder="e.g. Next.js 16+ App Router Masterclass"
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">2. Task / Action Item</Label>
+                    <Input
+                      value={bundleTask}
+                      onChange={(e) => setBundleTask(e.target.value)}
+                      placeholder="e.g. Build Week 3 project component & push to GitHub"
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">3. Content / Resource Link</Label>
+                    <Input
+                      value={bundleResource}
+                      onChange={(e) => setBundleResource(e.target.value)}
+                      placeholder="e.g. https://nextjs.org/docs"
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">4. Mentor Note / Context</Label>
+                    <Input
+                      value={bundleNotes}
+                      onChange={(e) => setBundleNotes(e.target.value)}
+                      placeholder="e.g. Focus on Server Components before starting!"
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Bundle Presets */}
+                <div className="pt-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 ml-1">Quick All-in-One Bundles:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {BUNDLE_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => applyBundlePreset(preset)}
+                        className="text-[10.5px] px-2.5 py-1.5 rounded-full border border-indigo-100/60 bg-indigo-50/30 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-200 font-semibold transition-all cursor-pointer shadow-3xs"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {shareMode === "course" && (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Course Title / Roadmap</Label>
+                    <Input
+                      value={courseTitle}
+                      onChange={(e) => setCourseTitle(e.target.value)}
+                      placeholder="e.g. Next.js 16+ App Router Masterclass"
+                      required={shareMode === "course"}
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Course Link / Material URL (Optional)</Label>
+                    <Input
+                      value={courseUrl}
+                      onChange={(e) => setCourseUrl(e.target.value)}
+                      placeholder="e.g. nextjs.org/docs"
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Course Guidance & Notes</Label>
+                  <Textarea
+                    value={courseNotes}
+                    onChange={(e) => setCourseNotes(e.target.value)}
+                    placeholder="Provide overview of modules, target deadlines, or study strategy..."
+                    rows={2}
+                    className="rounded-xl border-slate-200 text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 bg-white shadow-2xs resize-none"
+                  />
+                </div>
+
+                {/* Course Presets */}
+                <div className="pt-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 ml-1">Featured Courses:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {COURSE_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => applyCoursePreset(preset)}
+                        className="text-[10.5px] px-2.5 py-1.5 rounded-full border border-purple-100/60 bg-purple-50/30 text-purple-700 hover:bg-purple-50 hover:border-purple-200 font-semibold transition-all cursor-pointer shadow-3xs"
+                      >
+                        🎓 {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {shareMode === "resource" && (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Resource Title</Label>
+                    <Input
+                      value={resourceTitle}
+                      onChange={(e) => setResourceTitle(e.target.value)}
+                      placeholder="e.g. Next.js Routing Guide"
+                      required={shareMode === "resource"}
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Resource URL</Label>
+                    <Input
+                      value={resourceUrl}
+                      onChange={(e) => setResourceUrl(e.target.value)}
+                      placeholder="e.g. nextjs.org/docs"
+                      required={shareMode === "resource"}
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Message / Instructions</Label>
+                  <Textarea
+                    value={shareMessage}
+                    onChange={(e) => setShareMessage(e.target.value)}
+                    placeholder="Provide context or instructions for this resource..."
+                    rows={2}
+                    className="rounded-xl border-slate-200 text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 bg-white shadow-2xs resize-none"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 ml-1">Quick Content Presets:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {RESOURCE_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => applyResourcePreset(preset)}
+                        className="text-[10.5px] px-2.5 py-1.5 rounded-full border border-sky-100/60 bg-sky-50/30 text-sky-700 hover:bg-sky-50 hover:border-sky-200 font-semibold transition-all cursor-pointer shadow-3xs"
+                      >
+                        {preset.label === "Google Meet" ? "📹 Meet Room" : preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {shareMode === "task" && (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Task / Assignment Title</Label>
+                    <Input
+                      value={taskTitle}
+                      onChange={(e) => setTaskTitle(e.target.value)}
+                      placeholder="e.g. Implement Tailwind in Project"
+                      required={shareMode === "task"}
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Due Date (Optional)</Label>
+                    <Input
+                      type="date"
+                      value={taskDueDate}
+                      onChange={(e) => setTaskDueDate(e.target.value)}
+                      className="bg-white border-slate-200 text-xs h-10 px-3 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-2xs text-slate-700 font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider ml-1">Task Notes / Steps</Label>
+                  <Textarea
+                    value={taskNotes}
+                    onChange={(e) => setTaskNotes(e.target.value)}
+                    placeholder="Detail the steps or criteria to complete this task..."
+                    rows={2}
+                    className="rounded-xl border-slate-200 text-xs focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 bg-white shadow-2xs resize-none"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 ml-1">Task Templates:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TASK_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => applyTaskPreset(preset)}
+                        className="text-[10.5px] px-2.5 py-1.5 rounded-full border border-emerald-100/60 bg-emerald-50/30 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 font-semibold transition-all cursor-pointer shadow-3xs"
+                      >
+                        📋 {preset.title.split(" ")[0]} {preset.title.split(" ").slice(1, 3).join(" ")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submission Status & Button */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+              <div>
+                {shareHubSuccess && (
+                  <div className="text-[11.5px] text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-50/90 p-2 px-3 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1">
+                    <Check className="w-3.5 h-3.5 stroke-[3] text-emerald-600" /> {shareHubSuccess}
+                  </div>
+                )}
+              </div>
+              
+              <Button
+                type="submit"
+                disabled={isSharingHub || selectedStudentIds.length === 0}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-10 px-5 rounded-xl flex items-center gap-1.5 active:scale-[0.98] transition-all shadow-md shrink-0 border-0 cursor-pointer"
+              >
+                {isSharingHub ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-indigo-200 border-t-white rounded-full animate-spin" />
+                    Broadcasting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    {shareMode === "bundle"
+                      ? `Share Learning Pack to ${selectedStudentIds.length} Mentees`
+                      : shareMode === "course"
+                      ? `Share Course to ${selectedStudentIds.length} Mentees`
+                      : shareMode === "resource"
+                      ? `Share Content to ${selectedStudentIds.length} Mentees`
+                      : `Assign Task to ${selectedStudentIds.length} Mentees`} 🚀
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+
+      {/* 2. Mentees & Course Progress (Beneath Share Hub) */}
+      {featureFlags.mentor_students !== false && (
+        <div className="px-1 animate-in fade-in duration-500" style={{ animationDelay: "100ms" }}>
+          <Card className="p-6 shadow-sm bg-white border border-slate-100 rounded-3xl">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 text-indigo-600">
+                  <GraduationCap className="w-4.5 h-4.5" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">Mentees & Course Progress</p>
+                  <h3 className="text-slate-900 font-bold text-[15px] mt-1.5 leading-none">Track Study Progress & Milestones 📊</h3>
+                </div>
+              </div>
+              <span className="bg-indigo-50 text-indigo-600 text-[11px] px-2.5 py-1 rounded-full font-bold">
+                {assignedStudents.length} Assigned
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {assignedStudents.length === 0 ? (
+                <div className="w-full py-8 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <Users className="w-8 h-8 text-slate-300 mb-2" />
+                  <span className="text-[13px] text-slate-400 font-medium">No assigned mentees yet.</span>
+                </div>
+              ) : (
+                assignedStudents.map((stud) => {
+                  const progress = stud.progress || 0;
+                  const pStyle = getProgressStyles(progress);
+                  
+                  // Calculate student dynamic week/milestone info
+                  const joinedDateStr = stud.preferences?.joined_date || stud.created_at;
+                  const createdDate = joinedDateStr ? new Date(joinedDateStr) : new Date();
+                  createdDate.setHours(0,0,0,0);
+                  const today = new Date();
+                  today.setHours(23,59,59,999);
+                  const optOutDays = Array.isArray(stud.preferences?.opt_out_days) ? stud.preferences.opt_out_days : ["Saturday", "Sunday"];
+                  let learningDays = 0;
+                  const current = new Date(createdDate);
+                  while (current <= today) {
+                    const dayName = current.toLocaleDateString('en-US', { weekday: 'long' });
+                    if (!optOutDays.includes(dayName)) learningDays++;
+                    current.setDate(current.getDate() + 1);
+                  }
+                  learningDays = Math.max(1, learningDays);
+                  const activeWeekNum = Math.min(8, Math.max(1, Math.ceil(learningDays / 7)));
+                  const activeWeekObj = ROADMAP_WEEKS.find(w => w.week === activeWeekNum) || ROADMAP_WEEKS[0];
+
+                  return (
+                    <div 
+                      key={stud.id}
+                      className={`p-4 rounded-2xl border transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                        activeRoadmapStudentId === stud.id 
+                          ? "bg-slate-50/50 border-indigo-100" 
+                          : "bg-white border-slate-100 hover:border-slate-200"
+                      }`}
+                    >
+                      {/* Left: Avatar and Info */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative flex items-center justify-center shrink-0 w-11 h-11">
+                          <svg className="absolute w-11 h-11 transform -rotate-90">
+                            <circle cx="22" cy="22" r="19" stroke="#f1f5f9" strokeWidth="1.5" fill="transparent" />
+                            <circle 
+                              cx="22" 
+                              cy="22" 
+                              r="19" 
+                              stroke={pStyle.stroke} 
+                              strokeWidth="2.5" 
+                              fill="transparent"
+                              strokeDasharray={2 * Math.PI * 19}
+                              strokeDashoffset={2 * Math.PI * 19 - (progress / 100) * 2 * Math.PI * 19}
+                              strokeLinecap="round"
+                              className="transition-all duration-700 ease-out"
+                            />
+                          </svg>
+                          <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-100 shadow-sm bg-slate-50 flex items-center justify-center z-10">
+                            <img src={stud.avatar} alt={stud.name} className="w-full h-full object-cover" />
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-bold text-slate-850 text-xs sm:text-[13px] leading-tight flex items-center gap-1.5">
+                            {stud.name}
+                            {activeRoadmapStudentId === stud.id && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-650" />
+                            )}
+                          </h4>
+                          <span className="text-[10px] text-slate-400 font-semibold block mt-0.5 leading-none truncate max-w-[180px]">{stud.email}</span>
+                          <span className="text-[9px] text-slate-400 font-semibold block mt-1">
+                            Joined {stud.daysJoined} days ago
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Middle: Horizontal Progress Bar */}
+                      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                          <span>Course Progress</span>
+                          <span className={pStyle.text}>{progress}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden relative">
+                          <div 
+                            className={`h-full ${pStyle.bg} rounded-full transition-all duration-500`} 
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-semibold truncate leading-tight mt-0.5">
+                          Active week: <strong className="text-slate-700">Week {activeWeekNum} - {activeWeekObj.title}</strong>
+                        </p>
+                      </div>
+
+                      {/* Right: Quick Action Buttons */}
+                      <div className="flex items-center gap-2 shrink-0 self-end md:self-auto pt-1 md:pt-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedStudentIds([stud.id]);
+                            setShareMode("bundle");
+                            document.getElementById("share-hub-card")?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="text-[10.5px] font-bold h-8 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-all flex items-center gap-1 cursor-pointer shadow-3xs border-0"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          Share Pack
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveRoadmapStudentId(stud.id);
+                            document.getElementById("roadmap-section")?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className={`text-[10.5px] font-bold h-8 px-3.5 rounded-xl border flex items-center gap-1 transition-all cursor-pointer ${
+                            activeRoadmapStudentId === stud.id
+                              ? "bg-slate-900 border-slate-900 text-white shadow-3xs"
+                              : "bg-white border-slate-200 text-slate-650 hover:bg-slate-50"
+                          }`}
+                        >
+                          <Zap className="w-3.5 h-3.5 fill-current" />
+                          {activeRoadmapStudentId === stud.id ? "Focusing Roadmap" : "Focus Roadmap"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSelectStudent?.(stud.id)}
+                          className="text-[10.5px] font-bold h-8 px-3.5 rounded-xl bg-indigo-50 border border-indigo-100/50 hover:bg-indigo-100 text-indigo-700 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Chat
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* 3. 8-Week Career Roadmap (Moved down, focused student) */}
+      <div id="roadmap-section" className="px-1 animate-in fade-in duration-500" style={{ animationDelay: "150ms" }}>
         <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl relative">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-2.5">
@@ -868,7 +1696,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
                 <select
                   value={activeRoadmapStudentId}
                   onChange={(e) => setActiveRoadmapStudentId(e.target.value)}
-                  className="bg-transparent text-slate-700 text-xs font-semibold focus:outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-slate-700 text-xs font-semibold focus:outline-none cursor-pointer pr-1 border-0 p-0"
                 >
                   {assignedStudents.map(student => (
                     <option key={student.id} value={student.id}>
@@ -905,121 +1733,91 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
                     
                     let titleColor = "text-slate-500 font-medium";
                     let statusIcon = null;
-                    
+
                     if (isCompleted) {
-                      titleColor = "text-slate-700 font-medium";
-                      statusIcon = <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3.5] shrink-0" />;
+                      titleColor = "text-slate-400 line-through font-medium";
+                      statusIcon = (
+                        <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shrink-0">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                      );
                     } else if (isActive) {
-                      titleColor = "text-violet-600 font-bold";
-                      statusIcon = <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse shrink-0" />;
+                      titleColor = "text-indigo-650 font-bold";
+                      statusIcon = (
+                        <div className="w-5 h-5 rounded-full bg-indigo-650 text-white flex items-center justify-center shrink-0 border border-indigo-650 shadow-sm shadow-indigo-650/20">
+                          <span className="text-[10px] font-black">{w.week}</span>
+                        </div>
+                      );
+                    } else {
+                      statusIcon = (
+                        <div className="w-5 h-5 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200 shrink-0">
+                          <span className="text-[9px] font-bold">{w.week}</span>
+                        </div>
+                      );
                     }
 
                     return (
-                      <div key={w.week} className="border-b border-slate-100 last:border-0 pb-3 last:pb-0">
-                        {/* Content Block */}
-                        <div className="flex-1 min-w-0">
-                          <div 
-                            onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
-                            className="flex items-center justify-between cursor-pointer py-1 group"
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              {statusIcon}
-                              <span className={`text-[13.5px] transition-colors group-hover:text-slate-900 truncate ${titleColor}`}>
-                                Week {w.week}: {w.title}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {isActive && (
-                                <span className="bg-violet-50 border border-violet-100 text-violet-600 text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full shrink-0">
-                                  Active
-                                </span>
-                              )}
-                              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                                isExpanded ? "rotate-180 text-slate-600" : ""
-                              }`} />
-                            </div>
+                      <div key={w.week} className="border-b border-slate-50 last:border-0 pb-3 last:pb-0">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedWeek(isExpanded ? null : w.week)}
+                          className="w-full flex items-center justify-between text-left py-1 hover:bg-slate-50/50 rounded-lg px-1 transition-colors border-0 bg-transparent cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {statusIcon}
+                            <span className={`text-[12.5px] truncate ${titleColor}`}>
+                              Week {w.week}: {w.title}
+                            </span>
                           </div>
+                          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180 text-slate-650' : ''}`} />
+                        </button>
 
-                          {/* Sub-items Accordion */}
-                          <AnimatePresence initial={false}>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="mt-2 ml-1 space-y-2 border-l border-slate-100 pl-3">
-                                  {w.items.map((item, itemIdx) => (
-                                    <div key={itemIdx} className="flex items-start gap-2 text-slate-500 hover:text-slate-800 transition-colors py-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 shrink-0" />
-                                      <span className="text-[12px] font-medium leading-relaxed">{item}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden pl-7.5"
+                            >
+                              <div className="pt-2 pb-1 space-y-2">
+                                {w.items.map((item, i) => (
+                                  <div key={i} className="flex items-center gap-2 text-[11.5px] text-slate-500 font-medium">
+                                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isCompleted ? 'bg-slate-350' : isActive ? 'bg-indigo-500' : 'bg-slate-250'}`} />
+                                    <span>{item}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Footer Info with dynamic rest calculations */}
-                {assignedStudents.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] font-medium text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      <span>🗓️</span>
-                      <div>
-                        {isEditingJoinedDate ? (
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="date"
-                              value={editJoinedDateValue}
-                              onChange={(e) => setEditJoinedDateValue(e.target.value)}
-                              className="bg-white border border-slate-200 text-slate-800 text-[10.5px] font-semibold rounded-lg px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
-                            />
-                            <button
-                              onClick={handleSaveJoinedDate}
-                              disabled={isSavingJoinedDate}
-                              className="h-6 px-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-md text-[9px] font-bold disabled:opacity-50 transition-colors cursor-pointer"
-                            >
-                              {isSavingJoinedDate ? "..." : "Save"}
-                            </button>
-                            <button
-                              onClick={() => setIsEditingJoinedDate(false)}
-                              className="h-6 px-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-[9px] font-medium transition-colors cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            Joined on <strong className="text-slate-700">{new Date(currentStudentJoinedDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</strong>
-                            <button
-                              onClick={() => {
-                                const d = new Date(currentStudentJoinedDate);
-                                const yyyy = d.getFullYear();
-                                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                                const dd = String(d.getDate()).padStart(2, '0');
-                                setEditJoinedDateValue(`${yyyy}-${mm}-${dd}`);
-                                setIsEditingJoinedDate(true);
-                              }}
-                              className="p-0.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-colors inline-flex items-center justify-center cursor-pointer ml-0.5"
-                              title="Edit Joined Date"
-                            >
-                              <Pencil className="w-3 h-3" />
-                            </button>
-                          </span>
-                        )}
+                {/* Study days summary under active week if selected */}
+                {student && (
+                  <div className="mt-4 pt-3.5 border-t border-slate-50 text-[11px] font-semibold space-y-2">
+                    <div className="flex justify-between items-center text-slate-450 bg-slate-50/30 p-2 rounded-xl border border-slate-100/50">
+                      <span>Rest Schedule: {optOutDays.join(", ")}</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditJoinedDateValue(currentStudentJoinedDate.split("T")[0]);
+                            setIsEditingJoinedDate(true);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-850 flex items-center gap-0.5 text-[10.5px] bg-white px-2 py-1 rounded-lg border border-slate-200/60 shadow-3xs cursor-pointer"
+                        >
+                          <Pencil className="w-2.5 h-2.5" /> Edit Joined Date
+                        </button>
                       </div>
                     </div>
                     <p className="flex items-center gap-1.5 bg-slate-50 border border-slate-100/50 p-2 px-3 rounded-xl leading-normal text-slate-500/80">
                       <span>⚡</span>
                       <span>
-                        Active week: <strong>{learningDays} study days</strong> ({skippedDays} rest days skipped based on rest schedule: <em>{optOutDays.join(", ")}</em>).
+                        Active week: <strong>{learningDays} study days</strong> ({skippedDays} rest days skipped).
                       </span>
                     </p>
                   </div>
@@ -1030,156 +1828,74 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, mentorEmail, me
         </Card>
       </div>
 
-      {/* 2 & 3. Today's Plan & Mentees Overview */}
-      {(featureFlags.mentor_students !== false || featureFlags.mentor_sessions !== false) && (
-        <Card className="p-5.5 shadow-sm h-auto flex flex-col gap-0">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
-            <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
-          </div>
-          <div className="flex gap-2">
-            <span className="bg-indigo-50 text-indigo-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
-            <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-
-        {/* 3. Mentees */}
-        {featureFlags.mentor_students !== false && (
-          <>
-            <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold mb-2 uppercase">My Mentees</p>
-            <div className="flex gap-4.5 mb-1.5 overflow-x-auto pb-1 hidden-scrollbar">
-          {assignedStudents.length === 0 ? (
-            <div className="w-full py-6 flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-              <Users className="w-8 h-8 text-slate-300 mb-2" />
-              <span className="text-[13px] text-slate-400 font-medium">No assigned mentees yet.</span>
+      {/* 4. Today's Plan & Upcoming Sessions (Streamlined, no mentees list) */}
+      {featureFlags.mentor_sessions !== false && (
+        <div className="px-1 animate-in fade-in duration-500" style={{ animationDelay: "200ms" }}>
+          <Card className="p-5.5 shadow-sm h-auto flex flex-col gap-0 bg-white border border-slate-100 rounded-3xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-slate-800 font-medium text-[15px]">
+                <Calendar className="w-[18px] h-[18px] text-slate-500" strokeWidth={2}/> Today&apos;s Plan
+              </div>
+              <div className="flex gap-2">
+                <span className="bg-indigo-50 text-indigo-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</span>
+                <span className="bg-orange-50 text-orange-500 text-[12px] px-2.5 py-1 rounded-full font-medium">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
+              </div>
             </div>
-          ) : (
-            assignedStudents.map((stud, idx) => {
-              const progress = stud.progress || 0;
-              const avatarUrl = stud.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(stud.name || stud.id)}`;
-              const pStyle = getProgressStyles(progress);
 
-              return (
-                <div 
-                  key={stud.id} 
-                  onClick={() => onSelectStudent?.(stud.id)}
-                  className="flex flex-col items-center min-w-[85px] group cursor-pointer"
-                >
-                  <div className="relative flex items-center justify-center w-[76px] h-[76px]">
-                    {/* Circular Progress Ring with progress-dependent color */}
-                    <svg className="absolute w-[76px] h-[76px] transform -rotate-90">
-                      {/* Background circle */}
-                      <circle 
-                        cx="38" 
-                        cy="38" 
-                        r="33" 
-                        stroke="#f1f5f9" 
-                        strokeWidth="2" 
-                        fill="transparent"
-                      />
-                      {/* Active progress circle */}
-                      <circle 
-                        cx="38" 
-                        cy="38" 
-                        r="33" 
-                        stroke={pStyle.stroke} 
-                        strokeWidth="3.2" 
-                        fill="transparent"
-                        strokeDasharray={2 * Math.PI * 33}
-                        strokeDashoffset={2 * Math.PI * 33 - (progress / 100) * 2 * Math.PI * 33}
-                        strokeLinecap="round"
-                        className="transition-all duration-700 ease-out"
-                      />
-                    </svg>
+            <div className="flex items-center justify-between mb-3.5">
+              <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold uppercase">Upcoming Sessions</p>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => {
+                  if (assignedStudents.length > 0) {
+                    setSchedStudentId(assignedStudents[0].id);
+                  }
+                  const d = new Date();
+                  setSchedDate(d.toISOString().split('T')[0]);
+                  setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+                  setIsScheduleOpen(true);
+                }}
+                className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-semibold h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
+              >
+                + New Session
+              </Button>
+            </div>
+            
+            <div className="space-y-3">
+              {sessions.length === 0 ? (
+                <p className="text-[12.5px] text-slate-400 font-medium py-1.5 pl-1">No upcoming sessions scheduled yet.</p>
+              ) : (
+                sessions.map((sess) => {
+                  const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
+                  const schedDate = sess.scheduled_at ? new Date(sess.scheduled_at) : null;
+                  const timeStr = schedDate ? schedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Flexible";
+                  const dateStr = schedDate ? schedDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
 
-                    {/* Inner illustrated avatar circle */}
-                    <div className="w-[54px] h-[54px] rounded-full overflow-hidden border border-slate-100 shadow-sm bg-slate-50 flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105">
-                      <img 
-                        src={avatarUrl} 
-                        alt={stud.name} 
-                        className="w-full h-full object-cover"
-                      />
+                  return (
+                    <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
+                      <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <span className="text-[13px] font-medium leading-none">{timeStr.split(' ')[0]}</span>
+                        <span className="text-[9px] font-semibold uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-[14px] font-medium truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900'}`}>{sess.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{sess.student?.name || "Student"}</span>
+                          <span className="text-slate-200 text-[10px]">|</span>
+                          <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{dateStr}</span>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1.5 rounded-xl font-medium text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                        {sess.duration_minutes || 30}M
+                      </div>
                     </div>
-
-                    {/* Progress Badge Indicator pill overlapping bottom center */}
-                    <div className={`absolute bottom-[2px] ${pStyle.bg} text-white rounded-full flex items-center justify-center px-1.5 py-0.5 text-[8.5px] font-black z-20 shadow-xs border-2 border-white leading-none scale-95`}>
-                      {progress}%
-                    </div>
-                  </div>
-
-                  <span className="text-[12px] text-slate-900 mt-2 font-bold truncate max-w-[85px] group-hover:text-indigo-600 transition-colors">
-                    {stud.name?.split(" ")[0]}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                    {progress}% Completed
-                  </span>
-                </div>
-              );
-            })
-          )}
+                  );
+                })
+              )}
+            </div>
+          </Card>
         </div>
-          </>
-        )}
-
-        {featureFlags.mentor_sessions !== false && (
-          <>
-            <div className="border-t border-slate-100/60 my-2.5"></div>
-
-            {/* Sessions */}
-        <div className="flex items-center justify-between mb-3.5">
-          <p className="text-[10px] text-slate-400 tracking-[0.15em] font-semibold uppercase">Upcoming Sessions</p>
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={() => {
-              if (assignedStudents.length > 0) {
-                setSchedStudentId(assignedStudents[0].id);
-              }
-              const d = new Date();
-              setSchedDate(d.toISOString().split('T')[0]);
-              setSchedTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
-              setIsScheduleOpen(true);
-            }}
-            className="text-[10px] text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100 font-semibold h-8 px-3 rounded-full transition-all active:scale-95 shadow-sm"
-          >
-            + New Session
-          </Button>
-        </div>
-        <div className="space-y-3">
-          {sessions.length === 0 ? (
-            <p className="text-[12.5px] text-slate-400 font-medium py-1.5 pl-1">No upcoming sessions scheduled yet.</p>
-          ) : (
-            sessions.map((sess) => {
-              const isCompleted = sess.status === 'Completed' || sess.status === 'completed';
-              const schedDate = sess.scheduled_at ? new Date(sess.scheduled_at) : null;
-              const timeStr = schedDate ? schedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Flexible";
-              const dateStr = schedDate ? schedDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) : "";
-
-              return (
-                <div key={sess.id} className={`flex gap-4 items-center p-4 rounded-2xl border transition-all hover:border-slate-200 group active:scale-[0.98] ${isCompleted ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
-                  <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                    <span className="text-[13px] font-medium leading-none">{timeStr.split(' ')[0]}</span>
-                    <span className="text-[9px] font-semibold uppercase mt-1 opacity-70">{timeStr.split(' ')[1]}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[14px] font-medium truncate ${isCompleted ? 'text-slate-400' : 'text-slate-900'}`}>{sess.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{sess.student?.name || "Student"}</span>
-                      <span className="text-slate-200 text-[10px]">|</span>
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{dateStr}</span>
-                    </div>
-                  </div>
-                  <div className={`px-3 py-1.5 rounded-xl font-medium text-[10px] shrink-0 shadow-3xs ${isCompleted ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600'}`}>
-                    {sess.duration_minutes || 30}M
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-          </>
-        )}
-      </Card>
       )}
 
       {/* 14. New Student Notifications (Real Data) - Premium Light Theme */}
