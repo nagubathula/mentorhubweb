@@ -4548,9 +4548,17 @@ export default function OnboardingFlow() {
                             {/* Body Content */}
                             <div className="flex-1 flex flex-col justify-between gap-4 mt-4">
                               <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">
-                                {course.description && course.description.trim().startsWith('{')
-                                  ? JSON.parse(course.description).description
-                                  : course.description || "Master core concepts and build practical projects step by step."}
+                                {(() => {
+                                  if (course?.description && course.description.trim().startsWith('{')) {
+                                    try {
+                                      const parsed = JSON.parse(course.description);
+                                      return parsed.description || course.description;
+                                    } catch (e) {
+                                      return course.description;
+                                    }
+                                  }
+                                  return course?.description || "Master core concepts and build practical projects step by step.";
+                                })()}
                               </p>
 
                               {/* Progress info */}
