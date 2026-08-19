@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatLastActive } from "@/components/chat/RealtimeChat";
 
 const supabase = createClient();
 
@@ -293,7 +294,9 @@ export function YourMentorCard({
                   isOnline ? "text-emerald-600" : "text-slate-400"
                 }`}
               >
-                {isOnline ? "Online" : "Offline"}
+                {isOnline
+                  ? "● Online"
+                  : formatLastActive((mentor.preferences as any)?.last_seen)}
               </span>
             </div>
           </div>

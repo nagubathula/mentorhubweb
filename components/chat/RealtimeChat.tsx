@@ -22,6 +22,7 @@ export interface ChatUser {
   avatar_url?: string | null;
   expertise?: string | null;
   last_seen?: string | null;
+  preferences?: any;
 }
 
 export interface ChatMessage {
@@ -40,6 +41,27 @@ interface RealtimeChatProps {
   initialContactId?: string | null;
 }
 
+export function formatLastActive(isoString?: string | null): string {
+  if (!isoString) return "Offline";
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return "Offline";
+
+  const now = new Date();
+  const diffMs = Math.max(0, now.getTime() - date.getTime());
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSec < 60) return "Last active just now";
+  if (diffMin === 1) return "Last active 1 minute ago";
+  if (diffMin < 60) return `Last active ${diffMin} minutes ago`;
+  if (diffHours === 1) return "Last active 1 hour ago";
+  if (diffHours < 24) return `Last active ${diffHours} hours ago`;
+  if (diffDays === 1) return "Last active yesterday";
+  return `Last active ${diffDays} days ago`;
+}
+
 export function RealtimeChat({ currentUser, onBack, initialContactId }: RealtimeChatProps) {
   const [contacts, setContacts] = useState<ChatUser[]>([]);
   const [activeContact, setActiveContact] = useState<ChatUser | null>(null);
@@ -51,11 +73,19 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
   const [searchQuery, setSearchQuery] = useState("");
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string>>({});
+  const [peerIsTyping, setPeerIsTyping] = useState<boolean>(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
+  const [, setTicker] = useState<number>(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobileView = typeof window !== "undefined" && window.innerWidth < 768;
   const [showMobileChat, setShowMobileChat] = useState<boolean>(!!initialContactId);
+
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingSelfRef = useRef<boolean>(false);
+  const realtimeChannelRef = useRef<any>(null);
+  const lastUpdatedProfileTimeRef = useRef<number>(0);
 
   // Auto-scroll to bottom of messages
   const scrollToBottom = (smooth = true) => {
@@ -66,52 +96,188 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
     scrollToBottom(true);
   }, [messages]);
 
+  // Interval ticker to update "Last active X ago" relative strings every 15s
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTicker((t) => t + 1);
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Toast notice helper
   const showError = (msg: string) => {
     setErrorNotice(msg);
     setTimeout(() => setErrorNotice(null), 4000);
   };
 
-  // 1. Setup Supabase Realtime Presence channel for tracking Online/Offline status
+  // Helper to send typing broadcast to active contact
+  const sendTypingBroadcast = (isTyping: boolean) => {
+    if (!realtimeChannelRef.current || !activeContact?.id || !currentUser?.id) return;
+    try {
+      realtimeChannelRef.current.send({
+        type: "broadcast",
+        event: "typing",
+        payload: {
+          from_user_id: currentUser.id,
+          to_user_id: activeContact.id,
+          isTyping,
+        },
+      });
+    } catch (e) {
+      console.warn("Failed to send typing broadcast:", e);
+    }
+  };
+
+  // Throttled update of last_seen timestamp in profiles database table
+  const updateDatabaseLastSeen = useCallback(async () => {
+    if (!currentUser?.id) return;
+    const now = Date.now();
+    if (now - lastUpdatedProfileTimeRef.current < 60000) return; // Throttle to 60s
+    lastUpdatedProfileTimeRef.current = now;
+
+    try {
+      const nowIso = new Date().toISOString();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("preferences")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      const currentPrefs = (prof?.preferences as any) || {};
+      await supabase
+        .from("profiles")
+        .update({
+          preferences: { ...currentPrefs, last_seen: nowIso },
+        } as any)
+        .eq("id", currentUser.id);
+    } catch (err) {
+      console.warn("Failed to update profile last_seen:", err);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    updateDatabaseLastSeen();
+  }, [updateDatabaseLastSeen]);
+
+  // Reset typing state when active contact changes
+  useEffect(() => {
+    setPeerIsTyping(false);
+    if (isTypingSelfRef.current) {
+      isTypingSelfRef.current = false;
+      sendTypingBroadcast(false);
+    }
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+  }, [activeContact?.id]);
+
+  // Setup combined Supabase Realtime channel for Presence, Typing Broadcast, and Messages
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const presenceChannel = supabase.channel("online-presence-chat", {
-      config: { presence: { key: currentUser.id } }
+    const channel = supabase.channel(`user-messages-realtime-${currentUser.id}`, {
+      config: { presence: { key: currentUser.id } },
     });
 
-    presenceChannel
+    realtimeChannelRef.current = channel;
+
+    channel
       .on("presence", { event: "sync" }, () => {
-        const state = presenceChannel.presenceState();
+        const state = channel.presenceState();
         const onlineIds = new Set<string>();
+        const presencesMap: Record<string, string> = {};
+
         Object.keys(state).forEach((key) => {
           onlineIds.add(key);
+          const userPresences = state[key] as any[];
+          if (userPresences && userPresences[0]?.online_at) {
+            presencesMap[key] = userPresences[0].online_at;
+          }
         });
+
         setOnlineUserIds(onlineIds);
+        setLastSeenMap((prev) => ({ ...prev, ...presencesMap }));
       })
-      .on("presence", { event: "join" }, ({ key }: { key: string }) => {
+      .on("presence", { event: "join" }, ({ key, newPresences }: any) => {
         setOnlineUserIds((prev) => new Set(prev).add(key));
+        if (newPresences && newPresences[0]?.online_at) {
+          setLastSeenMap((prev) => ({ ...prev, [key]: newPresences[0].online_at }));
+        }
       })
-      .on("presence", { event: "leave" }, ({ key }: { key: string }) => {
+      .on("presence", { event: "leave" }, ({ key }: any) => {
         setOnlineUserIds((prev) => {
           const updated = new Set(prev);
           updated.delete(key);
           return updated;
         });
+        const leaveTime = new Date().toISOString();
+        setLastSeenMap((prev) => ({ ...prev, [key]: leaveTime }));
       })
+      .on("broadcast", { event: "typing" }, (payload: any) => {
+        const data = payload.payload;
+        if (
+          data &&
+          activeContact &&
+          data.from_user_id === activeContact.id &&
+          data.to_user_id === currentUser.id
+        ) {
+          setPeerIsTyping(!!data.isTyping);
+        }
+      })
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        (payload: any) => {
+          const newMsg: ChatMessage = payload.new;
+          if (!newMsg) return;
+
+          if (
+            activeContact &&
+            ((newMsg.from_user_id === activeContact.id && newMsg.to_user_id === currentUser.id) ||
+              (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === activeContact.id))
+          ) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+
+            if (newMsg.from_user_id === activeContact.id && newMsg.to_user_id === currentUser.id) {
+              supabase
+                .from("messages")
+                .update({ is_read: true } as any)
+                .eq("id", newMsg.id);
+            }
+          } else if (newMsg.to_user_id === currentUser.id) {
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [newMsg.from_user_id]: (prev[newMsg.from_user_id] || 0) + 1,
+            }));
+          }
+        }
+      )
       .subscribe(async (status: string) => {
         if (status === "SUBSCRIBED") {
-          await presenceChannel.track({
+          await channel.track({
             user_id: currentUser.id,
-            online_at: new Date().toISOString()
+            online_at: new Date().toISOString(),
           });
         }
       });
 
     return () => {
-      supabase.removeChannel(presenceChannel);
+      if (isTypingSelfRef.current) {
+        sendTypingBroadcast(false);
+      }
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+      }
+      supabase.removeChannel(channel);
     };
-  }, [currentUser?.id]);
+  }, [currentUser?.id, activeContact?.id]);
 
   // 2. Fetch contacts mapped to current user
   const fetchContacts = useCallback(async () => {
@@ -139,7 +305,9 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
               email: p.email || "",
               role: "MENTOR" as const,
               avatar_url: p.avatar_url || (p.preferences as any)?.avatar_url || null,
-              expertise: p.expertise || "Senior Mentor"
+              expertise: p.expertise || "Senior Mentor",
+              preferences: p.preferences,
+              last_seen: (p.preferences as any)?.last_seen || null,
             }));
         }
 
@@ -173,7 +341,9 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
               email: p.email || "",
               role: "STUDENT" as const,
               avatar_url: p.avatar_url || (p.preferences as any)?.avatar_url || null,
-              expertise: p.expertise || "Mentee"
+              expertise: p.expertise || "Mentee",
+              preferences: p.preferences,
+              last_seen: (p.preferences as any)?.last_seen || null,
             }));
         }
 
@@ -622,9 +792,15 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
                         }`}
                       />
                       {onlineUserIds.has(activeContact.id) ? (
-                        <span className="text-emerald-600 font-semibold">Online</span>
+                        <span className="text-emerald-600 font-semibold">● Online</span>
                       ) : (
-                        <span className="text-slate-400">Offline (Last seen recently)</span>
+                        <span className="text-slate-400 font-medium">
+                          {formatLastActive(
+                            lastSeenMap[activeContact.id] ||
+                              activeContact.last_seen ||
+                              (activeContact.preferences as any)?.last_seen
+                          )}
+                        </span>
                       )}
                       <span className="text-slate-300">•</span>
                       <span>{activeContact.expertise || activeContact.role}</span>
@@ -710,10 +886,50 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
 
               {/* Message Input Box */}
               <div className="p-3.5 md:p-4 border-t border-slate-200/80 bg-white shrink-0">
+                {/* Typing Indicator Banner */}
+                {peerIsTyping && (
+                  <div className="px-4 py-1.5 text-xs text-indigo-600 font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-1 duration-200 mb-1">
+                    <div className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                    <span>
+                      {activeContact.role === "MENTOR"
+                        ? "Mentor is typing..."
+                        : `${activeContact.name.split(" ")[0]} is typing...`}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-end gap-2.5">
                   <Textarea
                     value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setMessageInput(val);
+
+                      if (!activeContact || !currentUser?.id) return;
+
+                      if (val.trim().length > 0) {
+                        if (!isTypingSelfRef.current) {
+                          isTypingSelfRef.current = true;
+                          sendTypingBroadcast(true);
+                        }
+
+                        if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+                        typingTimerRef.current = setTimeout(() => {
+                          isTypingSelfRef.current = false;
+                          sendTypingBroadcast(false);
+                        }, 1500);
+                      } else {
+                        if (isTypingSelfRef.current) {
+                          isTypingSelfRef.current = false;
+                          sendTypingBroadcast(false);
+                        }
+                        if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+                      }
+                    }}
                     placeholder={`Message ${activeContact.name}...`}
                     disabled={isSending}
                     rows={1}

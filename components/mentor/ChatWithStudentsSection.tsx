@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatLastActive } from "@/components/chat/RealtimeChat";
 
 const supabase = createClient();
 
@@ -327,7 +328,9 @@ export function ChatWithStudentsSection({
                               : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          ● {isOnline ? "Online" : "Offline"}
+                          {isOnline
+                            ? "● Online"
+                            : formatLastActive((student.preferences as any)?.last_seen)}
                         </span>
                       </div>
 
