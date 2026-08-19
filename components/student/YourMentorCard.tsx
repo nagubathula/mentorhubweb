@@ -36,51 +36,57 @@ export function YourMentorCard({
   unreadCount = 0,
 }: YourMentorCardProps) {
   const [mentor, setMentor] = useState<MentorProfile | null>(mentorProp || null);
-  const [isLoading, setIsLoading] = useState<boolean>(isLoadingProp);
+  const [isLoading, setIsLoading] = useState<boolean>(isLoadingProp || (!mentorProp && !!currentUserId));
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [unreadMsgCount, setUnreadMsgCount] = useState<number>(unreadCount);
 
-  // Sync prop changes
-  useEffect(() => {
-    if (mentorProp !== undefined) {
-      setMentor(mentorProp);
+  // 1. Fetch assigned mentor directly from database mapping table
+  const fetchAssignedMentor = async () => {
+    if (!currentUserId) {
+      setIsLoading(false);
+      return;
     }
-  }, [mentorProp]);
 
-  // If mentor is not passed as prop, fetch from 'mapping' table for currentUserId
-  useEffect(() => {
-    if (mentorProp !== undefined || !currentUserId) return;
+    setIsLoading(true);
+    setErrorMsg(null);
 
-    let isMounted = true;
-    const fetchAssignedMentor = async () => {
-      setIsLoading(true);
-      try {
-        const { data: mapping, error } = await supabase
-          .from("mapping")
-          .select("mentor:profiles!mapping_mentor_id_fkey(*)")
-          .eq("student_id", currentUserId)
-          .maybeSingle();
+    try {
+      const { data: mapping, error } = await supabase
+        .from("mapping")
+        .select("mentor:profiles!mapping_mentor_id_fkey(*)")
+        .eq("student_id", currentUserId)
+        .maybeSingle();
 
-        if (!error && mapping && (mapping as any).mentor) {
-          if (isMounted) {
-            setMentor((mapping as any).mentor as MentorProfile);
-          }
-        } else {
-          if (isMounted) {
-            setMentor(null);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching assigned mentor:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
+      if (error) {
+        console.error("Error fetching assigned mentor:", error);
+        setErrorMsg("Unable to load mentor. Please try again.");
+        setMentor(null);
+      } else if (mapping && (mapping as any).mentor) {
+        setMentor((mapping as any).mentor as MentorProfile);
+        setErrorMsg(null);
+      } else {
+        setMentor(null);
+        setErrorMsg(null);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch mentor:", err);
+      setErrorMsg("Unable to load mentor. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchAssignedMentor();
-    return () => {
-      isMounted = false;
-    };
+  useEffect(() => {
+    if (mentorProp !== undefined && mentorProp !== null) {
+      setMentor(mentorProp);
+      setIsLoading(false);
+      setErrorMsg(null);
+    } else if (currentUserId) {
+      fetchAssignedMentor();
+    } else {
+      setIsLoading(false);
+    }
   }, [currentUserId, mentorProp]);
 
   // Track unread messages count if mentor exists
@@ -160,10 +166,15 @@ export function YourMentorCard({
     };
   }, [mentor?.id]);
 
+  // LOADING STATE
   if (isLoading) {
     return (
       <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden p-5 animate-pulse">
-        <div className="h-4 bg-slate-200 rounded w-28 mb-4" />
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Loading mentor...
+          </span>
+        </div>
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-slate-200 shrink-0" />
           <div className="space-y-2 flex-1">
@@ -171,6 +182,29 @@ export function YourMentorCard({
             <div className="h-3 bg-slate-100 rounded w-1/3" />
           </div>
         </div>
+      </Card>
+    );
+  }
+
+  // ERROR STATE
+  if (errorMsg) {
+    return (
+      <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-rose-100 bg-rose-50/50 overflow-hidden">
+        <CardContent className="p-5 flex flex-col items-center justify-center text-center space-y-3">
+          <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+            !
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-rose-900">{errorMsg}</h3>
+          </div>
+          <Button
+            onClick={fetchAssignedMentor}
+            variant="outline"
+            className="h-8 px-3 rounded-xl border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold"
+          >
+            Retry
+          </Button>
+        </CardContent>
       </Card>
     );
   }

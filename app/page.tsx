@@ -3905,7 +3905,7 @@ export default function OnboardingFlow() {
                 {/* Assigned Mentor Card */}
                 <YourMentorCard
                   currentUserId={userProfile?.id || (role === "STUDENT" ? "student-id" : null)}
-                  mentor={mappedMentor}
+                  mentor={mappedMentor || undefined}
                   onOpenChat={(mentorId) => {
                     if (mentorId) setActiveStudentId(mentorId);
                     setState("MESSAGES");

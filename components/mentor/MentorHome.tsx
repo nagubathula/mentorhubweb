@@ -1721,7 +1721,7 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPac
       <div className="px-1 animate-in fade-in duration-300">
         <ChatWithStudentsSection
           mentorId={mentorId}
-          students={assignedStudents}
+          students={assignedStudents.length > 0 ? assignedStudents : undefined}
           onOpenChat={(studentId) => {
             if (onSelectStudent) onSelectStudent(studentId);
             if (onOpenChat) onOpenChat();

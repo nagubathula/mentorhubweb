@@ -356,23 +356,9 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
   // 6. Handle Send Message
   const handleSendMessage = async () => {
     const text = messageInput.trim();
-    if (!text || isSending || !activeContact || !currentUser) return;
+    if (!text || isSending || !activeContact || !currentUser?.id) return;
 
     setIsSending(true);
-    const tempId = `temp-${Date.now()}`;
-    const newMsg: ChatMessage = {
-      id: tempId,
-      from_user_id: currentUser.id,
-      to_user_id: activeContact.id,
-      body: text,
-      sender_name: currentUser.name,
-      is_read: false,
-      created_at: new Date().toISOString()
-    };
-
-    // Optimistically append to message list
-    setMessages((prev) => [...prev, newMsg]);
-    setMessageInput("");
 
     try {
       const { data, error } = await supabase
@@ -381,19 +367,23 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
           from_user_id: currentUser.id,
           to_user_id: activeContact.id,
           body: text,
-          sender_name: currentUser.name,
+          sender_name: currentUser.name || "User",
           is_read: false
         } as any)
         .select("*")
         .single();
 
-      if (error) {
+      if (error || !data) {
         console.error("Database message insert error:", error);
-        // Replace temp msg with updated timestamp
-      } else if (data) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? (data as ChatMessage) : m))
-        );
+        showError("Message failed to send. Please try again.");
+      } else {
+        const confirmedMsg = data as ChatMessage;
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === confirmedMsg.id)) return prev;
+          return [...prev, confirmedMsg];
+        });
+        setMessageInput("");
+        setTimeout(() => scrollToBottom(true), 50);
       }
     } catch (err: any) {
       console.error("Failed to send message:", err);

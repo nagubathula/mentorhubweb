@@ -31,15 +31,21 @@ export function ChatWithStudentsSection({
   onOpenChat,
 }: ChatWithStudentsSectionProps) {
   const [students, setStudents] = useState<StudentProfile[]>(studentsProp || []);
-  const [isLoading, setIsLoading] = useState<boolean>(!studentsProp);
+  const [isLoading, setIsLoading] = useState<boolean>(!studentsProp || (studentsProp.length === 0 && !!mentorId));
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const [lastMessages, setLastMessages] = useState<Record<string, { body: string; created_at: string }>>({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
-  // 1. Fetch assigned students for mentorId
+  // 1. Fetch assigned students for mentorId directly from DB mapping table
   const fetchAssignedStudents = useCallback(async () => {
-    if (!mentorId) return;
+    if (!mentorId) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
+    setErrorMsg(null);
 
     try {
       // Query mapping table for assigned students
@@ -48,10 +54,12 @@ export function ChatWithStudentsSection({
         .select("student:profiles!mapping_student_id_fkey(*)")
         .eq("mentor_id", mentorId);
 
-      let fetchedList: StudentProfile[] = [];
-
-      if (!error && mappings && mappings.length > 0) {
-        fetchedList = mappings
+      if (error) {
+        console.error("Failed to load assigned students:", error);
+        setErrorMsg("Unable to load students. Please try again.");
+        setStudents([]);
+      } else {
+        const fetchedList = (mappings || [])
           .map((m: any) => m.student)
           .filter(Boolean)
           .map((p: any) => ({
@@ -60,23 +68,29 @@ export function ChatWithStudentsSection({
             email: p.email || "",
             avatar_url: p.avatar_url || (p.preferences as any)?.avatar_url || null,
           }));
-      }
 
-      setStudents(fetchedList);
+        setStudents(fetchedList);
+        setErrorMsg(null);
+      }
     } catch (err) {
-      console.error("Failed to load assigned students:", err);
+      console.error("Exception loading assigned students:", err);
+      setErrorMsg("Unable to load students. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }, [mentorId]);
 
   useEffect(() => {
-    if (studentsProp) {
+    if (studentsProp && studentsProp.length > 0) {
       setStudents(studentsProp);
-    } else {
+      setIsLoading(false);
+      setErrorMsg(null);
+    } else if (mentorId) {
       fetchAssignedStudents();
+    } else {
+      setIsLoading(false);
     }
-  }, [studentsProp, fetchAssignedStudents]);
+  }, [mentorId, studentsProp, fetchAssignedStudents]);
 
   // 2. Fetch last messages & unread counts for each student
   const fetchMessagesData = useCallback(async () => {
@@ -195,10 +209,15 @@ export function ChatWithStudentsSection({
     };
   }, [mentorId]);
 
+  // LOADING STATE
   if (isLoading) {
     return (
       <Card className="w-full rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden p-5 space-y-4">
-        <div className="h-5 bg-slate-200 rounded w-44 animate-pulse" />
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Loading students...
+          </span>
+        </div>
         <div className="space-y-3">
           {[1, 2].map((i) => (
             <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
@@ -210,6 +229,27 @@ export function ChatWithStudentsSection({
             </div>
           ))}
         </div>
+      </Card>
+    );
+  }
+
+  // ERROR STATE
+  if (errorMsg) {
+    return (
+      <Card className="w-full rounded-[1.5rem] shadow-sm border border-rose-100 bg-rose-50/50 overflow-hidden p-5 flex flex-col items-center justify-center text-center space-y-3">
+        <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
+          !
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-rose-900">{errorMsg}</h3>
+        </div>
+        <Button
+          onClick={fetchAssignedStudents}
+          variant="outline"
+          className="h-8 px-3 rounded-xl border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold"
+        >
+          Retry
+        </Button>
       </Card>
     );
   }
