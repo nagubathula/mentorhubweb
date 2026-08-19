@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight, X, Eye, Camera, Trash2 } from "lucide-react";
+import { User, Settings, BookOpen, Clock, Star, Users, MapPin, Briefcase, Mail, PlayCircle, Lock, LogOut, ChevronRight, X, Eye, Camera, Trash2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -10,7 +10,7 @@ import { MentorSettingsModal } from "./MentorSettingsModal";
 
 const supabase = createClient();
 
-export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => void; onSwitchRole?: () => void }) {
+export function MentorProfile({ onSignOut, onSwitchRole, onOpenChat }: { onSignOut?: () => void; onSwitchRole?: () => void; onOpenChat?: () => void }) {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRemoveAvatarModalOpen, setIsRemoveAvatarModalOpen] = useState(false);
@@ -369,6 +369,19 @@ export function MentorProfile({ onSignOut, onSwitchRole }: { onSignOut?: () => v
          </div>
       </div>
       
+      {/* Chat with Students Option */}
+      {onOpenChat && (
+        <div className="px-1 mb-4">
+          <Button 
+            onClick={onOpenChat} 
+            className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white font-medium text-[14px] uppercase tracking-[0.15em] rounded-[1.5rem] flex items-center justify-center gap-3 shadow-md transition-all active:scale-[0.98] cursor-pointer group"
+          >
+            <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform text-indigo-400" /> 
+            Chat with Students
+          </Button>
+        </div>
+      )}
+
       {/* Switch Role Option */}
       {onSwitchRole && (
         <div className="px-1 mb-4">

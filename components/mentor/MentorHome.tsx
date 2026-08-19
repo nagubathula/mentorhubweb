@@ -15,6 +15,7 @@ import { MentorCircle } from "./MentorCircle";
 import { MentorNotes } from "./MentorNotes";
 import { MentorCourses } from "./MentorCourses";
 import { MentorShareMaterials } from "./MentorShareMaterials";
+import { ChatWithStudentsSection } from "./ChatWithStudentsSection";
 
 const supabase = createClient();
 
@@ -122,11 +123,12 @@ interface MentorHomeProps {
   featureFlags?: Record<string, boolean>;
   onSelectStudent?: (studentId: string) => void;
   onNavigateToPack?: () => void;
+  onOpenChat?: () => void;
   mentorEmail?: string;
   mentorName?: string;
 }
 
-export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPack, mentorEmail, mentorName: mentorNameProp }: MentorHomeProps) {
+export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPack, onOpenChat, mentorEmail, mentorName: mentorNameProp }: MentorHomeProps) {
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
@@ -1715,8 +1717,20 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPac
         </div>
       )}
 
-      {/* 3. 8-Week Career Roadmap (Moved down, focused student) */}
-      <div id="roadmap-section" className="px-1 animate-in fade-in duration-500" style={{ animationDelay: "150ms" }}>
+      {/* Chat with Students Section */}
+      <div className="px-1 animate-in fade-in duration-300">
+        <ChatWithStudentsSection
+          mentorId={mentorId}
+          students={assignedStudents}
+          onOpenChat={(studentId) => {
+            if (onSelectStudent) onSelectStudent(studentId);
+            if (onOpenChat) onOpenChat();
+          }}
+        />
+      </div>
+
+      {/* 8-Week Roadmap Relocated to the Top */}
+      <div className="px-1 animate-in fade-in slide-in-from-top-3 duration-500">
         <Card className="p-6 shadow-sm overflow-hidden bg-white border border-slate-100 rounded-3xl relative">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div className="flex items-center gap-2.5">
@@ -1975,7 +1989,15 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPac
               </span>
             )}
           </div>
-          <Button variant="link" size="xs" className="text-slate-400 hover:text-slate-600 font-medium p-0">View All</Button>
+          {onOpenChat && (
+            <Button
+              onClick={onOpenChat}
+              className="text-[11px] bg-slate-900 hover:bg-slate-800 text-white font-bold h-8 px-3.5 rounded-xl transition-all active:scale-95 shadow-2xs cursor-pointer flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+              Chat with Students
+            </Button>
+          )}
         </div>
 
         <div className="space-y-5">

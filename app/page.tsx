@@ -33,6 +33,9 @@ import { AiLearningAssistant } from "@/components/student/AiLearningAssistant";
 import { mentorCoursesCatalog } from "@/lib/mentorCoursesData";
 import { CourseDetailsScreen } from "@/components/admin/CourseDetailsScreen";
 import { ExploreLearningPathsModal } from "@/components/student/ExploreLearningPathsModal";
+import { RealtimeChat } from "@/components/chat/RealtimeChat";
+import { YourMentorCard } from "@/components/student/YourMentorCard";
+import { ChatWithStudentsSection } from "@/components/mentor/ChatWithStudentsSection";
 
 type FlowState = "WELCOME" | "STUDENT_WELCOME" | "MENTOR_WELCOME" | "SIGNIN" | "SIGNUP" | "ROLE" | "STUDENT_PROFILE" | "STUDENT_QUIZ" | "STUDENT_SCREENING" | "DASHBOARD_AWAITING" | "DASHBOARD_MAIN" | "STUDENT_COURSES" | "COURSE_DETAILS" | "GAMES" | "NOTES" | "PROFILE" | "MENTOR_PROFILE" | "MENTOR_QUIZ" | "MENTOR_MATCHING" | "MENTOR_DASHBOARD" | "MENTOR_STUDENTS" | "MENTOR_NOTES" | "MENTOR_COURSES" | "MENTOR_CIRCLE" | "MENTOR_ACCOUNT" | "MENTOR_PACK" | "PORTFOLIO" | "WELLNESS" | "FACTS" | "GRATITUDE_WALL" | "MESSAGES" | "RESOURCES" | "ALL_TASKS" | "AI_ASSISTANT";
 
@@ -3757,108 +3760,18 @@ export default function OnboardingFlow() {
                  <div className="flex-1 overflow-y-auto hidden-scrollbar px-6 pt-0 md:px-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
             
             {state === "MESSAGES" && featureFlags.student_messages !== false && (
-              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in slide-in-from-right duration-300 -mx-6 md:-mx-8">
-                {/* Header */}
-                <div className="px-6 pt-6 pb-4 md:px-8 border-b border-slate-100 flex items-center gap-4 shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setState("DASHBOARD_MAIN")}
-                    className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
-                  >
-                    <ArrowLeft className="w-5 h-5 text-slate-600" />
-                  </Button>
-                  <div className="flex-1">
-                    <h2 className="text-[17px] font-medium text-slate-900 leading-tight">Conversation</h2>
-                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
-                      {mappedMentor ? `With ${mappedMentor.name}` : "Mentor Chat"}
-                    </p>
-                  </div>
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm">
-                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${mappedMentor?.id || 'mentor'}`} alt="mentor" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Messages List */}
-                <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 space-y-6 hidden-scrollbar bg-slate-50/40">
-                  {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3">
-                      <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-300 mb-2">
-                        <MessageSquare className="w-8 h-8" />
-                      </div>
-                      <p className="text-slate-800 font-medium text-[15px]">No messages yet</p>
-                      <p className="text-slate-400 text-xs leading-relaxed max-w-[200px]">Start the conversation with your mentor to get guidance on your learning path.</p>
-                    </div>
-                  ) : (
-                    messages.map((msg, i) => {
-                      const isMe = msg.from_user_id === mappedMentor?.id ? false : true;
-                      const urlRegex = /(https?:\/\/[^\s\)\>]+)/g;
-                      const hasLink = msg.body.match(urlRegex);
-                      
-                      let resourceTitle = "";
-                      if (hasLink) {
-                        const boldMatch = msg.body.match(/\*\*([^*]+)\*\*/);
-                        if (boldMatch) {
-                          resourceTitle = boldMatch[1];
-                        } else {
-                          const bookLine = msg.body.split('\n').find((l: string) => l.includes("📚"));
-                          if (bookLine) {
-                            resourceTitle = bookLine.replace("📚", "").replace(/\*/g, "").trim();
-                          } else {
-                            resourceTitle = "Recommended Resource";
-                          }
-                        }
-                      }
-
-                      return (
-                        <div key={msg.id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative animate-in fade-in slide-in-from-bottom-2 duration-300`} style={{ animationDelay: `${i * 50}ms` }}>
-                          <div className="flex items-center gap-2 max-w-[85%]">
-                            {isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
-                            <div className={`px-5 py-3.5 rounded-[1.5rem] text-[14.5px] font-medium leading-relaxed ${isMe ? 'bg-slate-900 text-white rounded-tr-none shadow-lg shadow-slate-900/5' : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-sm'}`}>
-                              <div>{renderMessageBody(msg.body, isMe)}</div>
-                            </div>
-                            {!isMe && <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-opacity" title="Delete Message"><Trash2 className="w-4 h-4" /></button>}
-                          </div>
-                          <span className="text-[10px] font-medium text-slate-300 uppercase tracking-wider mt-2 ml-3 mr-3">{isMe ? 'You' : mappedMentor?.name || 'Mentor'}</span>
-                        </div>
-                      );
-                    })
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input Area */}
-                <div className="px-6 py-4 md:px-8 border-t border-slate-100 bg-white shrink-0 pb-[calc(5rem+env(safe-area-inset-bottom))]">
-                   <div className="flex gap-3 items-end">
-                    <Textarea 
-                      value={messageInput}
-                      disabled={sendLoading}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 border border-slate-200 rounded-[1.5rem] px-5 py-3.5 bg-slate-50 text-[14.5px] text-slate-800 outline-none hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 min-h-[56px] max-h-32 resize-none shadow-inner"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                    />
-                    <Button 
-                      onClick={handleSendMessage}
-                      disabled={sendLoading || !messageInput.trim()}
-                      className={`${messageInput.trim() && !sendLoading ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-900/10' : 'bg-slate-100 text-slate-400'} w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-90 shrink-0 disabled:opacity-50`}
-                    >
-                      {sendLoading ? (
-                        <div className="w-5 h-5 border-3 border-slate-400 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Send className="w-6 h-6" strokeWidth={2.5} />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-center text-[10px] text-slate-400 mt-4 font-medium italic">Shift + Enter for new line</p>
-                </div>
+              <div className="flex flex-col h-full bg-white font-inter animate-in fade-in duration-300 -mx-6 md:-mx-8">
+                <RealtimeChat
+                  currentUser={{
+                    id: userProfile?.id || (role === "MENTOR" ? "mentor-id" : "student-id"),
+                    name: name || (role === "MENTOR" ? "Mentor" : "Student"),
+                    email: email || "",
+                    role: role === "MENTOR" ? "MENTOR" : "STUDENT",
+                    avatar_url: avatarUrl
+                  }}
+                  onBack={() => setState(role === "MENTOR" ? "MENTOR_DASHBOARD" : "DASHBOARD_MAIN")}
+                  initialContactId={activeStudentId || null}
+                />
               </div>
             )}
 
@@ -3887,6 +3800,16 @@ export default function OnboardingFlow() {
                       </div>
                     </div>
                 </div>
+
+                {/* Assigned Mentor Card */}
+                <YourMentorCard
+                  currentUserId={userProfile?.id || (role === "STUDENT" ? "student-id" : null)}
+                  mentor={mappedMentor}
+                  onOpenChat={(mentorId) => {
+                    if (mentorId) setActiveStudentId(mentorId);
+                    setState("MESSAGES");
+                  }}
+                />
 
                 {/* Today's Inspiration & Mentor Chat Card */}
                 <Card className="w-full relative z-10 rounded-[1.5rem] shadow-sm border border-slate-100 bg-white overflow-hidden">
@@ -5443,6 +5366,14 @@ export default function OnboardingFlow() {
                       </div>
                     )}
                     
+                    {/* Chat with Mentor Option */}
+                    <Button 
+                      onClick={() => setState("MESSAGES")} 
+                      className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 h-12 rounded-3xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+                    >
+                      <MessageSquare className="w-[18px] h-[18px] text-indigo-400" strokeWidth={2.5}/> Chat with Mentor
+                    </Button>
+
                     {/* Switch Role Option */}
                     <Button 
                       variant="outline" 
@@ -6087,6 +6018,7 @@ export default function OnboardingFlow() {
                         setState("MENTOR_STUDENTS");
                       }} 
                       onNavigateToPack={() => setState("MENTOR_PACK")}
+                      onOpenChat={() => setState("MESSAGES")}
                       mentorEmail={email}
                       mentorName={name}
                     />
@@ -6103,7 +6035,13 @@ export default function OnboardingFlow() {
                   {state === "MENTOR_NOTES" && featureFlags.mentor_sessions !== false && <MentorNotes />}
                   {state === "MENTOR_CIRCLE" && featureFlags.mentor_circle !== false && <MentorCircle />}
                   {state === "MENTOR_PACK" && featureFlags.mentor_learning_pack !== false && <MentorLearningPack onClose={() => setState("MENTOR_DASHBOARD")} />}
-                  {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && <MentorProfile onSignOut={handleSignOut} onSwitchRole={() => handleRoleSelection("STUDENT")} />}
+                  {state === "MENTOR_ACCOUNT" && featureFlags.mentor_account !== false && (
+                    <MentorProfile 
+                      onSignOut={handleSignOut} 
+                      onSwitchRole={() => handleRoleSelection("STUDENT")} 
+                      onOpenChat={() => setState("MESSAGES")}
+                    />
+                  )}
                 </div>
 
                   {/* Bottom Navigation - Premium Mentor Style */}
