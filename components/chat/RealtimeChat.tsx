@@ -94,6 +94,11 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
   const realtimeChannelRef = useRef<any>(null);
   const lastUpdatedProfileTimeRef = useRef<number>(0);
 
+  const activeContactRef = useRef<ChatUser | null>(activeContact);
+  useEffect(() => {
+    activeContactRef.current = activeContact;
+  }, [activeContact]);
+
   // Auto-scroll to bottom of messages
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
@@ -119,14 +124,14 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
 
   // Helper to send typing broadcast to active contact
   const sendTypingBroadcast = (isTyping: boolean) => {
-    if (!realtimeChannelRef.current || !activeContact?.id || !currentUser?.id) return;
+    if (!realtimeChannelRef.current || !activeContactRef.current?.id || !currentUser?.id) return;
     try {
       realtimeChannelRef.current.send({
         type: "broadcast",
         event: "typing",
         payload: {
           from_user_id: currentUser.id,
-          to_user_id: activeContact.id,
+          to_user_id: activeContactRef.current.id,
           isTyping,
         },
       });
@@ -178,11 +183,12 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
     }
   }, [activeContact?.id]);
 
-  // Setup combined Supabase Realtime channel for Presence, Typing Broadcast, and Messages
+  // Setup single combined Supabase Realtime channel for Presence, Typing Broadcast, and Messages
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const channel = supabase.channel(`user-messages-realtime-${currentUser.id}`, {
+    const channelName = `user-messages-realtime-${currentUser.id}`;
+    const channel = supabase.channel(channelName, {
       config: { presence: { key: currentUser.id } },
     });
 
@@ -222,10 +228,11 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
       })
       .on("broadcast", { event: "typing" }, (payload: any) => {
         const data = payload.payload;
+        const currentActive = activeContactRef.current;
         if (
           data &&
-          activeContact &&
-          data.from_user_id === activeContact.id &&
+          currentActive &&
+          data.from_user_id === currentActive.id &&
           data.to_user_id === currentUser.id
         ) {
           setPeerIsTyping(!!data.isTyping);
@@ -242,17 +249,18 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
           const newMsg: ChatMessage = payload.new;
           if (!newMsg) return;
 
+          const currentActive = activeContactRef.current;
           if (
-            activeContact &&
-            ((newMsg.from_user_id === activeContact.id && newMsg.to_user_id === currentUser.id) ||
-              (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === activeContact.id))
+            currentActive &&
+            ((newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) ||
+              (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === currentActive.id))
           ) {
             setMessages((prev) => {
               if (prev.some((m) => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
             });
 
-            if (newMsg.from_user_id === activeContact.id && newMsg.to_user_id === currentUser.id) {
+            if (newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) {
               supabase
                 .from("messages")
                 .update({ is_read: true } as any)
@@ -266,12 +274,12 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
           }
         }
       )
-      .subscribe(async (status: string) => {
+      .subscribe((status: string) => {
         if (status === "SUBSCRIBED") {
-          await channel.track({
+          channel.track({
             user_id: currentUser.id,
             online_at: new Date().toISOString(),
-          });
+          }).catch(() => {});
         }
       });
 
@@ -284,7 +292,7 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
       }
       supabase.removeChannel(channel);
     };
-  }, [currentUser?.id, activeContact?.id]);
+  }, [currentUser?.id]);
 
   // 2. Fetch contacts mapped to current user
   const fetchContacts = useCallback(async () => {
@@ -478,57 +486,6 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
-
-  // 5. Supabase Realtime Subscription for incoming & outgoing messages
-  useEffect(() => {
-    if (!currentUser?.id) return;
-
-    const channel = supabase.channel(`user-messages-realtime-${currentUser.id}`);
-
-    channel
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages"
-        },
-        (payload: any) => {
-          const newMsg: ChatMessage = payload.new;
-
-          // Check if message belongs to active conversation
-          if (
-            activeContact &&
-            ((newMsg.from_user_id === activeContact.id && newMsg.to_user_id === currentUser.id) ||
-              (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === activeContact.id))
-          ) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
-            });
-
-            // If received while active contact open, mark as read immediately
-            if (newMsg.from_user_id === activeContact.id) {
-              supabase
-                .from("messages")
-                .update({ is_read: true } as any)
-                .eq("id", newMsg.id);
-            }
-          } else if (newMsg.to_user_id === currentUser.id) {
-            // Update unread count for other contacts
-            setUnreadCounts((prev) => ({
-              ...prev,
-              [newMsg.from_user_id]: (prev[newMsg.from_user_id] || 0) + 1
-            }));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentUser?.id, activeContact?.id]);
 
   // 6. Handle Send Message
   const handleSendMessage = async () => {
