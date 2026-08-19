@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatLastActive } from "@/components/chat/RealtimeChat";
+import { getCleanChannel, GLOBAL_PRESENCE_CHANNEL } from "@/lib/realtime";
 
 const supabase = createClient();
 
@@ -146,7 +147,11 @@ export function ChatWithStudentsSection({
   useEffect(() => {
     if (!mentorId) return;
 
-    const presenceChannel = supabase.channel("online-presence-chat");
+    const presenceChannel = getCleanChannel(supabase, GLOBAL_PRESENCE_CHANNEL, {
+      config: { presence: { key: mentorId } },
+    });
+
+    if (!presenceChannel) return;
 
     presenceChannel
       .on("presence", { event: "sync" }, () => {
@@ -163,7 +168,14 @@ export function ChatWithStudentsSection({
           return updated;
         });
       })
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "SUBSCRIBED") {
+          presenceChannel.track({
+            user_id: mentorId,
+            online_at: new Date().toISOString(),
+          }).catch(() => {});
+        }
+      });
 
     return () => {
       supabase.removeChannel(presenceChannel);

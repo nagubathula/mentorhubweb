@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatLastActive } from "@/components/chat/RealtimeChat";
+import { getCleanChannel, GLOBAL_PRESENCE_CHANNEL } from "@/lib/realtime";
 
 const supabase = createClient();
 
@@ -141,12 +142,16 @@ export function YourMentorCard({
 
   // Track online/offline status via Supabase Realtime Presence
   useEffect(() => {
-    if (!mentor?.id) {
+    if (!currentUserId || !mentor?.id) {
       setIsOnline(false);
       return;
     }
 
-    const presenceChannel = supabase.channel("online-presence-chat");
+    const presenceChannel = getCleanChannel(supabase, GLOBAL_PRESENCE_CHANNEL, {
+      config: { presence: { key: currentUserId } },
+    });
+
+    if (!presenceChannel) return;
 
     presenceChannel
       .on("presence", { event: "sync" }, () => {
@@ -160,12 +165,19 @@ export function YourMentorCard({
       .on("presence", { event: "leave" }, ({ key }: { key: string }) => {
         if (key === mentor.id) setIsOnline(false);
       })
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "SUBSCRIBED") {
+          presenceChannel.track({
+            user_id: currentUserId,
+            online_at: new Date().toISOString(),
+          }).catch(() => {});
+        }
+      });
 
     return () => {
       supabase.removeChannel(presenceChannel);
     };
-  }, [mentor?.id]);
+  }, [currentUserId, mentor?.id]);
 
   // LOADING STATE
   if (isLoading) {

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { getCleanChannel, GLOBAL_PRESENCE_CHANNEL } from "@/lib/realtime";
 
 const supabase = createClient();
 
@@ -183,15 +184,36 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
     }
   }, [activeContact?.id]);
 
+  // Re-track presence and update database last_seen on window focus / tab visibility return
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && currentUser?.id && realtimeChannelRef.current) {
+        updateDatabaseLastSeen();
+        realtimeChannelRef.current.track({
+          user_id: currentUser.id,
+          online_at: new Date().toISOString(),
+        }).catch(() => {});
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [currentUser?.id, updateDatabaseLastSeen]);
+
   // Setup single combined Supabase Realtime channel for Presence, Typing Broadcast, and Messages
   useEffect(() => {
     if (!currentUser?.id) return;
 
-    const channelName = `user-messages-realtime-${currentUser.id}`;
-    const channel = supabase.channel(channelName, {
+    const channel = getCleanChannel(supabase, GLOBAL_PRESENCE_CHANNEL, {
       config: { presence: { key: currentUser.id } },
     });
 
+    if (!channel) return;
     realtimeChannelRef.current = channel;
 
     channel

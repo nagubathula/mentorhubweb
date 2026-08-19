@@ -16,6 +16,7 @@ import { MentorNotes } from "./MentorNotes";
 import { MentorCourses } from "./MentorCourses";
 import { MentorShareMaterials } from "./MentorShareMaterials";
 import { ChatWithStudentsSection } from "./ChatWithStudentsSection";
+import { getCleanChannel } from "@/lib/realtime";
 
 const supabase = createClient();
 
@@ -950,17 +951,19 @@ export function MentorHome({ featureFlags = {}, onSelectStudent, onNavigateToPac
 
       // Real-time message listener
       if (session) {
-        channel = supabase.channel(`mentor-messages-${currentUserId}`);
-        channel
-          .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'messages', 
-            filter: `to_user_id=eq.${currentUserId}` 
-          }, (payload: any) => {
-            if (isMounted) setMessages(prev => [payload.new, ...prev]);
-          })
-          .subscribe();
+        channel = getCleanChannel(supabase, `mentor-messages-${currentUserId}`);
+        if (channel) {
+          channel
+            .on('postgres_changes', { 
+              event: 'INSERT', 
+              schema: 'public', 
+              table: 'messages', 
+              filter: `to_user_id=eq.${currentUserId}` 
+            }, (payload: any) => {
+              if (isMounted) setMessages(prev => [payload.new, ...prev]);
+            })
+            .subscribe();
+        }
       }
     };
 
