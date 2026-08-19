@@ -116,6 +116,13 @@ const getCookie = (name: string): string | null => {
   return null;
 };
 
+const deleteCookie = (name: string) => {
+  if (typeof window === "undefined") return;
+  document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;";
+  document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax;";
+  document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+};
+
 const LOCAL_ENROLLMENTS_KEY = "mentorhub_local_enrollments";
 
 const AESTHETIC_GRADIENTS = [
@@ -763,23 +770,49 @@ export default function OnboardingFlow() {
           setRole(null);
           setName("");
           setEmail("");
+          setAvatarUrl(null);
           setUserProfile(null);
+          setMappedMentor(null);
+          setEnrolledCourse(null);
+          setStudentEnrollments([]);
+          setCustomTodos([]);
+          setActiveStudentId(null);
+          setSelections({});
+          setScreeningSelections({});
+          setQuizIndex(0);
+          setScreeningIndex(0);
+          setMentorQuizIndex(0);
           setAuthInitializing(false);
         }
         // Wipes state cookies only on explicit user sign out
-        setCookie('mentorhub_state', '', -1);
-        setCookie('mentorhub_role', '', -1);
-        setCookie('mentorhub_name', '', -1);
-        setCookie('mentorhub_email', '', -1);
-        setCookie('mentorhub_avatarUrl', '', -1);
-        setCookie('mentorhub_selections', '', -1);
-        setCookie('mentorhub_screeningSelections', '', -1);
-        setCookie('mentorhub_quizIndex', '', -1);
-        setCookie('mentorhub_screeningIndex', '', -1);
-        setCookie('mentorhub_mentorQuizIndex', '', -1);
-        setCookie('mentorhub_mentorExpertise', '', -1);
-        setCookie('mentorhub_coinsCount', '', -1);
-        setCookie('mentorhub_streakCount', '', -1);
+        const cookiesToClear = [
+          'mentorhub_state',
+          'mentorhub_role',
+          'mentorhub_name',
+          'mentorhub_email',
+          'mentorhub_avatarUrl',
+          'mentorhub_selections',
+          'mentorhub_screeningSelections',
+          'mentorhub_quizIndex',
+          'mentorhub_screeningIndex',
+          'mentorhub_mentorQuizIndex',
+          'mentorhub_mentorExpertise',
+          'mentorhub_coinsCount',
+          'mentorhub_streakCount'
+        ];
+        cookiesToClear.forEach(cookieName => deleteCookie(cookieName));
+
+        if (typeof window !== "undefined") {
+          try {
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('sb-') || key.startsWith('supabase') || key.startsWith('mentorhub_')) {
+                localStorage.removeItem(key);
+              }
+            });
+          } catch (err) {
+            console.error("Error clearing localStorage on SIGNED_OUT:", err);
+          }
+        }
       }
     });
 
@@ -1521,22 +1554,38 @@ export default function OnboardingFlow() {
 
   useEffect(() => {
     if (!hasLoadedFromCookies.current) return;
-    if (role) setCookie('mentorhub_role', role);
+    if (role) {
+      setCookie('mentorhub_role', role);
+    } else {
+      deleteCookie('mentorhub_role');
+    }
   }, [role]);
 
   useEffect(() => {
     if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_name', name);
+    if (name) {
+      setCookie('mentorhub_name', name);
+    } else {
+      deleteCookie('mentorhub_name');
+    }
   }, [name]);
 
   useEffect(() => {
     if (!hasLoadedFromCookies.current) return;
-    setCookie('mentorhub_email', email);
+    if (email) {
+      setCookie('mentorhub_email', email);
+    } else {
+      deleteCookie('mentorhub_email');
+    }
   }, [email]);
 
   useEffect(() => {
     if (!hasLoadedFromCookies.current) return;
-    if (avatarUrl) setCookie('mentorhub_avatarUrl', avatarUrl);
+    if (avatarUrl) {
+      setCookie('mentorhub_avatarUrl', avatarUrl);
+    } else {
+      deleteCookie('mentorhub_avatarUrl');
+    }
   }, [avatarUrl]);
 
   useEffect(() => {
@@ -2384,15 +2433,67 @@ export default function OnboardingFlow() {
     } catch (e) {
       console.error("Sign out error:", e);
     }
+
+    // 1. Reset all React state variables
     setRole(null);
     setName("");
     setEmail("");
+    setAvatarUrl(null);
+    setUserProfile(null);
+    setMappedMentor(null);
+    setEnrolledCourse(null);
+    setStudentEnrollments([]);
+    setCustomTodos([]);
+    setActiveStudentId(null);
+    setSelections({});
+    setScreeningSelections({});
+    setQuizIndex(0);
+    setScreeningIndex(0);
+    setMentorQuizIndex(0);
+    setMentorExpertise("");
+    setCoinsCount(240);
+    setStreakCount(0);
+    setAuthEmail("");
+    setAuthPassword("");
+    setAuthError("");
+    setAuthLoading(false);
     setState("WELCOME");
-    setCookie('mentorhub_state', '', -1);
-    setCookie('mentorhub_role', '', -1);
-    setCookie('mentorhub_name', '', -1);
-    setCookie('mentorhub_email', '', -1);
-    setCookie('mentorhub_avatarUrl', '', -1);
+
+    // 2. Clear all cookies
+    const cookiesToClear = [
+      'mentorhub_state',
+      'mentorhub_role',
+      'mentorhub_name',
+      'mentorhub_email',
+      'mentorhub_avatarUrl',
+      'mentorhub_selections',
+      'mentorhub_screeningSelections',
+      'mentorhub_quizIndex',
+      'mentorhub_screeningIndex',
+      'mentorhub_mentorQuizIndex',
+      'mentorhub_mentorExpertise',
+      'mentorhub_coinsCount',
+      'mentorhub_streakCount'
+    ];
+    cookiesToClear.forEach(cookieName => deleteCookie(cookieName));
+
+    // 3. Clear localStorage items
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(LOCAL_ENROLLMENTS_KEY);
+        localStorage.removeItem('mentorhub_student_todos');
+        localStorage.removeItem('mentorhub_inspiration_messages');
+        localStorage.removeItem('mentor_assigned_student_notification_dismissed');
+        // Clear all Supabase auth storage keys & mentorhub keys
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-') || key.startsWith('supabase') || key.startsWith('mentorhub_')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (err) {
+        console.error("Error clearing localStorage on sign out:", err);
+      }
+    }
   };
 
   const handleSelect = (qId: string, val: string, multi: boolean = false) => {
