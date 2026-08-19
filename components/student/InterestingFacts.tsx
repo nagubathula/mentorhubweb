@@ -141,7 +141,7 @@ export function InterestingFacts({ onBack, coins, onCoinsEarned }: InterestingFa
 
   // Find active fact from pushed fact of the day, or fallback to dayOfYear calculation
   let factOfTheDay = factsList.find(f => f.is_active_today) || factsList[0];
-  const pushedFactStr = localStorage.getItem("pushed_fact_of_the_day");
+  const pushedFactStr = typeof window !== "undefined" ? localStorage.getItem("pushed_fact_of_the_day") : null;
   if (pushedFactStr) {
     try {
       const parsed = JSON.parse(pushedFactStr);

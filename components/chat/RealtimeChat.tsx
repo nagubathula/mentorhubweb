@@ -79,8 +79,15 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
   const [, setTicker] = useState<number>(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isMobileView = typeof window !== "undefined" && window.innerWidth < 768;
+  const [isMobileView, setIsMobileView] = useState<boolean>(false);
   const [showMobileChat, setShowMobileChat] = useState<boolean>(!!initialContactId);
+
+  useEffect(() => {
+    setIsMobileView(window.innerWidth < 768);
+    const handleResize = () => setIsMobileView(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingSelfRef = useRef<boolean>(false);

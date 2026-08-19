@@ -296,7 +296,7 @@ export function YourMentorCard({
               >
                 {isOnline
                   ? "● Online"
-                  : formatLastActive((mentor.preferences as any)?.last_seen)}
+                  : formatLastActive((mentor?.preferences as any)?.last_seen)}
               </span>
             </div>
           </div>

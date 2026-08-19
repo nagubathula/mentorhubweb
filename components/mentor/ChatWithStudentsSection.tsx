@@ -330,7 +330,7 @@ export function ChatWithStudentsSection({
                         >
                           {isOnline
                             ? "● Online"
-                            : formatLastActive((student.preferences as any)?.last_seen)}
+                            : formatLastActive((student?.preferences as any)?.last_seen)}
                         </span>
                       </div>
 
