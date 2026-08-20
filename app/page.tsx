@@ -559,6 +559,34 @@ export default function OnboardingFlow() {
 
   // Messaging state
   const [mappedMentor, setMappedMentor] = useState<any>(null);
+
+  const fetchAssignedMentorForUser = useCallback(async (userId: string) => {
+    if (!userId) return null;
+    try {
+      const { data: mapping, error: mapErr } = await supabase
+        .from('mapping')
+        .select('mentor:profiles!mapping_mentor_id_fkey(*)')
+        .eq('student_id', userId)
+        .maybeSingle();
+
+      if (mapErr) {
+        console.error("Error fetching mentor mapping:", mapErr);
+        return null;
+      }
+
+      if (mapping && (mapping as any).mentor) {
+        const mentorProf = (mapping as any).mentor;
+        setMappedMentor(mentorProf);
+        return mentorProf;
+      } else {
+        setMappedMentor(null);
+        return null;
+      }
+    } catch (err) {
+      console.error("Exception fetching assigned mentor:", err);
+      return null;
+    }
+  }, []);
   const [enrolledCourse, setEnrolledCourse] = useState<any>(null);
   
   // Feedback state
@@ -899,6 +927,33 @@ export default function OnboardingFlow() {
     };
   }, []);
 
+  // Real-Time Assigned Mentor Mapping Subscription & Syncing
+  useEffect(() => {
+    if (!userProfile?.id || role !== "STUDENT") return;
+
+    fetchAssignedMentorForUser(userProfile.id);
+
+    const channel = supabase
+      .channel(`mapping-sync-${userProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'mapping',
+          filter: `student_id=eq.${userProfile.id}`,
+        },
+        () => {
+          fetchAssignedMentorForUser(userProfile.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userProfile?.id, role, fetchAssignedMentorForUser]);
+
   const handleSessionSync = async (session: any) => {
     if (!session?.user) return;
     
@@ -937,6 +992,11 @@ export default function OnboardingFlow() {
         setUserProfile(profile);
         if (profile.name) setName(profile.name);
         if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
+
+        // Immediately load assigned mentor mapping for student
+        if (profile.role === "STUDENT" || session.user.user_metadata?.role === "STUDENT") {
+          fetchAssignedMentorForUser(session.user.id);
+        }
 
         const prefs = (profile.preferences as any) || {};
         if (typeof prefs.coins === 'number') {
@@ -3904,7 +3964,7 @@ export default function OnboardingFlow() {
 
                 {/* Assigned Mentor Card */}
                 <YourMentorCard
-                  currentUserId={userProfile?.id || (role === "STUDENT" ? "student-id" : null)}
+                  currentUserId={userProfile?.id || null}
                   mentor={mappedMentor || undefined}
                   onOpenChat={(mentorId) => {
                     if (mentorId) setActiveStudentId(mentorId);

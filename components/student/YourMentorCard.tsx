@@ -37,20 +37,25 @@ export function YourMentorCard({
   onOpenChat,
   unreadCount = 0,
 }: YourMentorCardProps) {
-  const [mentor, setMentor] = useState<MentorProfile | null>(mentorProp || null);
-  const [isLoading, setIsLoading] = useState<boolean>(isLoadingProp || (!mentorProp && !!currentUserId));
+  const [localMentor, setLocalMentor] = useState<MentorProfile | null>(mentorProp || null);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [unreadMsgCount, setUnreadMsgCount] = useState<number>(unreadCount);
 
+  // Sync prop changes into local state
+  useEffect(() => {
+    if (mentorProp !== undefined && mentorProp !== null) {
+      setLocalMentor(mentorProp);
+      setErrorMsg(null);
+    }
+  }, [mentorProp]);
+
   // 1. Fetch assigned mentor directly from database mapping table
   const fetchAssignedMentor = async () => {
-    if (!currentUserId) {
-      setIsLoading(false);
-      return;
-    }
+    if (!currentUserId) return;
 
-    setIsLoading(true);
+    setIsFetching(true);
     setErrorMsg(null);
 
     try {
@@ -62,34 +67,30 @@ export function YourMentorCard({
 
       if (error) {
         console.error("Error fetching assigned mentor:", error);
-        setErrorMsg("Unable to load mentor. Please try again.");
-        setMentor(null);
+        setErrorMsg("Unable to load your mentor. Please try again.");
       } else if (mapping && (mapping as any).mentor) {
-        setMentor((mapping as any).mentor as MentorProfile);
+        setLocalMentor((mapping as any).mentor as MentorProfile);
         setErrorMsg(null);
       } else {
-        setMentor(null);
+        setLocalMentor(null);
         setErrorMsg(null);
       }
     } catch (err) {
       console.error("Failed to fetch mentor:", err);
-      setErrorMsg("Unable to load mentor. Please try again.");
+      setErrorMsg("Unable to load your mentor. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   };
 
   useEffect(() => {
-    if (mentorProp !== undefined && mentorProp !== null) {
-      setMentor(mentorProp);
-      setIsLoading(false);
-      setErrorMsg(null);
-    } else if (currentUserId) {
+    if (currentUserId && !mentorProp) {
       fetchAssignedMentor();
-    } else {
-      setIsLoading(false);
     }
   }, [currentUserId, mentorProp]);
+
+  const mentor = mentorProp ?? localMentor;
+  const isLoading = isLoadingProp || isFetching || (!currentUserId && !mentor);
 
   // Track unread messages count if mentor exists
   useEffect(() => {
