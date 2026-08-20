@@ -63,6 +63,35 @@ export function formatLastActive(isoString?: string | null): string {
   return `Active ${diffDays} days ago`;
 }
 
+export function upsertMessage(prev: ChatMessage[], newMsg: ChatMessage): ChatMessage[] {
+  if (!newMsg || !newMsg.id) return prev;
+
+  // 1. If exact ID is already in prev, return unchanged
+  if (prev.some((m) => m.id === newMsg.id)) {
+    return prev;
+  }
+
+  // 2. If newMsg is a real DB message (non-temp), check if matching temp message exists
+  if (!newMsg.id.startsWith("temp-")) {
+    const tempIndex = prev.findIndex(
+      (m) =>
+        m.id.startsWith("temp-") &&
+        m.from_user_id === newMsg.from_user_id &&
+        m.to_user_id === newMsg.to_user_id &&
+        m.body === newMsg.body
+    );
+
+    if (tempIndex !== -1) {
+      const updated = [...prev];
+      updated[tempIndex] = newMsg;
+      return updated;
+    }
+  }
+
+  // 3. Append new message
+  return [...prev, newMsg];
+}
+
 export function RealtimeChat({ currentUser, onBack, initialContactId }: RealtimeChatProps) {
   const [contacts, setContacts] = useState<ChatUser[]>([]);
   const [activeContact, setActiveContact] = useState<ChatUser | null>(null);
@@ -260,6 +289,31 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
           setPeerIsTyping(!!data.isTyping);
         }
       })
+      .on("broadcast", { event: "new_message" }, (payload: any) => {
+        const newMsg: ChatMessage = payload.payload;
+        if (!newMsg) return;
+
+        const currentActive = activeContactRef.current;
+        if (
+          currentActive &&
+          ((newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) ||
+            (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === currentActive.id))
+        ) {
+          setMessages((prev) => upsertMessage(prev, newMsg));
+
+          if (newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) {
+            supabase
+              .from("messages")
+              .update({ is_read: true } as any)
+              .eq("id", newMsg.id);
+          }
+        } else if (newMsg.to_user_id === currentUser.id) {
+          setUnreadCounts((prev) => ({
+            ...prev,
+            [newMsg.from_user_id]: (prev[newMsg.from_user_id] || 0) + 1,
+          }));
+        }
+      })
       .on(
         "postgres_changes",
         {
@@ -277,10 +331,7 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
             ((newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) ||
               (newMsg.from_user_id === currentUser.id && newMsg.to_user_id === currentActive.id))
           ) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
-            });
+            setMessages((prev) => upsertMessage(prev, newMsg));
 
             if (newMsg.from_user_id === currentActive.id && newMsg.to_user_id === currentUser.id) {
               supabase
@@ -509,14 +560,54 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
     fetchMessages();
   }, [fetchMessages]);
 
-  // 6. Handle Send Message
+  // 6. Handle Send Message (Optimistic UI & Realtime Sync)
   const handleSendMessage = async () => {
     const text = messageInput.trim();
     if (!text || isSending || !activeContact || !currentUser?.id) return;
 
     updateDatabaseLastSeen();
-    setIsSending(true);
 
+    // 1. Create client-side Optimistic temporary message
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const tempMsg: ChatMessage = {
+      id: tempId,
+      from_user_id: currentUser.id,
+      to_user_id: activeContact.id,
+      body: text,
+      sender_name: currentUser.name || "User",
+      is_read: false,
+      created_at: new Date().toISOString(),
+    };
+
+    // 2. Add message to local UI IMMEDIATELY
+    setMessages((prev) => upsertMessage(prev, tempMsg));
+    setMessageInput("");
+    setIsSending(false);
+    setTimeout(() => scrollToBottom(true), 20);
+
+    // Stop self typing indicator broadcast
+    if (isTypingSelfRef.current) {
+      isTypingSelfRef.current = false;
+      sendTypingBroadcast(false);
+    }
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+
+    // 3. Broadcast message to active contact in real-time over Supabase Realtime Channel
+    if (realtimeChannelRef.current) {
+      try {
+        realtimeChannelRef.current.send({
+          type: "broadcast",
+          event: "new_message",
+          payload: tempMsg,
+        });
+      } catch (err) {
+        console.warn("Failed to broadcast message:", err);
+      }
+    }
+
+    // 4. Save to Supabase database in background
     try {
       const { data, error } = await supabase
         .from("messages")
@@ -525,28 +616,34 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
           to_user_id: activeContact.id,
           body: text,
           sender_name: currentUser.name || "User",
-          is_read: false
+          is_read: false,
         } as any)
         .select("*")
         .single();
 
       if (error || !data) {
         console.error("Database message insert error:", error);
+        // Remove temp message and alert user if insert failed
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
         showError("Message failed to send. Please try again.");
       } else {
         const confirmedMsg = data as ChatMessage;
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === confirmedMsg.id)) return prev;
-          return [...prev, confirmedMsg];
-        });
-        setMessageInput("");
-        setTimeout(() => scrollToBottom(true), 50);
+        // Replace temp message with confirmed database record seamlessly
+        setMessages((prev) => upsertMessage(prev, confirmedMsg));
+
+        // Send confirmation broadcast with real DB ID
+        if (realtimeChannelRef.current) {
+          realtimeChannelRef.current.send({
+            type: "broadcast",
+            event: "new_message",
+            payload: confirmedMsg,
+          }).catch(() => {});
+        }
       }
     } catch (err: any) {
       console.error("Failed to send message:", err);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       showError("Message failed to send. Please try again.");
-    } finally {
-      setIsSending(false);
     }
   };
 
