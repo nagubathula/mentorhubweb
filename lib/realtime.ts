@@ -27,7 +27,7 @@ export function getCleanChannel(supabase: any, topic: string, config?: any) {
  * E.g., "Online", "Active just now", "Active 5m ago", "Active 2h ago"
  */
 export function formatLastActiveStatus(isOnline: boolean, lastSeenIsoOrMs?: string | number | null): string {
-  if (isOnline) return "Online";
+  if (isOnline) return "● Online";
   if (!lastSeenIsoOrMs) return "Offline";
 
   const date = typeof lastSeenIsoOrMs === "number" ? new Date(lastSeenIsoOrMs) : new Date(lastSeenIsoOrMs);
@@ -36,7 +36,15 @@ export function formatLastActiveStatus(isOnline: boolean, lastSeenIsoOrMs?: stri
 
   const diff = Date.now() - time;
   if (diff < 0 || diff < 60000) return "Active just now";
-  if (diff < 3600000) return `Active ${Math.floor(diff / 60000)}m ago`;
-  if (diff < 86400000) return `Active ${Math.floor(diff / 3600000)}h ago`;
-  return `Active ${Math.floor(diff / 86400000)}d ago`;
+  
+  const diffMin = Math.floor(diff / 60000);
+  if (diffMin < 60) return `Active ${diffMin} min ago`;
+  
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours === 1) return "Active 1 hour ago";
+  if (diffHours < 24) return `Active ${diffHours} hours ago`;
+  
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "Active 1 day ago";
+  return `Active ${diffDays} days ago`;
 }

@@ -54,13 +54,13 @@ export function formatLastActive(isoString?: string | null): string {
   const diffHours = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSec < 60) return "Last active just now";
-  if (diffMin === 1) return "Last active 1 minute ago";
-  if (diffMin < 60) return `Last active ${diffMin} minutes ago`;
-  if (diffHours === 1) return "Last active 1 hour ago";
-  if (diffHours < 24) return `Last active ${diffHours} hours ago`;
-  if (diffDays === 1) return "Last active yesterday";
-  return `Last active ${diffDays} days ago`;
+  if (diffSec < 60) return "Active just now";
+  if (diffMin === 1) return "Active 1 min ago";
+  if (diffMin < 60) return `Active ${diffMin} min ago`;
+  if (diffHours === 1) return "Active 1 hour ago";
+  if (diffHours < 24) return `Active ${diffHours} hours ago`;
+  if (diffDays === 1) return "Active 1 day ago";
+  return `Active ${diffDays} days ago`;
 }
 
 export function RealtimeChat({ currentUser, onBack, initialContactId }: RealtimeChatProps) {
@@ -514,6 +514,7 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
     const text = messageInput.trim();
     if (!text || isSending || !activeContact || !currentUser?.id) return;
 
+    updateDatabaseLastSeen();
     setIsSending(true);
 
     try {
@@ -701,8 +702,14 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
                         <p className={`text-xs truncate ${isActive ? "font-bold text-indigo-950" : "font-semibold text-slate-800"}`}>
                           {contact.name}
                         </p>
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {isOnline ? "Online" : "Offline"}
+                        <span className={`text-[10px] font-medium ${isOnline ? "text-emerald-600 font-semibold" : "text-slate-400"}`}>
+                          {isOnline
+                            ? "● Online"
+                            : formatLastActive(
+                                lastSeenMap[contact.id] ||
+                                  contact.last_seen ||
+                                  (contact.preferences as any)?.last_seen
+                              )}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-400 truncate">
@@ -766,17 +773,12 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
                     />
                   </div>
 
-                  <div>
+                  <div className="flex flex-col justify-center">
                     <h3 className="text-sm font-bold text-slate-900 leading-tight flex items-center gap-1.5">
                       {activeContact.name}
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                     </h3>
-                    <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          onlineUserIds.has(activeContact.id) ? "bg-emerald-500" : "bg-slate-400"
-                        }`}
-                      />
+                    <div className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
                       {onlineUserIds.has(activeContact.id) ? (
                         <span className="text-emerald-600 font-semibold">● Online</span>
                       ) : (
@@ -788,9 +790,20 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
                           )}
                         </span>
                       )}
-                      <span className="text-slate-300">•</span>
-                      <span>{activeContact.expertise || activeContact.role}</span>
-                    </p>
+                      {peerIsTyping ? (
+                        <>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-indigo-600 font-semibold animate-pulse">Typing...</span>
+                        </>
+                      ) : (
+                        (activeContact.expertise || activeContact.role) && (
+                          <>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-slate-400 font-normal">{activeContact.expertise || activeContact.role}</span>
+                          </>
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -894,6 +907,7 @@ export function RealtimeChat({ currentUser, onBack, initialContactId }: Realtime
                     onChange={(e) => {
                       const val = e.target.value;
                       setMessageInput(val);
+                      updateDatabaseLastSeen();
 
                       if (!activeContact || !currentUser?.id) return;
 
